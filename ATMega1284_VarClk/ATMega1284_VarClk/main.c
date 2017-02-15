@@ -5,16 +5,33 @@
  * Author : patri
  */ 
 
-#define F_CPU 1000000UL
+#define F_CPU_8 8000000UL
+#define F_CPU_1 1000000IL
+#define BAUD  115200UL
+#define RAND_MAX 255
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <stdio.h>
-//#include "uart.h"
+#include <stdlib.h>
+
+// UART Read Buffer
+char rec[50];
+
+// TIMER0 and TIMER2 Control Variables
+unsigned long millis = 0;
+uint8_t fastClk      = 1;
+
+// Blink Control Variables
+#define LED		 PINB0
+#define INTERVAL 1000
+
+unsigned long prevMillis = 0;
 
 
 /*
  * Send character c down the UART Tx, wait until tx holding register
- * is empty.
+ * is empty. (From ECE 3411 UART Library)
  */
 int uart_putchar(char c, FILE *stream) {
 
@@ -33,7 +50,7 @@ int uart_putchar(char c, FILE *stream) {
 }
 
 /*
- * Receive a character from the UART Rx.
+ * Receive a character from the UART Rx. (From ECE 3411 UART Library)
  *
  * This features a simple line-editor that allows to delete and
  * re-edit the characters entered, until either CR or NL is entered.
@@ -65,8 +82,7 @@ int uart_putchar(char c, FILE *stream) {
  * Successive calls to uart_getchar() will be satisfied from the
  * internal buffer until that buffer is emptied again.
  */
-int
-uart_getchar(FILE *stream)
+int uart_getchar(FILE *stream)
 {
   uint8_t c;
   char *cp, *cp2;
@@ -160,24 +176,94 @@ uart_getchar(FILE *stream)
 }
 
 FILE uart_str = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
-char rec[50];
 
+// Initializes UART0 as a standard serial port
 void initUART0(unsigned long _freq, unsigned long _baud) {
 	UCSR0A |= (1<<U2X0);
 	UBRR0L = (_freq / (8UL * _baud)) - 1;
 	UCSR0B |= (1<<RXEN0)|(1<<TXEN0);
 }
 
-void initUART0(unsigned long _freq, unsigned long _baud) {
+// Initializes UART1 as a standard serial port
+void initUART1(unsigned long _freq, unsigned long _baud) {
 	UCSR1A |= (1<<U2X1);
 	UBRR1L = (_freq / (8UL * _baud)) - 1;
-	UCSR0B |= (1<<RXEN0)|(1<<TXEN0);
+	UCSR1B |= (1<<RXEN1)|(1<<TXEN1);
 }
+
+// Initializes Timer 0 as a 1ms Timer
+void initTimer0(void) {
+	TIMSK0 |= (1<<OCIE0A);  // Enables Interrupt
+	TCCR0A |= (1<<WGM01);   // CTC Mode
+	TCCR0B |= (1<<CS01)|(1<<CS00);    // /64 prescaler
+	OCR0A   = 124;          // 125 counts @ 8Mhz == 1 ms overflow
+}
+
+// Initializes Timer 2 as clock-switching timer
+void initTimer2(void) {
+	TIMSK0 |= (1<<OCIE0A);  // Enables Interrupt
+	TCCR0A |= (1<<WGM01);   // CTC Mode
+	TCCR0B |= (1<<CS02)|(1<<CS00);    // /1024 prescaler
+	OCR2A   = rand();          // Pseudorandom overflow value 
+}
+
+// Sets UART0, UART1, and TIMER0 for 8Mhz operation
+// Assumes TIMER0 is 1ms timer
+// Assumes UART0, UART1 operating at BAUD
+void setFor8MHz(void) {
+	// Removes clock divisor
+	CLKPR = (1<<CLKPCE);
+	CLKPR = 0;
+	
+	// Updates Baud Rate Generators
+	UBRR0L = (F_CPU_8 / (8UL * BAUD)) - 1;
+	UBRR1L = (F_CPU_8 / (8UL * BAUD)) - 1;
+	
+	// Updates Timer 0
+	TCCR0B |= (1<<CS00);
+}
+
+// Sets UART0, UART1, and TIMER0 for 1Mhz operation
+// Assumes TIMER0 is 1ms timer
+// Assumes UART0, UART1 operating at BAUD
+void setFor1MHz(void) {
+		// Sets /8 clock divisor
+		CLKPR = (1<<CLKPCE);
+		CLKPR = (1<<CLKPS1)|(1<<CLKPS0);
+	
+	// Updates Baud Rate Generators
+	UBRR0L = (F_CPU_1 / (8UL * BAUD)) - 1;
+	UBRR1L = (F_CPU_1 / (8UL * BAUD)) - 1;
+	
+	// Updates Timer 0
+	TCCR0B &= ~(1<<CS00);
+}
+
+ISR(TIMER0_COMPA_vect) {
+	millis++;
+}
+
+ISR(TIMER2_COMPA_vect) {
+	OCR2A = rand();
+	
+	if(fastClk) {
+		fastClk = 0;
+		setFor1MHz();
+		
+	}
+	else {
+		fastClk = 1;
+		setFor8MHz();
+	}
+}
+
 
 
 int main(void)
 {
-	initUART0(F_CPU, 115200);
+	// Only UART0 is configured to print text
+	initUART0(F_CPU_8, BAUD);
+	initUART1(F_CPU_8, BAUD);
 	
 	stdout = stdin = stderr = &uart_str;
 	
@@ -185,6 +271,11 @@ int main(void)
     /* Replace with your application code */
     while (1) 
     {
+		if((millis - prevMillis) >= INTERVAL) {
+			prevMillis = millis;
+			PORTB ^= (1<<LED);
+		}
+			
     }
 }
 
