@@ -31,8 +31,8 @@ def construct_request(start_addr, num_bytes):
     except:
         pass # File not found
         SECRET_PASSWORD = "abcdefghijklmnop"
-
-    return struct.pack('>B16sII', 128, SECRET_PASSWORD, start_addr, num_bytes)
+    formatstring = '>B' + str(len(SECRET_PASSWORD)) + 'sII'
+    return struct.pack(formatstring, len(SECRET_PASSWORD), SECRET_PASSWORD, start_addr, num_bytes)
 
 
 if __name__ == '__main__':
