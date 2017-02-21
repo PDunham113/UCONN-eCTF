@@ -2,7 +2,7 @@
  * ATMega1284 TRNG.c
  *
  * Created: 2/10/2017 3:05:27 PM
- * Author : patri
+ * Author : Patrick Dunham
  *
  * Info: Proof that the ATMega1284 watchdog timer jitter
  *		 can be used to generate quality random numbers
@@ -11,7 +11,7 @@
 
 /*** INCLUDES ***/
 
-#define F_CPU 8000000UL
+#define F_CPU 20000000UL
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
