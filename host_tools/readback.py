@@ -25,15 +25,16 @@ RESP_ERROR = b'\x01'
 def construct_request(start_addr, num_bytes):
     # Read in secret password from file.
     SECRET_PASSWORD = ''
+    secret = 'secret_configure_output.txt'
     try:
-        with open('secret_configure_outpt.txt', 'rb') as secret_file:
+        with open(secret, 'rb') as secret_file:
             SECRET_PASSWORD = secret_file.read()
+            # remove those pesky newlines
+            SECRET_PASSWORD = SECRET_PASSWORD.rstrip()
     except:
-        pass # File not found
-        SECRET_PASSWORD = "abcdefghijklmnop"
-    formatstring = '>B' + str(len(SECRET_PASSWORD)) + 'sII'
-    return struct.pack(formatstring, len(SECRET_PASSWORD), SECRET_PASSWORD, start_addr, num_bytes)
-
+        print("File not found")
+    formatstring = '>' + str(len(SECRET_PASSWORD)) + 'sII'
+    return struct.pack(formatstring, SECRET_PASSWORD, start_addr, num_bytes)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Memory Readback Tool')

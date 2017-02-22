@@ -5,7 +5,7 @@ import unittest
 
 class TestReadback(unittest.TestCase):
     def test_construct_request(self):
-        output = ":".join(['%0X' % ord(b) for b in
+        output = ":".join(['%0X' % b for b in
         readback.construct_request(0x11, 22)])
         print(output)
 
