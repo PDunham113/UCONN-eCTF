@@ -48,8 +48,8 @@
 
 
 
-#define F_CPU 8000000
-#define BAUD 115200
+#define F_CPU 20000000UL
+#define BAUD 115200UL
 
 /*** INCLUDES ***/
 
@@ -71,6 +71,7 @@ void program_flash(uint32_t page_address, unsigned char *data);
 void load_firmware(void);
 void boot_firmware(void);
 void readback(void);
+void configure(void);
 
 
 

@@ -5,8 +5,8 @@
 #include <avr/io.h>
 #include "uart.h"
 
-#define  F_CPU 8000000
-#define  BAUD 11520
+#define  F_CPU 20000000UL
+#define  BAUD 115200UL
 
 
 /* init UART1
@@ -14,9 +14,9 @@
  */
 void UART1_init(void)
 {
-    #include <util/setbaud.h>
+    //#include <util/setbaud.h>
     UBRR1H = 0; // Set the baud rate
-    UBRR1L = 8;
+    UBRR1L = 21;
 
     UCSR1A |= (1 << U2X1);
 
@@ -72,9 +72,9 @@ void UART1_putstring(char* str)
  * Configured for baud = 115200 and f_cpu = 8MHz
  */
 void UART0_init(void) {
-    #include <util/setbaud.h>
+    //#include <util/setbaud.h>
     UBRR0H = 0; // Set the baud rate
-    UBRR0L = 8;
+    UBRR0L = 21;
 
     UCSR0A |= (1 << U2X0);
 
