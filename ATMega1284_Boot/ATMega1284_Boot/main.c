@@ -79,11 +79,15 @@ void readback(void);
 #define LED PINB0
 #define UPDATE_PIN PINB2
 #define READBACK_PIN PINB3
+#define CONFIGURE_PIN PIN4
 #define OK    ((unsigned char)0x00)
 #define ERROR ((unsigned char)0x01)
+#define ACK ((unsigned char)0x06)
 
 uint16_t fw_size EEMEM = 0;
 uint16_t fw_version EEMEM = 0;
+
+unsigned char CONFIG_ERROR_FLAG = OK;
 
 
 /*** Code ***/
@@ -98,10 +102,10 @@ int main(void) {
 	wdt_reset();
 
 	// Configure Port B Pins 2 and 3 as inputs.
-	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN));
+	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
 
 	// Enable pullups - give port time to settle.
-	PORTB |= (1 << UPDATE_PIN) | (1 << READBACK_PIN);
+	PORTB |= (1 << UPDATE_PIN) | (1 << READBACK_PIN) | (1 << CONFIGURE_PIN);
 
 	// If jumper is present on pin 2, load new firmware.
 	if(!(PINB & (1 << UPDATE_PIN)))
@@ -114,6 +118,13 @@ int main(void) {
 		UART1_putchar('R');
 		readback();
 	}
+	
+	else if(!(PINB & (1 << PB4)))
+	{
+		UART1_putchar('C');
+		configure();
+	}
+	
 	else
 	{
 		UART1_putchar('B');
@@ -128,6 +139,56 @@ int main(void) {
 
 
 /*** Function Bodies ***/
+/*
+*  Interface with host configure tool
+*/
+void configure()
+{
+	//Start the Watchdog Timer
+	wdt_enable(WDTO_2S);
+	
+	//Wait for ACK
+	while(UART1_getchar()!=ACK);
+	
+	//reset Watchdog Timer
+	wdt_reset();
+	
+	//generate hash of bootloader and eeprom
+	
+	//reset Watchdog Timer
+	wdt_reset();
+	
+	//send hash over UART1
+	
+	//reset Watchdog Timer
+	wdt_reset();
+	
+	//Wait for OK or ERROR
+	while(!UART1_data_available());
+	unsigned char result = UART1_getchar();
+	//reset Watchdog Timer
+	wdt_reset();
+	
+	if(result == OK)
+	{
+		//send counter
+		
+		//stall for reset
+		while(1) __asm__ __volatile__(""); // Wait for watchdog timer to reset.
+		
+	}
+	
+	else
+	{
+		CONFIG_ERROR_FLAG = ERROR;
+		//stall for reset
+		while(1) __asm__ __volatile__(""); // Wait for watchdog timer to reset.
+		
+	}
+	
+	
+}
+
 
 /*
  * Interface with host readback tool.
