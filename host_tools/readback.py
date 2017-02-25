@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Memory Readback Tool
+"""Memory Readback Tool
 
 A frame consists of four sections:
 1. One byte for the length of the password.
@@ -23,6 +22,8 @@ RESP_OK = b'\x00'
 RESP_ERROR = b'\x01'
 
 def construct_request(start_addr, num_bytes):
+    """Construct a request frame to send the the AVR.
+    """
     # Read in secret password from file.
     SECRET_PASSWORD = ''
     secret = 'secret_configure_output.txt'
@@ -33,6 +34,7 @@ def construct_request(start_addr, num_bytes):
             SECRET_PASSWORD = SECRET_PASSWORD.rstrip()
     except:
         print("File not found")
+        exit()
     formatstring = '>' + str(len(SECRET_PASSWORD)) + 'sII'
     return struct.pack(formatstring, SECRET_PASSWORD, start_addr, num_bytes)
 
