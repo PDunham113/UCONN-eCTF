@@ -51,7 +51,7 @@ char rec[50];
 uint8_t plaintext[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 uint8_t ciphertext[16];
 uint8_t key[32]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t j             = 0;
+uint8_t IV[16]             = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
 
 /*** Code ***/
 
@@ -84,23 +84,28 @@ int main(void) {
 	}
 	
 	// Prints random value
-	fprintf(stdout, "\nJ: %d", j);
+	fprintf(stdout, "\nIV: ");
+	
+	for(int i = 0; i < 16; i++) {
+		fprintf(stdout, "%d ", IV[i]);
+	}
+	
 	
 	// copies plaintext into buffer
 	for(int i = 0; i < 16; i++) {
 		ciphertext[i] = plaintext[i];
 	}
 	
-	aes256_enc_single(key, ciphertext);
+	encCFB(key, ciphertext, IV, 16);
 	
 	// Prints ciphertext
 	fprintf(stdout, "\nCiphertext: ");
 	
 	for(int i = 0; i < 16; i++) {
-		fprintf(stdout, "%d ", ciphertext[i]);
+		fprintf(stdout, "%x ", ciphertext[i]);
 	}
 	
-	aes256_dec_single(key, ciphertext);
+	decCFB(key, ciphertext, IV, 16);
 	
 	// Prints ciphertext
 	fprintf(stdout, "\nCiphertext: ");
@@ -197,10 +202,16 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 		}
 		
 		// XOR buffer1 with ciphertext. Store in data
-		_data[_address + i]
+		for(uint8_t i = 0; i < 16; i++) {
+			data[_address + i] = _buffer1[i] ^ _buffer2[i];
+		}
 		
+		// Copy buffer2 to buffer1
+		for(uint8_t i = 0; i < 16; i++) {
+			_buffer1[i] = _buffer2[i];
+		}
 		
-		
+		_address += 16;
 	}
 }
 
