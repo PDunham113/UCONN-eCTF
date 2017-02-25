@@ -3,7 +3,6 @@
 
 #include <config.h>
 
-#include <sw.h>
 #include <string.h>
 #include <types.h>
 
