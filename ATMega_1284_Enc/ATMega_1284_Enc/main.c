@@ -26,6 +26,9 @@
 #include <stdio.h>
 #include "uart.h"
 
+// For AES lib
+#include "AES_lib/aes256_enc.h"
+
 
 /*** FUNCTION DECLARATIONS ***/
 
@@ -38,6 +41,12 @@ void disableWDT(void);
 // UART Setup
 FILE uart_str = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
 char rec[50];
+
+// AES Setup
+uint8_t plaintext[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+uint8_t ciphertext[16];
+uint8_t key[32]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t j             = 0;
 
 /*** Code ***/
 
@@ -53,10 +62,38 @@ int main(void) {
 	
 	// Maps UART0 to stdout, letting us fprintf for funsies.
 	stdin = stdout = stderr = &uart_str;
-	fprintf(stdout, "Hello, world! You ready for some AES Encryption? (y/n)\n\n");
+	fprintf(stdout, "Hello, world! You ready for some AES Encryption? \n\n");
 	
+	// Prints plaintext
+	fprintf(stdout, "Plaintext: ");
 	
+	for(int i = 0; i < 16; i++) {
+		fprintf(stdout, "%d ", plaintext[i]);
+	}
 	
+	// Prints key
+	fprintf(stdout, "\nKey: ");
+	
+	for(int i = 0; i < 32; i++) {
+		fprintf(stdout, "%d ", key[i]);
+	}
+	
+	// Prints random value
+	fprintf(stdout, "\nJ: %d", j);
+	
+	// copies plaintext into buffer
+	for(int i = 0; i < 16; i++) {
+		ciphertext[i] = plaintext[i];
+	}
+	
+	aes_cenc(ciphertext, key, &j);
+	
+	// Prints ciphertext
+	fprintf(stdout, "Ciphertext: ");
+	
+	for(int i = 0; i < 16; i++) {
+		fprintf(stdout, "%d ", ciphertext[i]);
+	}
 
     while (1) {
 		/* Loop */
