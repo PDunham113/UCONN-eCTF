@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 
-void aes_encrypt_core(uint8_t* j,aes_cipher_state_t* state, const aes_genctx_t* ks, uint8_t rounds, uint8_t rng);
+void aes_encrypt_core(uint8_t* j,aes_cipher_state_t* state, const aes_genctx_t* ks, uint8_t rounds);
 
 
 #endif

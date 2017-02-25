@@ -17,7 +17,7 @@
  */
 
 
-void aes256_enc(uint8_t* j, void* buffer, aes256_ctx_t* ctx, uint8_t rng);
+void aes256_enc(uint8_t* j, void* buffer, aes256_ctx_t* ctx);
 
 
 
@@ -29,6 +29,6 @@ void aes256_enc(uint8_t* j, void* buffer, aes256_ctx_t* ctx, uint8_t rng);
 	\param v Array of two long values containing the data block.
 	\param k Array of four long values containing the key.
 */
-void aes_cenc( uint8_t *v, uint8_t *k,uint8_t *j, uint8_t rng );
+void aes_cenc( uint8_t *v, uint8_t *k,uint8_t *j);
 
 #endif /* AES256_ENC_H_ */
