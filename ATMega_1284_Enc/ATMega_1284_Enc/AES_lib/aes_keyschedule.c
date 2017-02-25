@@ -5,7 +5,7 @@
 #include "aes.h"
 #include "aes_keyschedule.h"
 #include "aes_sbox.h"
-//#include <string.h>
+#include <string.h>
 #include <avr/pgmspace.h>
 
 static

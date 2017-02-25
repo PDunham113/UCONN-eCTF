@@ -27,7 +27,7 @@
 #include "uart.h"
 
 // For AES lib
-#include "AES_lib/aes256_enc.h"
+//#include "AES_lib/aes256_enc.h"
 
 
 /*** FUNCTION DECLARATIONS ***/
@@ -86,7 +86,7 @@ int main(void) {
 		ciphertext[i] = plaintext[i];
 	}
 	
-	aes_cenc(ciphertext, key, &j);
+	//aes_cenc(ciphertext, key, &j);
 	
 	// Prints ciphertext
 	fprintf(stdout, "Ciphertext: ");
