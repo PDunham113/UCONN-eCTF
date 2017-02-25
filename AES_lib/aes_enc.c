@@ -11,8 +11,7 @@
 #include "aes_sbox.h"
 #include "aes_enc.h"
 #include <avr/pgmspace.h>
-#include "hal.h"
-#include "t0.h"
+
 
 void aes_shiftcol(void* data, uint8_t shift){
 	//entier_de_test++;
@@ -36,7 +35,7 @@ void aes_shiftcol(void* data, uint8_t shift){
 // Generic round of AES RSM
 
 static
-void aes_enc_round(uint8_t* j,aes_cipher_state_t* state, const aes_roundkey_t* k,uint8_t rng){
+void aes_enc_round(uint8_t* j,aes_cipher_state_t* state, const aes_roundkey_t* k){
 	uint8_t tmp[16], t, i;
     int idx;
 
@@ -98,7 +97,7 @@ static
 void aes_enc_lastround(uint8_t* j,aes_cipher_state_t* state,const aes_roundkey_t* k){
 	uint8_t i;
 	uint8_t tmp;
-        int idx;
+    int idx;
 	// subBytes /
 
 	for(i=0; i<16; ++i){
@@ -127,11 +126,9 @@ void aes_enc_lastround(uint8_t* j,aes_cipher_state_t* state,const aes_roundkey_t
 
 /*This is the generic core of AES RSM */
 
-void aes_encrypt_core(uint8_t* j, aes_cipher_state_t* state, const aes_genctx_t* ks, uint8_t rounds,uint8_t rng) {
+void aes_encrypt_core(uint8_t* j, aes_cipher_state_t* state, const aes_genctx_t* ks, uint8_t rounds) {
     uint8_t i;
 
-    if(!rng)
-       	hal_trig1();
     //The plaintext is first xored with the mask j of the array of masks, j being the random offset
     // The we xor it the key ( First Add round key)
     for (i = 0; i < 16; ++i) {;
@@ -145,10 +142,8 @@ void aes_encrypt_core(uint8_t* j, aes_cipher_state_t* state, const aes_genctx_t*
     for (; rounds > 1; --rounds) { 						// For the first round, state is masked with m[j[0]]
 
 
-    	aes_enc_round(j, state, &(ks->key[i]), rng); 	// The masked Sbox is chosen depending on the offset j
+    	aes_enc_round(j, state, &(ks->key[i])); 	// The masked Sbox is chosen depending on the offset j
         												// The final state of each round is masked with m[j+1]
-        if(!rng)
-        	hal_trig0();
         ++i;
         j[0] = (j[0] + 1) % 16; // At the end of each round , the mask is shifted by 1 byte
     }
