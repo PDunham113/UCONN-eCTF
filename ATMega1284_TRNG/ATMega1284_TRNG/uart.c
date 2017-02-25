@@ -17,7 +17,7 @@
 #define F_CPU 8000000UL
 
 /* UART baud rate */
-#define UART_BAUD  9600
+#define UART_BAUD  115200UL
 
 
 #include <stdint.h>
@@ -33,13 +33,9 @@
 void
 uart_init(void)
 {
-#if F_CPU < 2000000UL && defined(U2X)
-  UCSR0A = _BV(U2X);             /* improve baud rate error by using 2x clk */
-  UBRR0L = (F_CPU / (8UL * UART_BAUD)) - 1;
-#else
-  UBRR0L = (F_CPU / (16UL * UART_BAUD)) - 1;
-#endif
-  UCSR0B = _BV(TXEN0) | _BV(RXEN0); /* tx/rx enable */
+  UCSR0A = (1<<U2X0);             /* improve baud rate error by using 2x clk */
+  UBRR0L = 8;
+  UCSR0B = (1<<TXEN0)|(1<<RXEN0); /* tx/rx enable */
 }
 
 /*

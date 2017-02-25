@@ -76,10 +76,13 @@ void readback(void);
 
 /*** VARIABLES & DEFINITIONS ***/
 
+// Pin definitions
 #define LED PINB0
 #define UPDATE_PIN PINB2
 #define READBACK_PIN PINB3
-#define CONFIGURE_PIN PIN4
+#define CONFIGURE_PIN PINB4
+
+// Character definitions
 #define OK    ((unsigned char)0x00)
 #define ERROR ((unsigned char)0x01)
 #define ACK ((unsigned char)0x06)
