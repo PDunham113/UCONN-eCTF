@@ -3,6 +3,7 @@
 Firmware Bundle-and-Protect Tool
 
 """
+import random
 import argparse
 import shutil
 import struct
@@ -17,9 +18,9 @@ from intelhex import IntelHex
 
 # This function takes a bytes object representing the HEX file
 # and strips the appropriate data that nobody wants/needs.
-# Returns a bytes object
+# Returns a bytes object [size (0x2)][addr (0x4)][data (size)]
 def stripLine(intelLine):
-    intLine = intelLine[3:][:4] + intelLine[:3][6:][:-2]
+    intLine = intelLine[1:7] + intelLine[9:-3]
     return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
 
 if __name__ == '__main__':
@@ -36,18 +37,27 @@ if __name__ == '__main__':
                         required=True)
     args = parser.parse_args()
 
+    #finalList will be the output data file with the firmware/headers packed in
+    finalList = []
+
     # Parse Intel hex file.
-    # firmware = IntelHex(args.infile)
-    hexList = []
-    with open(args.infile) hexFile:
+    firmware = IntelHex(args.infile)
+    firmwareSections = []
+    with open(args.infile) as hexFile:
         for line in hexFile:
             hexList.append(stripLine(line))
-    b''.join(hexList)
+    random.shuffle(firmwareSections)
 
 
     # Get version and size.
-    firmware_size = firmware.maxaddr() + 1
-    version = int(args.version)
+    firmware_size = (firmware.maxaddr() + 1).to_bytes(2,byteorder='big')
+    version = (int(args.version)).to_bytes(2,byteorder='big')
+
+    # Pack version into finalList first
+    finalList.append(version)
+
+    # Pack firmware size into finalList second
+    finalList.append(firmware_size)
 
     # Add release message to end of hex (null-terminated).
     sio = StringIO()
@@ -66,4 +76,3 @@ if __name__ == '__main__':
         data = json.dumps(data)
         data = zlib.compress(data)
         outfile.write(data)
-
