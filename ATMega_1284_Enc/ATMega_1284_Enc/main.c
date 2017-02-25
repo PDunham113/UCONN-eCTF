@@ -27,13 +27,18 @@
 #include "uart.h"
 
 // For AES lib
-//#include "AES_lib/aes256_enc.h"
+#include "AES_lib/AESlib.h"
 
 
 /*** FUNCTION DECLARATIONS ***/
 
+// Standard Starting Code
 void disableWDT(void);
 
+// AES
+void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size);
+void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size);
+void hshCBC(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size, uint8_t* hash);
 
 
 /*** VARIABLES & DEFINITIONS ***/
@@ -86,10 +91,19 @@ int main(void) {
 		ciphertext[i] = plaintext[i];
 	}
 	
-	//aes_cenc(ciphertext, key, &j);
+	aes256_enc_single(key, ciphertext);
 	
 	// Prints ciphertext
-	fprintf(stdout, "Ciphertext: ");
+	fprintf(stdout, "\nCiphertext: ");
+	
+	for(int i = 0; i < 16; i++) {
+		fprintf(stdout, "%d ", ciphertext[i]);
+	}
+	
+	aes256_dec_single(key, ciphertext);
+	
+	// Prints ciphertext
+	fprintf(stdout, "\nCiphertext: ");
 	
 	for(int i = 0; i < 16; i++) {
 		fprintf(stdout, "%d ", ciphertext[i]);
@@ -121,4 +135,76 @@ void disableWDT(void) {
 	// Then, we clear the WDT Control register. Now it's off for good.
 	WDTCSR |= (1<<WDCE)|(1<<WDE);
 	WDTCSR = 0x00;
+}
+
+// Block Cipher CFB Mode Encryption
+void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
+	// Create address counter and block buffer
+	uint16_t _address = 0;
+	uint8_t  _buffer[16];
+
+
+	
+	// Copy IV to buffer for First Round
+	for(uint8_t i = 0; i < 16; i++) {
+		_buffer[i] = IV[i];
+	}	
+	
+	// Encryption Rounds
+	while(_address <= size) {
+		
+		// Encrypt buffer in place
+		aes256_enc_single(key, _buffer);
+		
+		// XOR plaintext with encrypted buffer. Store in place.
+		for(uint8_t i = 0; i < 16; i++) {
+			data[_address + i] ^= _buffer[i];
+		}
+		
+		// Copy next block to buffer
+		for(uint8_t i = 0; i < 16; i++) {
+			_buffer[i] = data[_address + i];
+		}
+		
+		// Move address to next block
+		_address += 16;
+	}
+}
+
+// Block Cipher CFB Mode Decryption
+void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
+	// Create address counter and block buffer
+	uint16_t _address = 0;
+	uint8_t  _buffer1[16];
+	uint8_t  _buffer2[16];
+	
+	
+	
+	// Copy IV to buffer1 for First Round
+	for(uint8_t i = 0; i < 16; i++) {
+		_buffer1[i] = IV[i];
+	}
+	
+	// Encryption Rounds
+	while(_address <= size) {
+		
+		// Encrypt buffer1 in place
+		aes256_enc_single(key, _buffer1);
+		
+		// Copy ciphertext to buffer2
+		for(uint8_t i = 0; i < 16; i++) {
+			_buffer2[i] = data[_address + i];
+		}
+		
+		// XOR buffer1 with ciphertext. Store in data
+		_data[_address + i]
+		
+		
+		
+	}
+}
+
+// Block Cipher CBC Mode Hash
+void hashCBC(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size, uint8_t* hash) {
+	
 }

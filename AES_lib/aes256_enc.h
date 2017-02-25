@@ -1,11 +1,35 @@
 /* aes256_enc.h */
+/*
+ This file is part of the AVR-Crypto-Lib.
+ Copyright (C) 2006-2015 Daniel Otte (bg@nerilex.org)
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * \file     aes256_enc.h
+ * \email    bg@nerilex.org
+ * \author   Daniel Otte
+ * \date     2008-12-31
+ * \license  GPLv3 or later
+ * \ingroup  AES
+ */
 
 #ifndef AES256_ENC_H_
 #define AES256_ENC_H_
 
 #include "aes_types.h"
 #include "aes_enc.h"
-
 
 /**
  * \brief encrypt with 256 bit key.
@@ -15,20 +39,6 @@
  * \param buffer pointer to the block to encrypt
  * \param ctx    pointer to the key schedule
  */
-
-
-void aes256_enc(uint8_t* j, void* buffer, aes256_ctx_t* ctx);
-
-
-
-/*! \brief Full AES RSM encryption function.
-
-	This function encrypts <EM>v</EM> with <EM>k</EM> and returns the
-	encrypted data in <EM>v</EM>.
-	The computation of keyschedule is done before encryption .
-	\param v Array of two long values containing the data block.
-	\param k Array of four long values containing the key.
-*/
-void aes_cenc( uint8_t *v, uint8_t *k,uint8_t *j);
+void aes256_enc(void *buffer, aes256_ctx_t *ctx);
 
 #endif /* AES256_ENC_H_ */

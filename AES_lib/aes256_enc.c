@@ -1,34 +1,34 @@
 /* aes256_enc.c */
+/*
+    This file is part of the AVR-Crypto-Lib.
+    Copyright (C) 2006-2015 Daniel Otte (bg@nerilex.org)
 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/**
+ * \file     aes256_enc.c
+ * \email    bg@nerilex.org
+ * \author   Daniel Otte 
+ * \date     2008-12-31
+ * \license  GPLv3 or later
+ * 
+ */
 
 #include "aes.h"
 #include "aes_enc.h"
-#include <avr/pgmspace.h>
 
-/*  This is the AES RSM 256 encryption function that call the generic AES RSM encryption core*/
-
-void aes256_enc(uint8_t* j, void* buffer, aes256_ctx_t* ctx){
-	aes_encrypt_core(j,buffer, (aes_genctx_t*)ctx, 14);
+void aes256_enc(void *buffer, aes256_ctx_t *ctx){
+	aes_encrypt_core(buffer, (aes_genctx_t*)ctx, 14);
 }
-
-
-/*This is the AES RSM 256 sequencer that initialize and launches the encryption
- *It output the cyphertext on the serial output  */
-/*Inputs : 	v 	: Pointer to first byte of the plaintext buffer
- *			k 	: Pointer to first byte of the key
- *			j  	: Pointer to the output of the random offset
- *			rng : Flag that enables the Trigger signal during AES encryption when = 1
- *
- *  */
-void aes_cenc(uint8_t *v, uint8_t *k,uint8_t *j) {
-	aes256_ctx_t ctx;
-	//Initialization
-
-	aes256_init(k, &ctx);
-
-	//Encryption
-	aes256_enc(j, v, &ctx);
-}
-
-
 
