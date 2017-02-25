@@ -2,6 +2,9 @@
 # UCONN-eCTF
 Code and Tools used for the 2017 MITRE eCTF Competition
 
+### AES_lib
+Contains Chenglu's side-channel resistant AES code.
+
 ### ATMega1284_Boot
 Contains MITRE's example bootloader code with minor edits to function in Atmel Studio. Will eventually contain full encrypted bootloader.
 

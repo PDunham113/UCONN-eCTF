@@ -48,7 +48,7 @@
 
 
 
-#define F_CPU 20000000
+#define F_CPU 8000000
 #define BAUD 115200
 
 /*** INCLUDES ***/
