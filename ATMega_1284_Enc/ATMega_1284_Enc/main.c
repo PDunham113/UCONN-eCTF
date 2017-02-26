@@ -1,5 +1,5 @@
 /*
- ATMega1284P_Enc.c
+ ATMega1284P_Enc_noSCP.c
  *
  * Created: 2/23/2017 11:46:33 AM
  * Author : Patrick Dunham
@@ -38,7 +38,7 @@ void disableWDT(void);
 // AES
 void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size);
 void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size);
-void hashCBC(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size, uint8_t* hash);
+void hashCBC(uint8_t* key, uint8_t* data, uint8_t* hash, uint16_t size);
 
 
 /*** VARIABLES & DEFINITIONS ***/
@@ -48,11 +48,13 @@ FILE uart_str = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
 char rec[50];
 
 // AES Setup
-uint8_t plaintext[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-uint8_t ciphertext[16];
-uint8_t key[32]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t IV[16]        = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
-uint8_t hash[16];
+#define MESSAGE_LENGTH 32
+
+uint8_t plaintext[MESSAGE_LENGTH]  = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+uint8_t ciphertext[MESSAGE_LENGTH];
+uint8_t key[32]		   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t IV[16]         = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+uint8_t hash[16]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /*** Code ***/
 
@@ -73,7 +75,7 @@ int main(void) {
 	// Prints plaintext
 	fprintf(stdout, "Plaintext:\t\t");
 	
-	for(int i = 0; i < 16; i++) {
+	for(int i = 0; i < MESSAGE_LENGTH; i++) {
 		fprintf(stdout, "%d ", plaintext[i]);
 	}
 	
@@ -84,7 +86,7 @@ int main(void) {
 		fprintf(stdout, "%d ", key[i]);
 	}
 	
-	// Prints random value
+	// Prints Initialization Vector
 	fprintf(stdout, "\nIV:\t\t\t");
 	
 	for(int i = 0; i < 16; i++) {
@@ -92,31 +94,31 @@ int main(void) {
 	}
 	
 	
-	// copies plaintext into buffer
-	for(int i = 0; i < 16; i++) {
+	// Copies plaintext into buffer
+	for(int i = 0; i < MESSAGE_LENGTH; i++) {
 		ciphertext[i] = plaintext[i];
 	}
 	
-	encCFB(key, ciphertext, IV, 16);
+	encCFB(key, ciphertext, IV, MESSAGE_LENGTH);
 	
 	// Prints ciphertext
 	fprintf(stdout, "\nCiphertext:\t\t");
 	
-	for(int i = 0; i < 16; i++) {
+	for(int i = 0; i < MESSAGE_LENGTH; i++) {
 		fprintf(stdout, "%X ", ciphertext[i]);
 	}
 	
-	decCFB(key, ciphertext, IV, 16);
+	decCFB(key, ciphertext, IV, MESSAGE_LENGTH);
 	
-	// Prints ciphertext
+	// Prints decrypted ciphertext
 	fprintf(stdout, "\nDecrypted Ciphertext:\t");
 	
-	for(int i = 0; i < 16; i++) {
+	for(int i = 0; i < MESSAGE_LENGTH; i++) {
 		fprintf(stdout, "%d ", ciphertext[i]);
 	}
 	
 	// Calculates hash
-	hashCBC(key, plaintext, IV, 16, hash);
+	hashCBC(key, plaintext, hash, MESSAGE_LENGTH);
 	
 	// Prints hash
 	fprintf(stdout, "\nHash:\t\t\t");
@@ -168,7 +170,7 @@ void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	}	
 	
 	// Encryption Rounds
-	while(_address <= size) {
+	while(_address < size) {
 		
 		// Encrypt buffer in place
 		aes256_enc_single(key, _buffer);
@@ -203,7 +205,7 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	}
 	
 	// Encryption Rounds
-	while(_address <= size) {
+	while(_address < size) {
 		
 		// Encrypt buffer1 in place
 		aes256_enc_single(key, _buffer1);
@@ -228,20 +230,11 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 }
 
 // Block Cipher CBC Mode Hash
-void hashCBC(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size, uint8_t* hash) {
+void hashCBC(uint8_t* key, uint8_t* data, uint8_t* hash, uint16_t size) {
 	uint16_t _address = 0;
 	
-	// XOR plaintext with IV
-	for(uint8_t i = 0; i < 16; i++) {
-		hash[i] = IV[i] ^ data[i];
-	}
-	
-	// Encrypt current hash in place
-	aes256_enc_single(key, hash);
-	
 	// Hashing Rounds
-	while(_address <= size) {
-		
+	while(_address < size) {
 		// XOR current hash with plaintext
 		for(uint8_t i = 0; i < 16; i++) {
 			hash[i] ^= data[i];
@@ -250,7 +243,10 @@ void hashCBC(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size, uint8_t* h
 		// Encrypt current hash in place
 		aes256_enc_single(key, hash);
 		
+		// Increment address
 		_address += 16;
+
+
 	}
 	
 }
