@@ -28,7 +28,6 @@ def AESHash(key,iv,input_file,output_file):
                 pass
             elif len(block) % 16 != 0:
                 block += b'\x00'* (16 - len(block)%16)
-                print("heh")
             outfile.write(encryptor.encrypt(block))
 def decryptFileAES(key, iv, input_file, output_file):
     """ Takes in a key, initialization vector, and a file location of the input, and location of the output"""
