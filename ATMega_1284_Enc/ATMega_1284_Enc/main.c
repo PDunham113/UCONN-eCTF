@@ -38,7 +38,7 @@ void disableWDT(void);
 // AES
 void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size);
 void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size);
-void hshCBC(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size, uint8_t* hash);
+void hashCBC(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size, uint8_t* hash);
 
 
 /*** VARIABLES & DEFINITIONS ***/
@@ -51,7 +51,8 @@ char rec[50];
 uint8_t plaintext[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 uint8_t ciphertext[16];
 uint8_t key[32]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t IV[16]             = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+uint8_t IV[16]        = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+uint8_t hash[16];
 
 /*** Code ***/
 
@@ -70,21 +71,21 @@ int main(void) {
 	fprintf(stdout, "Hello, world! You ready for some AES Encryption? \n\n");
 	
 	// Prints plaintext
-	fprintf(stdout, "Plaintext: ");
+	fprintf(stdout, "Plaintext:\t\t");
 	
 	for(int i = 0; i < 16; i++) {
 		fprintf(stdout, "%d ", plaintext[i]);
 	}
 	
 	// Prints key
-	fprintf(stdout, "\nKey: ");
+	fprintf(stdout, "\nKey:\t\t\t");
 	
 	for(int i = 0; i < 32; i++) {
 		fprintf(stdout, "%d ", key[i]);
 	}
 	
 	// Prints random value
-	fprintf(stdout, "\nIV: ");
+	fprintf(stdout, "\nIV:\t\t\t");
 	
 	for(int i = 0; i < 16; i++) {
 		fprintf(stdout, "%d ", IV[i]);
@@ -99,20 +100,31 @@ int main(void) {
 	encCFB(key, ciphertext, IV, 16);
 	
 	// Prints ciphertext
-	fprintf(stdout, "\nCiphertext: ");
+	fprintf(stdout, "\nCiphertext:\t\t");
 	
 	for(int i = 0; i < 16; i++) {
-		fprintf(stdout, "%x ", ciphertext[i]);
+		fprintf(stdout, "%X ", ciphertext[i]);
 	}
 	
 	decCFB(key, ciphertext, IV, 16);
 	
 	// Prints ciphertext
-	fprintf(stdout, "\nCiphertext: ");
+	fprintf(stdout, "\nDecrypted Ciphertext:\t");
 	
 	for(int i = 0; i < 16; i++) {
 		fprintf(stdout, "%d ", ciphertext[i]);
 	}
+	
+	// Calculates hash
+	hashCBC(key, plaintext, IV, 16, hash);
+	
+	// Prints hash
+	fprintf(stdout, "\nHash:\t\t\t");
+	
+	for(int i = 0; i < 16; i++) {
+		fprintf(stdout, "%X ", hash[i]);
+	}
+	
 
     while (1) {
 		/* Loop */
@@ -217,5 +229,28 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 
 // Block Cipher CBC Mode Hash
 void hashCBC(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size, uint8_t* hash) {
+	uint16_t _address = 0;
+	
+	// XOR plaintext with IV
+	for(uint8_t i = 0; i < 16; i++) {
+		hash[i] = IV[i] ^ data[i];
+	}
+	
+	// Encrypt current hash in place
+	aes256_enc_single(key, hash);
+	
+	// Hashing Rounds
+	while(_address <= size) {
+		
+		// XOR current hash with plaintext
+		for(uint8_t i = 0; i < 16; i++) {
+			hash[i] ^= data[i];
+		}
+		
+		// Encrypt current hash in place
+		aes256_enc_single(key, hash);
+		
+		_address += 16;
+	}
 	
 }
