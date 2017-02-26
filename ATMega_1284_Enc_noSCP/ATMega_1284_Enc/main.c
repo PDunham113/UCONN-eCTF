@@ -27,7 +27,7 @@
 #include "uart.h"
 
 // For AES lib
-#include "AES_lib/AESlib.h"
+#include "AES_lib/aes.h"
 
 
 /*** FUNCTION DECLARATIONS ***/
@@ -183,8 +183,12 @@ void disableWDT(void) {
  */
 void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	// Create address counter and block buffer
-	uint16_t _address = 0;
-	uint8_t  _buffer[16];
+	uint16_t	 _address = 0;
+	uint8_t		 _buffer[16];
+	aes256_ctx_t ctx;
+	
+	// Compute AES-256 Keyschedule
+	aes256_init(key, &ctx);
 
 
 	
@@ -197,7 +201,8 @@ void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	while(_address < size) {
 		
 		// Encrypt buffer in place
-		aes256_enc_single(key, _buffer);
+		//aes256_enc_single(key, _buffer);
+		aes256_enc(_buffer, &ctx);
 		
 		// XOR plaintext with encrypted buffer. Store in place.
 		for(uint8_t i = 0; i < 16; i++) {
@@ -234,10 +239,13 @@ void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
  */
 void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	// Create address counter and block buffer
-	uint16_t _address = 0;
-	uint8_t  _buffer1[16];
-	uint8_t  _buffer2[16];
+	uint16_t     _address = 0;
+	uint8_t      _buffer1[16];
+	uint8_t      _buffer2[16];
+	aes256_ctx_t ctx;
 	
+	// Compute AES-256 Keyschedule
+	aes256_init(key, &ctx);
 	
 	
 	// Copy IV to buffer1 for First Round
@@ -249,7 +257,7 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	while(_address < size) {
 		
 		// Encrypt buffer1 in place
-		aes256_enc_single(key, _buffer1);
+		aes256_enc(_buffer1, &ctx);
 		
 		// Copy ciphertext to buffer2
 		for(uint8_t i = 0; i < 16; i++) {
@@ -289,7 +297,11 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
  * @param size Size in bytes of data array. Must be divisible by 16.
  */
 void hashCBC(uint8_t* key, uint8_t* data, uint8_t* hash, uint16_t size) {
-	uint16_t _address = 0;
+	uint16_t     _address = 0;
+	aes256_ctx_t ctx;
+	
+	// Compute AES-256 Keyschedule
+	aes256_init(key, &ctx);
 	
 	// Hashing Rounds
 	while(_address < size) {
@@ -299,7 +311,7 @@ void hashCBC(uint8_t* key, uint8_t* data, uint8_t* hash, uint16_t size) {
 		}
 		
 		// Encrypt current hash in place
-		aes256_enc_single(key, hash);
+		aes256_enc(hash, &ctx);
 		
 		// Increment address
 		_address += 16;

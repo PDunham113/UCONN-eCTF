@@ -41,25 +41,7 @@
  */
 void aes_init(const void* key, uint16_t keysize_b, aes_genctx_t* ctx);
 
-/**
- * \brief initialize the keyschedule for 128 bit key
- *
- * This function computes the keyschedule from a given 128 bit key
- * and stores it in the context variable
- * \param key       pointer to the key material
- * \param ctx       pointer to the context where the keyschedule should be stored
- */
-void aes128_init(const void* key, aes128_ctx_t* ctx);
 
-/**
- * \brief initialize the keyschedule for 192 bit key
- *
- * This function computes the keyschedule from a given 192 bit key
- * and stores it in the context variable
- * \param key       pointer to the key material
- * \param ctx       pointer to the context where the keyschedule should be stored
- */
-void aes192_init(const void* key, aes192_ctx_t* ctx);
 
 /**
  * \brief initialize the keyschedule for 256 bit key

@@ -141,22 +141,10 @@
     <Compile Include="AES_lib\aes256_enc.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AES_lib\AESLib.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\AESLib.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="AES_lib\aes_enc-asm.S">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="AES_lib\aes_enc.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\aes_invsbox-asm.S">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\aes_invsbox.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="AES_lib\aes_keyschedule-asm.S">
@@ -177,22 +165,10 @@
     <Compile Include="AES_lib\avr-asm-macros.S">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="AES_lib\gf256mul.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\gf256mul.S">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="AES_lib\keysize_descriptor.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="AES_lib\keysize_descriptor.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\memxor.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\memxor.S">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.c">
