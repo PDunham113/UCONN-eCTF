@@ -5,6 +5,13 @@
  *  Author: Patrick Dunham
  */ 
 
+/**
+ * \file    AES_lib.h 
+ * \author  Patrick Dunham
+ * \date    2017-02-26
+ * \license GPLv3 or later
+ */
+
 
 #ifndef AES_LIB_H_
 #define AES_LIB_H_
