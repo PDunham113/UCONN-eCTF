@@ -143,7 +143,14 @@ int main(void) {
 
 /*** Function Bodies ***/
 
-// Disables Watchdog Timer, ensuring firmware runs properly.
+/**
+ * Disables Watchdog Timer, ensuring firmware runs properly.
+ * <p>
+ * This method should always be called upon firmware launch, following @code cli();.
+ * First, it resets the Watchdog Timer. Next, it resets the Watchdog Timer Reset Flag
+ * in the @code MCUSR register. Finally, it turns off the Watchdog Timer completely.
+ * This allows the code to continue without error.
+ */
 void disableWDT(void) {
 	// Make sure we reset the timer. Don't want to get caught in a loop! 
 	wdt_reset();
@@ -156,7 +163,24 @@ void disableWDT(void) {
 	WDTCSR = 0x00;
 }
 
-// Block Cipher CFB Mode Encryption
+
+
+/** 
+ * Encrypts data in-place using AES-256 in CFB Mode
+ * <p>
+ * This method uses a standard AES-256 encryption kernel to encrypt data in CFB
+ * Mode. This essentially turns the block cipher into a self-correcting stream
+ * cipher. In addition, the corresponding decryption method can also use the 
+ * AES-256 encryption kernel, saving code space. The code will be encrypted block
+ * by block and stored in the same memory space used for the plaintext. This
+ * results in drastic memory savings. The data array byte count MUST be divisible
+ * by 16. This can be achieved through padding.
+ * <p>
+ * @param key Pointer to 32-byte array containing the AES-256 key.
+ * @param data Pointer to data array. Begins as plaintext, ends as ciphertext.
+ * @param IV Pointer to a 16-byte random Initialization Vector
+ * @param size Size in bytes of data array. Must be divisible by 16.
+ */
 void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	// Create address counter and block buffer
 	uint16_t _address = 0;
@@ -190,7 +214,24 @@ void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	}
 }
 
-// Block Cipher CFB Mode Decryption
+
+
+/** 
+ * Decrypts data in-place using AES-256 in CFB Mode
+ * <p>
+ * This method uses a standard AES-256 encryption kernel to decrypt data in CFB
+ * Mode. This essentially turns the block cipher into a self-correcting stream
+ * cipher. Unlike other block cipher modes, the decryption method can also use the
+ * AES-256 encryption kernel, saving code space. The code will be decrypted block
+ * by block and stored in the same memory space used for the ciphertext. This
+ * results in drastic memory savings. The data array byte count MUST be divisible
+ * by 16. This should have been accounted for in the encryption function.
+ * <p>
+ * @param key Pointer to 32-byte array containing the AES-256 key.
+ * @param data Pointer to data array. Begins as ciphertext, ends as plaintext.
+ * @param IV Pointer to a 16-byte random Initialization Vector
+ * @param size Size in bytes of data array. Must be divisible by 16.
+ */
 void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	// Create address counter and block buffer
 	uint16_t _address = 0;
@@ -229,7 +270,24 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	}
 }
 
-// Block Cipher CBC Mode Hash
+
+
+/** 
+ * Generates a 128-bit hash using AES-256 CBC-MAC
+ * <p>
+ * This method uses a standard AES-256 encryption kernel to generate a 128-byte
+ * Message Authentication Code (MAC) by running the cipher in CBC Mode. Only the
+ * last encrypted block is saved. This hash must be used for messages with fixed
+ * sizes only, and the encryption key must be different than the one used for the
+ * message encryption. The data is left untouched, unlike with @code encCFB() and
+ * @code decCFB(). The hash parameter must be initialized to zero before calling
+ * this function.
+ * <p>
+ * @param key Pointer to 32-byte array containing the AES-256 key.
+ * @param data Pointer to data array. Begins as ciphertext, ends as plaintext.
+ * @param hash Pointer to a 16-byte hash array. Must be initialized to all zeros.
+ * @param size Size in bytes of data array. Must be divisible by 16.
+ */
 void hashCBC(uint8_t* key, uint8_t* data, uint8_t* hash, uint16_t size) {
 	uint16_t _address = 0;
 	
@@ -249,4 +307,22 @@ void hashCBC(uint8_t* key, uint8_t* data, uint8_t* hash, uint16_t size) {
 
 	}
 	
+}
+
+
+/** 
+ * Decodes AES-256 key from key-inverse pair. 
+ * <p>
+ * This method decodes a standard AES-256 key from its side-channel resistant 
+ * key-inverse pairing. With the key-inverse pair, a logical 1 is encoded as '0b10',
+ * and a logical 0 is encoded as '0b01'. This encoding means that each byte stored in
+ * flash contains an even number of 1's and 0's, making power side-channel attacks
+ * versus key reading significantly more difficult. This method provides a means to 
+ * decode the key-inverse pair into the original key.
+ * <p>
+ * @param encodedKey Pointer to 64-byte array containing the key-inverse pair
+ * @param key Pointer to the 32-byte array containing the to-be decoded AES-256 key
+ */
+void decodeAESKey(uint8_t* encodedKey, uint8_t key) {
+
 }
