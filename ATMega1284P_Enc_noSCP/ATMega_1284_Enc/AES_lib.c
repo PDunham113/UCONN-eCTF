@@ -18,6 +18,73 @@
 
 
 /** 
+ * \brief Begins encryption using AES-256 in CFB Mode on a single block
+ * 
+ * This method uses a standard AES-256 encryption kernel to encrypt data in CFB
+ * Mode. This essentially turns the block cipher into a self-correcting stream
+ * cipher. In addition, the corresponding decryption method can also use the
+ * AES-256 encryption kernel, saving code space. The data array byte count MUST
+ * be divisible by 16. This can be achieved through padding.
+ * 
+ * \param key Pointer to 32-byte AES-256 key.
+ * \param firstBlockPlaintext Pointer to data holding plaintext block to be encrypted.
+ * \param IV Pointer to 16-byte Initialization Vector
+ * \param ctx Pointer to AES-256 Keyschedule.
+ * \param firstBlockCiphertext Pointer to memory that will hold block of ciphertext
+ */
+void strtEncCFB(uint8_t* key, uint8_t* firstBlockPlaintext, uint8_t* IV, aes256_ctx_t* ctx, uint8_t* firstBlockCiphertext) {
+	// Generate AES-256 Keyschedule
+	aes256_init(key, ctx);
+	
+	// Copy IV to buffer
+	for(uint8_t i = 0; i < 16; i++) {
+		firstBlockCiphertext[i] = IV[i];
+	}
+	
+	// Encrypt IV in buffer
+	aes256_enc(firstBlockCiphertext, ctx);
+	
+	// XOR plaintext with buffer, return ciphertext
+	for(uint8_t i = 0; i < 16; i++) {
+		firstBlockCiphertext[i] ^= firstBlockPlaintext[i];
+	}
+	
+}
+
+
+
+/** 
+ * \brief Continues encryption using AES-256 in CFB Mode on a single block
+ * 
+ * This method uses a standard AES-256 encryption kernel to encrypt data in CFB
+ * Mode. This essentially turns the block cipher into a self-correcting stream
+ * cipher. In addition, the corresponding decryption method can also use the
+ * AES-256 encryption kernel, saving code space. The data array byte count MUST
+ * be divisible by 16. This can be achieved through padding.
+ * 
+ * \param ctx Pointer to AES-256 Keyschedule.
+ * \param nextBlockPlaintext Pointer to data holding plaintext block to be encrypted.
+ * \param prevBlockCiphertext Pointer to data holding previous block of ciphertext
+ * \param nextBlockCiphertext Pointer to memory that will hold next block of ciphertext
+ */
+void contEncCFB(aes256_ctx_t* ctx, uint8_t* nextBlockPlaintext, uint8_t* prevBlockCiphertext, uint8_t* nextBlockCiphertext) {
+	// Copy previous ciphertext to buffer
+	for(uint8_t i = 0; i < 16; i++) {
+		nextBlockCiphertext[i] = prevBlockCiphertext[i];
+	}
+	
+	// Encrypt previous ciphertext in buffer
+	aes256_enc(nextBlockCiphertext, ctx);
+	
+	// XOR plaintext with buffer, return ciphertext
+	for(uint8_t i = 0; i < 16; i++) {
+		nextBlockCiphertext[i] ^= nextBlockPlaintext[i];
+	}
+}
+
+
+
+/** 
  * \brief Encrypts data in-place using AES-256 in CFB Mode
  * 
  * This method uses a standard AES-256 encryption kernel to encrypt data in CFB
@@ -69,6 +136,73 @@ void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 		// Move address to next block
 		_address += 16;
 	}
+}
+
+
+/** 
+ * \brief Begins decryption using AES-256 in CFB Mode on a single block
+ * 
+ * This method uses a standard AES-256 encryption kernel to decrypt data in CFB
+ * Mode. This essentially turns the block cipher into a self-correcting stream
+ * cipher. Unlike other block cipher modes, the decryption method can also use the
+ * AES-256 encryption kernel, saving code space. The data array byte count MUST be
+ * divisible by 16. This should have been accounted for in the encryption function.
+ * 
+ * \param key Pointer to 32-byte AES-256 key.
+ * \param firstBlockCiphertext Pointer to data holding ciphertext block to be decrypted.
+ * \param IV Pointer to 16-byte Initialization Vector
+ * \param ctx Pointer to AES-256 Keyschedule.
+ * \param firstBlockPlaintext Pointer to memory that will hold block of plaintext
+ */
+void strtDecCFB(uint8_t* key, uint8_t* firstBlockCiphertext, uint8_t* IV, aes256_ctx_t* ctx, uint8_t* firstBlockPlaintext) {
+	// Generate AES-256 Keyschedule
+	aes256_init(key, ctx);
+	
+	// Copy IV to buffer
+	for(uint8_t i = 0; i < 16; i++) {
+		firstBlockPlaintext[i] = IV[i];
+	}
+	
+	// Encrypt IV in buffer
+	aes256_enc(firstBlockPlaintext, ctx);
+	
+	// XOR ciphertext with buffer, return plaintext
+	for(uint8_t i = 0; i < 16; i++) {
+		firstBlockPlaintext[i] ^= firstBlockCiphertext[i];
+	}
+	
+}
+
+
+
+/** 
+ * \brief Continues decryption using AES-256 in CFB Mode on a single block
+ * 
+ * This method uses a standard AES-256 encryption kernel to decrypt data in CFB
+ * Mode. This essentially turns the block cipher into a self-correcting stream
+ * cipher. Unlike other block cipher modes, the decryption method can also use the
+ * AES-256 encryption kernel, saving code space. The data array byte count MUST be
+ * divisible by 16. This should have been accounted for in the encryption function.
+ * 
+ * \param ctx Pointer to AES-256 Keyschedule.
+ * \param nextBlockCiphertext Pointer to data holding ciphertext block to be decrypted.
+ * \param prevBlockCiphertext Pointer to data holding previous block of ciphertext
+ * \param nextBlockPlaintext Pointer to memory that will hold next block of plaintext
+ */
+void contDecCFB(aes256_ctx_t* ctx, uint8_t* nextBlockCiphertext, uint8_t* prevBlockCiphertext, uint8_t* nextBlockPlaintext) {
+	// Copy previous ciphertext to buffer
+	for(uint8_t i = 0; i < 16; i++) {
+		nextBlockPlaintext[i] = prevBlockCiphertext[i];
+	}
+	
+	// Encrypt previous ciphertext in buffer
+	aes256_enc(nextBlockPlaintext, ctx);
+	
+	// XOR plaintext with buffer, return ciphertext
+	for(uint8_t i = 0; i < 16; i++) {
+		nextBlockPlaintext[i] ^= nextBlockCiphertext[i];
+	}
+	
 }
 
 

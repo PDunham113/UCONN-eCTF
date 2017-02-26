@@ -43,13 +43,16 @@ FILE uart_str = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
 char rec[50];
 
 // AES Setup
-#define MESSAGE_LENGTH 32
+#define MESSAGE_LENGTH 64
 
-uint8_t plaintext[MESSAGE_LENGTH]  = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+uint8_t plaintext[MESSAGE_LENGTH]  = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 uint8_t ciphertext[MESSAGE_LENGTH];
+uint8_t newPlaintext[MESSAGE_LENGTH];
 uint8_t key[32]		   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t IV[16]         = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
 uint8_t hash[16]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	
+aes256_ctx_t ctx;
 
 /*** Code ***/
 
@@ -89,12 +92,17 @@ int main(void) {
 	}
 	
 	
-	// Copies plaintext into buffer
+	/*// Copies plaintext into buffer
 	for(int i = 0; i < MESSAGE_LENGTH; i++) {
 		ciphertext[i] = plaintext[i];
-	}
+	}*/
 	
-	encCFB(key, ciphertext, IV, MESSAGE_LENGTH);
+	// Encryption
+	//encCFB(key, ciphertext, IV, MESSAGE_LENGTH);
+	strtEncCFB(key, plaintext, IV, &ctx, ciphertext);
+	for(int i = 16; i < MESSAGE_LENGTH; i += 16) {
+		contEncCFB(&ctx, &plaintext[i], ciphertext, &ciphertext[i]);
+	}
 	
 	// Prints ciphertext
 	fprintf(stdout, "\nCiphertext:\t\t");
@@ -103,16 +111,21 @@ int main(void) {
 		fprintf(stdout, "%X ", ciphertext[i]);
 	}
 	
-	decCFB(key, ciphertext, IV, MESSAGE_LENGTH);
+	// Decryption
+	//decCFB(key, ciphertext, IV, MESSAGE_LENGTH);
+	strtDecCFB(key, ciphertext, IV, &ctx, newPlaintext);
+	for(int i = 16; i < MESSAGE_LENGTH; i += 16) {
+		contDecCFB(&ctx, &ciphertext[i], ciphertext, &newPlaintext[i]);
+	}
 	
 	// Prints decrypted ciphertext
 	fprintf(stdout, "\nDecrypted Ciphertext:\t");
 	
 	for(int i = 0; i < MESSAGE_LENGTH; i++) {
-		fprintf(stdout, "%d ", ciphertext[i]);
+		fprintf(stdout, "%d ", newPlaintext[i]);
 	}
 	
-	// Calculates hash
+	// Hashing
 	hashCBC(key, plaintext, hash, MESSAGE_LENGTH);
 	
 	// Prints hash
