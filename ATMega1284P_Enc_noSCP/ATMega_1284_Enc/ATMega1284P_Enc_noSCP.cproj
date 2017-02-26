@@ -135,6 +135,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AES_lib.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="AES_lib\aes.h">
       <SubType>compile</SubType>
     </Compile>
