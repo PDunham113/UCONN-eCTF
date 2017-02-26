@@ -13,7 +13,7 @@
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
     <AssemblyName>ATMega_1284_Enc</AssemblyName>
-    <Name>ATMega_1284_Enc_noSCP</Name>
+    <Name>ATMega1284P_Enc_noSCP</Name>
     <RootNamespace>ATMega_1284_Enc</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
