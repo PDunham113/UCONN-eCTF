@@ -70,7 +70,7 @@ int main(void) {
 	
 	// Maps UART0 to stdout, letting us fprintf for funsies.
 	stdin = stdout = stderr = &uart_str;
-	fprintf(stdout, "Hello, world! You ready for some AES Encryption? \n\n");
+	fprintf(stdout, "\n\nHello, world! You ready for some AES Encryption? \n\n");
 	
 	// Prints plaintext
 	fprintf(stdout, "Plaintext:\t\t");

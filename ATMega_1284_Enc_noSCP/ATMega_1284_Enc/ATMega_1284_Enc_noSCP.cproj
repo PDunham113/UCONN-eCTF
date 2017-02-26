@@ -97,60 +97,45 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
       <AvrGcc>
-  <avrgcc.common.Device>-mmcu=atmega1284p -B "%24(PackRepoDir)\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p"</avrgcc.common.Device>
-  <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
-  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
-  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
-  <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
-  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-  <avrgcc.compiler.symbols.DefSymbols>
-    <ListValues>
-      <Value>DEBUG</Value>
-    </ListValues>
-  </avrgcc.compiler.symbols.DefSymbols>
-  <avrgcc.compiler.directories.IncludePaths>
-    <ListValues>
-      <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.0.106\include</Value>
-    </ListValues>
-  </avrgcc.compiler.directories.IncludePaths>
-  <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
-  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-  <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
-  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-  <avrgcc.linker.libraries.Libraries>
-    <ListValues>
-      <Value>libm</Value>
-    </ListValues>
-  </avrgcc.linker.libraries.Libraries>
-  <avrgcc.assembler.general.IncludePaths>
-    <ListValues>
-      <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.0.106\include</Value>
-    </ListValues>
-  </avrgcc.assembler.general.IncludePaths>
-  <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
-</AvrGcc>
+        <avrgcc.common.Device>-mmcu=atmega1284p -B "%24(PackRepoDir)\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p"</avrgcc.common.Device>
+        <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
+        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+        <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcc.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>DEBUG</Value>
+          </ListValues>
+        </avrgcc.compiler.symbols.DefSymbols>
+        <avrgcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.0.106\include</Value>
+          </ListValues>
+        </avrgcc.compiler.directories.IncludePaths>
+        <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
+        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+        <avrgcc.linker.libraries.Libraries>
+          <ListValues>
+            <Value>libm</Value>
+          </ListValues>
+        </avrgcc.linker.libraries.Libraries>
+        <avrgcc.assembler.general.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.0.106\include</Value>
+          </ListValues>
+        </avrgcc.assembler.general.IncludePaths>
+        <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
+      </AvrGcc>
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AES_lib\aes.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\aes128_dec.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\aes128_enc.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\aes192_dec.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\aes192_enc.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\aes256_dec.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="AES_lib\aes256_enc.h">
@@ -160,12 +145,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="AES_lib\AESLib.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\aes_dec-asm_faster.S">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\aes_dec.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="AES_lib\aes_enc-asm.S">
@@ -196,51 +175,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="AES_lib\avr-asm-macros.S">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal-basic.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal-basic.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal-cbc.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal-cbc.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal-cmac.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal-cmac.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal-ofb.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal-ofb.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal_aes128.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal_aes128.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal_aes192.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal_aes192.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal_aes256.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\bcal_aes256.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="AES_lib\blockcipher_descriptor.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="AES_lib\gf256mul.h">
