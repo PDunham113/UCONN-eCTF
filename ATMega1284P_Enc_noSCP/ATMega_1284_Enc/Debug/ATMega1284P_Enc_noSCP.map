@@ -5,34 +5,37 @@ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/..
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
                               C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.106/gcc/dev/atmega1284p/avr51/crtatmega1284p.o (exit)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_copy_data.o)
-                              AES_lib.o (__do_copy_data)
+                              main.o (__do_copy_data)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_clear_bss.o)
-                              uart.o (__do_clear_bss)
+                              main.o (__do_clear_bss)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(malloc.o)
                               AES_lib/keysize_descriptor.o (malloc)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(memcpy.o)
                               AES_lib/aes_keyschedule.o (memcpy)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fprintf.o)
-                              AES_lib.o (fprintf)
-c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
-                              AES_lib.o (fputc)
+                              main.o (fprintf)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputs.o)
-                              AES_lib.o (fputs)
+                              main.o (fputs)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(iob.o)
-                              AES_lib.o (__iob)
+                              main.o (__iob)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(vfprintf_std.o)
                               c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fprintf.o) (vfprintf)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(strnlen_P.o)
                               c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(vfprintf_std.o) (strnlen_P)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(strnlen.o)
                               c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(vfprintf_std.o) (strnlen)
+c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
+                              c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(vfprintf_std.o) (fputc)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(ultoa_invert.o)
                               c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(vfprintf_std.o) (__ultoa_invert)
 
 Allocating common symbols
 Common symbol       size              file
 
+newPlaintext        0x40              main.o
 __brkval            0x2               c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(malloc.o)
+ctx                 0xf0              main.o
+ciphertext          0x40              main.o
 __flp               0x2               c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(malloc.o)
 __iob               0x6               c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(iob.o)
 
@@ -161,9 +164,6 @@ Discarded input sections
  .text          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fprintf.o)
  .data          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fprintf.o)
  .bss           0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fprintf.o)
- .text          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
- .data          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
- .bss           0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
  .text          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputs.o)
  .data          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputs.o)
  .bss           0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputs.o)
@@ -179,6 +179,9 @@ Discarded input sections
  .text          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(strnlen.o)
  .data          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(strnlen.o)
  .bss           0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(strnlen.o)
+ .text          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
+ .data          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
+ .bss           0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
  .text          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(ultoa_invert.o)
  .data          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(ultoa_invert.o)
  .bss           0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(ultoa_invert.o)
@@ -316,7 +319,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000     0x13ca
+.text           0x00000000     0x12c8
  *(.vectors)
  .vectors       0x00000000       0x8c C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.106/gcc/dev/atmega1284p/avr51/crtatmega1284p.o
                 0x00000000                __vector_default
@@ -421,78 +424,78 @@ END GROUP
                 0x000001ee                . = ALIGN (0x2)
  *(.text.*)
  .text.strtEncCFB
-                0x000001ee       0xfa AES_lib.o
+                0x000001ee       0x78 AES_lib.o
                 0x000001ee                strtEncCFB
  .text.contEncCFB
-                0x000002e8       0x50 AES_lib.o
-                0x000002e8                contEncCFB
+                0x00000266       0x50 AES_lib.o
+                0x00000266                contEncCFB
  .text.strtDecCFB
-                0x00000338       0x78 AES_lib.o
-                0x00000338                strtDecCFB
+                0x000002b6       0x78 AES_lib.o
+                0x000002b6                strtDecCFB
  .text.contDecCFB
-                0x000003b0       0x50 AES_lib.o
-                0x000003b0                contDecCFB
- .text.hashCBC  0x00000400       0x96 AES_lib.o
-                0x00000400                hashCBC
+                0x0000032e       0x50 AES_lib.o
+                0x0000032e                contDecCFB
+ .text.hashCBC  0x0000037e       0x96 AES_lib.o
+                0x0000037e                hashCBC
  .text.aes256_enc
-                0x00000496        0x4 AES_lib/aes256_enc.o
-                0x00000496                aes256_enc
+                0x00000414        0x4 AES_lib/aes256_enc.o
+                0x00000414                aes256_enc
  .text.aes_shiftcol
-                0x0000049a       0xa0 AES_lib/aes_enc.o
-                0x0000049a                aes_shiftcol
+                0x00000418       0xa0 AES_lib/aes_enc.o
+                0x00000418                aes_shiftcol
  .text.aes_encrypt_core
-                0x0000053a      0x24e AES_lib/aes_enc.o
-                0x0000053a                aes_encrypt_core
+                0x000004b8      0x266 AES_lib/aes_enc.o
+                0x000004b8                aes_encrypt_core
  .text.aes_init
-                0x00000788      0x14e AES_lib/aes_keyschedule.o
-                0x00000788                aes_init
+                0x0000071e      0x1c2 AES_lib/aes_keyschedule.o
+                0x0000071e                aes_init
  .text.aes256_init
-                0x000008d6        0x8 AES_lib/aes_keyschedule.o
-                0x000008d6                aes256_init
+                0x000008e0        0x8 AES_lib/aes_keyschedule.o
+                0x000008e0                aes256_init
  .text.disableWDT
-                0x000008de       0x16 main.o
-                0x000008de                disableWDT
+                0x000008e8       0x16 main.o
+                0x000008e8                disableWDT
  .text.startup.main
-                0x000008f4      0x348 main.o
-                0x000008f4                main
+                0x000008fe      0x23c main.o
+                0x000008fe                main
  .text.uart_init
-                0x00000c3c        0xe uart.o
-                0x00000c3c                uart_init
+                0x00000b3a        0xe uart.o
+                0x00000b3a                uart_init
  .text.uart_putchar
-                0x00000c4a       0x34 uart.o
-                0x00000c4a                uart_putchar
+                0x00000b48       0x34 uart.o
+                0x00000b48                uart_putchar
  .text.uart_getchar
-                0x00000c7e      0x18c uart.o
-                0x00000c7e                uart_getchar
+                0x00000b7c      0x18c uart.o
+                0x00000b7c                uart_getchar
  .text.avr-libc
-                0x00000e0a       0x12 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(memcpy.o)
-                0x00000e0a                memcpy
+                0x00000d08       0x12 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(memcpy.o)
+                0x00000d08                memcpy
  .text.avr-libc
-                0x00000e1c       0x1e c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fprintf.o)
-                0x00000e1c                fprintf
+                0x00000d1a       0x1e c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fprintf.o)
+                0x00000d1a                fprintf
  .text.avr-libc
-                0x00000e3a       0x70 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
-                0x00000e3a                fputc
+                0x00000d38       0x58 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputs.o)
+                0x00000d38                fputs
  .text.avr-libc
-                0x00000eaa       0x58 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputs.o)
-                0x00000eaa                fputs
+                0x00000d90      0x3dc c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(vfprintf_std.o)
+                0x00000d90                vfprintf
  .text.avr-libc
-                0x00000f02      0x3dc c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(vfprintf_std.o)
-                0x00000f02                vfprintf
+                0x0000116c       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(strnlen_P.o)
+                0x0000116c                strnlen_P
  .text.avr-libc
-                0x000012de       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(strnlen_P.o)
-                0x000012de                strnlen_P
+                0x00001182       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(strnlen.o)
+                0x00001182                strnlen
  .text.avr-libc
-                0x000012f4       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(strnlen.o)
-                0x000012f4                strnlen
+                0x00001198       0x70 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
+                0x00001198                fputc
  .text.avr-libc
-                0x0000130a       0xbc c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(ultoa_invert.o)
-                0x0000130a                __ultoa_invert
-                0x000013c6                . = ALIGN (0x2)
+                0x00001208       0xbc c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(ultoa_invert.o)
+                0x00001208                __ultoa_invert
+                0x000012c4                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x000013c6        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
-                0x000013c6                _exit
-                0x000013c6                exit
+ .fini9         0x000012c4        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
+                0x000012c4                _exit
+                0x000012c4                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -511,52 +514,61 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x000013c6        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
+ .fini0         0x000012c4        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr51\libgcc.a(_exit.o)
  *(.fini0)
-                0x000013ca                _etext = .
+                0x000012c8                _etext = .
 
-.data           0x00800100      0x122 load address 0x000013ca
+.data           0x00800100       0xf4 load address 0x000012c8
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
+ .data.IV       0x00800100       0x10 main.o
+                0x00800100                IV
+ .data.plaintext
+                0x00800110       0x40 main.o
+                0x00800110                plaintext
  .data.uart_str
-                0x00800100        0xe main.o
-                0x00800100                uart_str
+                0x00800150        0xe main.o
+                0x00800150                uart_str
  *(.rodata)
- .rodata        0x0080010e       0x50 main.o
  *(.rodata*)
  .rodata.str1.1
-                0x0080015e       0x14 AES_lib.o
+                0x0080015e       0x8d main.o
  .rodata.str1.1
-                0x00800172       0xa7 main.o
-                                 0xab (size before relaxing)
- .rodata.str1.1
-                0x00800219        0x8 uart.o
+                0x008001eb        0x8 uart.o
  *(.gnu.linkonce.d*)
-                0x00800222                . = ALIGN (0x2)
- *fill*         0x00800221        0x1 
-                0x00800222                _edata = .
-                0x00800222                PROVIDE (__data_end, .)
+                0x008001f4                . = ALIGN (0x2)
+ *fill*         0x008001f3        0x1 
+                0x008001f4                _edata = .
+                0x008001f4                PROVIDE (__data_end, .)
 
-.bss            0x00800222       0x58
-                0x00800222                PROVIDE (__bss_start, .)
+.bss            0x008001f4      0x1f8
+                0x008001f4                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
- .bss.b.1707    0x00800222       0x50 uart.o
- .bss.rxp.1708  0x00800272        0x2 uart.o
+ .bss.key       0x008001f4       0x20 main.o
+                0x008001f4                key
+ .bss.hash      0x00800214       0x10 main.o
+                0x00800214                hash
+ .bss.b.1707    0x00800224       0x50 uart.o
+ .bss.rxp.1708  0x00800274        0x2 uart.o
  *(COMMON)
- COMMON         0x00800274        0x6 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(iob.o)
-                0x00800274                __iob
-                0x0080027a                PROVIDE (__bss_end, .)
-                0x000013ca                __data_load_start = LOADADDR (.data)
-                0x000014ec                __data_load_end = (__data_load_start + SIZEOF (.data))
+ COMMON         0x00800276      0x170 main.o
+                0x00800276                newPlaintext
+                0x008002b6                ctx
+                0x008003a6                ciphertext
+ COMMON         0x008003e6        0x6 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(iob.o)
+                0x008003e6                __iob
+                0x008003ec                PROVIDE (__bss_end, .)
+                0x000012c8                __data_load_start = LOADADDR (.data)
+                0x000013bc                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x0080027a        0x0
+.noinit         0x008003ec        0x0
                 [!provide]                PROVIDE (__noinit_start, .)
  *(.noinit*)
                 [!provide]                PROVIDE (__noinit_end, .)
-                0x0080027a                _end = .
-                0x0080027a                PROVIDE (__heap_start, .)
+                0x008003ec                _end = .
+                0x008003ec                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -606,11 +618,11 @@ END GROUP
  .comment       0x00000030       0x31 main.o
  .comment       0x00000030       0x31 uart.o
  .comment       0x00000030       0x31 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fprintf.o)
- .comment       0x00000030       0x31 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
  .comment       0x00000030       0x31 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputs.o)
  .comment       0x00000030       0x31 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(iob.o)
  .comment       0x00000030       0x2c c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(vfprintf_std.o)
                                  0x2d (size before relaxing)
+ .comment       0x0000005c       0x31 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/../../../../avr/lib/avr51\libc.a(fputc.o)
 
 .note.gnu.avr.deviceinfo
                 0x00000000       0x40
@@ -654,73 +666,73 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x20da
+.debug_info     0x00000000     0x1f07
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000      0x958 AES_lib.o
- .debug_info    0x00000958      0x1c1 AES_lib/aes256_enc.o
- .debug_info    0x00000b19      0x468 AES_lib/aes_enc.o
- .debug_info    0x00000f81      0x4ae AES_lib/aes_keyschedule.o
- .debug_info    0x0000142f       0x8f AES_lib/aes_sbox.o
- .debug_info    0x000014be       0xcb AES_lib/gf256mul.o
- .debug_info    0x00001589      0x719 main.o
- .debug_info    0x00001ca2      0x438 uart.o
+ .debug_info    0x00000000      0x77a AES_lib.o
+ .debug_info    0x0000077a      0x1c1 AES_lib/aes256_enc.o
+ .debug_info    0x0000093b      0x473 AES_lib/aes_enc.o
+ .debug_info    0x00000dae      0x492 AES_lib/aes_keyschedule.o
+ .debug_info    0x00001240       0x8f AES_lib/aes_sbox.o
+ .debug_info    0x000012cf       0xcb AES_lib/gf256mul.o
+ .debug_info    0x0000139a      0x735 main.o
+ .debug_info    0x00001acf      0x438 uart.o
 
-.debug_abbrev   0x00000000      0xb12
+.debug_abbrev   0x00000000      0xa4a
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x273 AES_lib.o
- .debug_abbrev  0x00000273       0xea AES_lib/aes256_enc.o
- .debug_abbrev  0x0000035d      0x1d7 AES_lib/aes_enc.o
- .debug_abbrev  0x00000534      0x1e0 AES_lib/aes_keyschedule.o
- .debug_abbrev  0x00000714       0x5d AES_lib/aes_sbox.o
- .debug_abbrev  0x00000771       0x14 AES_lib/gf256mul.o
- .debug_abbrev  0x00000785      0x202 main.o
- .debug_abbrev  0x00000987      0x18b uart.o
+ .debug_abbrev  0x00000000      0x1b8 AES_lib.o
+ .debug_abbrev  0x000001b8       0xea AES_lib/aes256_enc.o
+ .debug_abbrev  0x000002a2      0x1d7 AES_lib/aes_enc.o
+ .debug_abbrev  0x00000479      0x1e0 AES_lib/aes_keyschedule.o
+ .debug_abbrev  0x00000659       0x5d AES_lib/aes_sbox.o
+ .debug_abbrev  0x000006b6       0x14 AES_lib/gf256mul.o
+ .debug_abbrev  0x000006ca      0x1f5 main.o
+ .debug_abbrev  0x000008bf      0x18b uart.o
 
-.debug_line     0x00000000      0xde7
+.debug_line     0x00000000      0xd52
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000      0x39a AES_lib.o
- .debug_line    0x0000039a       0xc9 AES_lib/aes256_enc.o
- .debug_line    0x00000463      0x200 AES_lib/aes_enc.o
- .debug_line    0x00000663      0x1ac AES_lib/aes_keyschedule.o
- .debug_line    0x0000080f       0x95 AES_lib/aes_sbox.o
- .debug_line    0x000008a4       0x8b AES_lib/gf256mul.o
- .debug_line    0x0000092f      0x27e main.o
- .debug_line    0x00000bad      0x23a uart.o
+ .debug_line    0x00000000      0x339 AES_lib.o
+ .debug_line    0x00000339       0xc9 AES_lib/aes256_enc.o
+ .debug_line    0x00000402      0x200 AES_lib/aes_enc.o
+ .debug_line    0x00000602      0x1ac AES_lib/aes_keyschedule.o
+ .debug_line    0x000007ae       0x95 AES_lib/aes_sbox.o
+ .debug_line    0x00000843       0x8b AES_lib/gf256mul.o
+ .debug_line    0x000008ce      0x24a main.o
+ .debug_line    0x00000b18      0x23a uart.o
 
-.debug_frame    0x00000000      0x424
+.debug_frame    0x00000000      0x47c
  *(.debug_frame)
- .debug_frame   0x00000000      0x238 AES_lib.o
- .debug_frame   0x00000238       0x24 AES_lib/aes256_enc.o
- .debug_frame   0x0000025c       0xa4 AES_lib/aes_enc.o
- .debug_frame   0x00000300       0x70 AES_lib/aes_keyschedule.o
- .debug_frame   0x00000370       0x48 main.o
- .debug_frame   0x000003b8       0x6c uart.o
+ .debug_frame   0x00000000      0x208 AES_lib.o
+ .debug_frame   0x00000208       0x24 AES_lib/aes256_enc.o
+ .debug_frame   0x0000022c       0xa4 AES_lib/aes_enc.o
+ .debug_frame   0x000002d0       0x8c AES_lib/aes_keyschedule.o
+ .debug_frame   0x0000035c       0xb4 main.o
+ .debug_frame   0x00000410       0x6c uart.o
 
-.debug_str      0x00000000      0x4c3
+.debug_str      0x00000000      0x4b3
  *(.debug_str)
- .debug_str     0x00000000      0x312 AES_lib.o
-                                0x35c (size before relaxing)
- .debug_str     0x00000312       0x49 AES_lib/aes256_enc.o
+ .debug_str     0x00000000      0x2c6 AES_lib.o
+                                0x2ff (size before relaxing)
+ .debug_str     0x000002c6       0x49 AES_lib/aes256_enc.o
                                 0x253 (size before relaxing)
- .debug_str     0x0000035b       0x79 AES_lib/aes_enc.o
-                                0x2a3 (size before relaxing)
- .debug_str     0x000003d4       0x5b AES_lib/aes_keyschedule.o
+ .debug_str     0x0000030f       0x82 AES_lib/aes_enc.o
+                                0x2ac (size before relaxing)
+ .debug_str     0x00000391       0x52 AES_lib/aes_keyschedule.o
                                 0x290 (size before relaxing)
- .debug_str     0x0000042f       0x16 AES_lib/aes_sbox.o
+ .debug_str     0x000003e3       0x16 AES_lib/aes_sbox.o
                                 0x1fb (size before relaxing)
- .debug_str     0x00000445       0x51 main.o
+ .debug_str     0x000003f9       0x8d main.o
                                 0x2d7 (size before relaxing)
- .debug_str     0x00000496       0x2d uart.o
+ .debug_str     0x00000486       0x2d uart.o
                                 0x250 (size before relaxing)
 
-.debug_loc      0x00000000     0x1b2e
+.debug_loc      0x00000000     0x1d60
  *(.debug_loc)
- .debug_loc     0x00000000      0xf95 AES_lib.o
- .debug_loc     0x00000f95       0x4c AES_lib/aes256_enc.o
- .debug_loc     0x00000fe1      0x3ea AES_lib/aes_enc.o
- .debug_loc     0x000013cb      0x3dd AES_lib/aes_keyschedule.o
- .debug_loc     0x000017a8      0x110 main.o
- .debug_loc     0x000018b8      0x276 uart.o
+ .debug_loc     0x00000000      0xef0 AES_lib.o
+ .debug_loc     0x00000ef0       0x4c AES_lib/aes256_enc.o
+ .debug_loc     0x00000f3c      0x3ea AES_lib/aes_enc.o
+ .debug_loc     0x00001326      0x371 AES_lib/aes_keyschedule.o
+ .debug_loc     0x00001697      0x453 main.o
+ .debug_loc     0x00001aea      0x276 uart.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -740,14 +752,14 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000       0xd0
+.debug_ranges   0x00000000       0xb8
  *(.debug_ranges)
- .debug_ranges  0x00000000       0x58 AES_lib.o
- .debug_ranges  0x00000058       0x10 AES_lib/aes256_enc.o
- .debug_ranges  0x00000068       0x18 AES_lib/aes_enc.o
- .debug_ranges  0x00000080       0x18 AES_lib/aes_keyschedule.o
- .debug_ranges  0x00000098       0x18 main.o
- .debug_ranges  0x000000b0       0x20 uart.o
+ .debug_ranges  0x00000000       0x40 AES_lib.o
+ .debug_ranges  0x00000040       0x10 AES_lib/aes256_enc.o
+ .debug_ranges  0x00000050       0x18 AES_lib/aes_enc.o
+ .debug_ranges  0x00000068       0x18 AES_lib/aes_keyschedule.o
+ .debug_ranges  0x00000080       0x18 main.o
+ .debug_ranges  0x00000098       0x20 uart.o
 
 .debug_macro
  *(.debug_macro)

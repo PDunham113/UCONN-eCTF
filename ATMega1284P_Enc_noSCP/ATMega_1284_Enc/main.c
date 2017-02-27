@@ -3,7 +3,7 @@
  *
  * Created: 2/23/2017 11:46:33 AM
  * Author : Patrick Dunham
- *
+ * 
  * Info   : Test platform for encryption and decryption. Uses side-channel-resistant AES in CFB Mode.
  *
  * External Hardware:
@@ -20,7 +20,6 @@
 /*** INCLUDES ***/
 
 #include <avr/io.h>
-//#include <util/delay.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
@@ -44,19 +43,19 @@ FILE uart_str = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
 // AES Setup
 #define MESSAGE_LENGTH 64
 
+uint8_t hash[16]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t plaintext[MESSAGE_LENGTH]  = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+uint8_t key[32]		   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t IV[16]         = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+uint8_t ciphertext[MESSAGE_LENGTH];
+uint8_t newPlaintext[MESSAGE_LENGTH];
+
+aes256_ctx_t ctx;
+
 /*** Code ***/
 
 int main(void) {
 	/* Setup & Initialization */	
-	
-	// AES Initil
-	uint8_t hash[16]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	uint8_t plaintext[MESSAGE_LENGTH]  = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-	uint8_t key[32]		   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	uint8_t IV[16]         = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
-	uint8_t ciphertext[MESSAGE_LENGTH];
-	uint8_t newPlaintext[MESSAGE_LENGTH];
-	aes256_ctx_t ctx;
 	
 	// Cleans up from bootloader exit.
 	cli();
@@ -72,55 +71,35 @@ int main(void) {
 	
 	// Prints plaintext
 	fprintf(stdout, "Plaintext:\t\t");
-	
 	for(int i = 0; i < MESSAGE_LENGTH; i++) {
 		fprintf(stdout, "%d ", plaintext[i]);
 	}
 	
 	// Prints key
-	fprintf(stdout, "\nKey@%x:\t\t", (unsigned int)key);
-	
+	fprintf(stdout, "\nKey:\t\t\t");
 	for(int i = 0; i < 32; i++) {
 		fprintf(stdout, "%d ", key[i]);
 	}
 	
 	// Prints Initialization Vector
 	fprintf(stdout, "\nIV:\t\t\t");
-	
 	for(int i = 0; i < 16; i++) {
 		fprintf(stdout, "%d ", IV[i]);
 	}
 	
-	
-	/*// Copies plaintext into buffer
-	for(int i = 0; i < MESSAGE_LENGTH; i++) {
-		ciphertext[i] = plaintext[i];
-	}*/
-	
-	// Encryption
-	//encCFB(key, ciphertext, IV, MESSAGE_LENGTH);
+	/* ENCRYPTION */
 	strtEncCFB(key, plaintext, IV, &ctx, ciphertext);
-	
-	// Prints Initialization Vector
-	fprintf(stdout, "\nIntermediate ciphertext:\t\t");
-	
-	for(int i = 0; i < 32; i++) {
-		fprintf(stdout, "%X ", ciphertext[i]);
-	}
-	
 	for(int i = 16; i < MESSAGE_LENGTH; i += 16) {
 		contEncCFB(&ctx, &plaintext[i], &ciphertext[i - 16], &ciphertext[i]);
 	}
 	
 	// Prints ciphertext
 	fprintf(stdout, "\nCiphertext:\t\t");
-	
 	for(int i = 0; i < MESSAGE_LENGTH; i++) {
 		fprintf(stdout, "%X ", ciphertext[i]);
 	}
 	
-	// Decryption
-	//decCFB(key, ciphertext, IV, MESSAGE_LENGTH);
+	/* DECRYPTION */
 	strtDecCFB(key, ciphertext, IV, &ctx, newPlaintext);
 	for(int i = 16; i < MESSAGE_LENGTH; i += 16) {
 		contDecCFB(&ctx, &ciphertext[i], ciphertext, &newPlaintext[i]);
@@ -128,17 +107,15 @@ int main(void) {
 	
 	// Prints decrypted ciphertext
 	fprintf(stdout, "\nDecrypted Ciphertext:\t");
-	
 	for(int i = 0; i < MESSAGE_LENGTH; i++) {
 		fprintf(stdout, "%d ", newPlaintext[i]);
 	}
 	
-	// Hashing
+	/* HASHING */
 	hashCBC(key, plaintext, hash, MESSAGE_LENGTH);
 	
 	// Prints hash
 	fprintf(stdout, "\nHash:\t\t\t");
-	
 	for(int i = 0; i < 16; i++) {
 		fprintf(stdout, "%X ", hash[i]);
 	}
@@ -146,8 +123,6 @@ int main(void) {
 
     while (1) {
 		/* Loop */
-		
-		
 		
     }
 }

@@ -14,7 +14,6 @@
 
 #include "AES_lib.h"
 #include "AES_lib/aes.h"
-#include <stdio.h>
 
 
 
@@ -36,15 +35,6 @@
 void strtEncCFB(uint8_t* key, uint8_t* firstBlockPlaintext, uint8_t* IV, aes256_ctx_t* ctx, uint8_t* firstBlockCiphertext) {
 	// Generate AES-256 Keyschedule
 	aes256_init(key, ctx);
-	
-	fprintf(stdout, "\nKeyschedule: \n");
-	for(int i = 0; i < 15; i++) {
-		fprintf(stdout, "\t");
-		for(int j = 0; j < 16; j++) {
-			fprintf(stdout, "%X ", ctx->key[i].ks[j]);
-		}
-		fprintf(stdout, "\n");
-	}
 	
 	// Copy IV to buffer
 	for(uint8_t i = 0; i < 16; i++) {
