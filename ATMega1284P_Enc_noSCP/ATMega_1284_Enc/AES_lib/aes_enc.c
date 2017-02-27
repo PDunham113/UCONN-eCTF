@@ -54,7 +54,7 @@ void aes_enc_round(aes_cipher_state_t *state, const aes_roundkey_t *k)
     uint8_t i;
     /* subBytes */
     for (i = 0; i < 16; ++i) {
-        tmp[i] = pgm_read_byte(aes_sbox + state->s[i]);
+        tmp[i] = pgm_read_byte_far(aes_sbox + state->s[i]);
     }
     /* shiftRows */
     aes_shiftcol(tmp + 1, 1);
@@ -93,7 +93,7 @@ void aes_enc_lastround(aes_cipher_state_t *state, const aes_roundkey_t *k)
     uint8_t i;
     /* subBytes */
     for (i = 0; i < 16; ++i) {
-        state->s[i] = pgm_read_byte(aes_sbox + state->s[i]);
+        state->s[i] = pgm_read_byte_far(aes_sbox + state->s[i]);
     }
     /* shiftRows */
     aes_shiftcol(state->s + 1, 1);

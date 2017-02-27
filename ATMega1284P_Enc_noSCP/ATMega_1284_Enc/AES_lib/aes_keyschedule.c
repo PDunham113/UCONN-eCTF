@@ -60,19 +60,19 @@ void aes_init(const void *key, uint16_t keysize_b, aes_genctx_t *ctx)
         tmp.v32 = ((uint32_t*) (ctx->key[0].ks))[i - 1];
         if (i != next_nk) {
             if (nk == 8 && i % 8 == 4) {
-                tmp.v8[0] = pgm_read_byte(aes_sbox + tmp.v8[0]);
-                tmp.v8[1] = pgm_read_byte(aes_sbox + tmp.v8[1]);
-                tmp.v8[2] = pgm_read_byte(aes_sbox + tmp.v8[2]);
-                tmp.v8[3] = pgm_read_byte(aes_sbox + tmp.v8[3]);
+                tmp.v8[0] = pgm_read_byte_far(aes_sbox + tmp.v8[0]);
+                tmp.v8[1] = pgm_read_byte_far(aes_sbox + tmp.v8[1]);
+                tmp.v8[2] = pgm_read_byte_far(aes_sbox + tmp.v8[2]);
+                tmp.v8[3] = pgm_read_byte_far(aes_sbox + tmp.v8[3]);
             }
         } else {
             next_nk += nk;
             aes_rotword(&(tmp.v32));
-            tmp.v8[0] = pgm_read_byte(aes_sbox + tmp.v8[0]);
-            tmp.v8[1] = pgm_read_byte(aes_sbox + tmp.v8[1]);
-            tmp.v8[2] = pgm_read_byte(aes_sbox + tmp.v8[2]);
-            tmp.v8[3] = pgm_read_byte(aes_sbox + tmp.v8[3]);
-            tmp.v8[0] ^= pgm_read_byte(rc_tab + rc);
+            tmp.v8[0] = pgm_read_byte_far(aes_sbox + tmp.v8[0]);
+            tmp.v8[1] = pgm_read_byte_far(aes_sbox + tmp.v8[1]);
+            tmp.v8[2] = pgm_read_byte_far(aes_sbox + tmp.v8[2]);
+            tmp.v8[3] = pgm_read_byte_far(aes_sbox + tmp.v8[3]);
+            tmp.v8[0] ^= pgm_read_byte_far(rc_tab + rc);
             rc++;
         }
         ((uint32_t*) (ctx->key[0].ks))[i] = ((uint32_t*) (ctx->key[0].ks))[i
