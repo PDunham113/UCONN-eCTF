@@ -24,6 +24,7 @@
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
+#include "avr/boot.h"
 #include "uart.h"
 
 // For AES lib
@@ -36,28 +37,26 @@
 void disableWDT(void);
 
 
-/*** VARIABLES & DEFINITIONS ***/
+/***  DEFINITIONS ***/
 
-// UART Setup
 FILE uart_str = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
-char rec[50];
 
 // AES Setup
 #define MESSAGE_LENGTH 64
 
-uint8_t plaintext[MESSAGE_LENGTH]  = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-uint8_t ciphertext[MESSAGE_LENGTH];
-uint8_t newPlaintext[MESSAGE_LENGTH];
-uint8_t key[32]		   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t IV[16]         = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
-uint8_t hash[16]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	
-aes256_ctx_t ctx;
-
 /*** Code ***/
 
 int main(void) {
-	/* Setup & Initialization */
+	/* Setup & Initialization */	
+	
+	// AES Initil
+	uint8_t hash[16]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	uint8_t plaintext[MESSAGE_LENGTH]  = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+	uint8_t key[32]		   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	uint8_t IV[16]         = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+	uint8_t ciphertext[MESSAGE_LENGTH];
+	uint8_t newPlaintext[MESSAGE_LENGTH];
+	aes256_ctx_t ctx;
 	
 	// Cleans up from bootloader exit.
 	cli();
@@ -65,6 +64,7 @@ int main(void) {
 	
 	// Initializes UART0
 	uart_init();
+
 	
 	// Maps UART0 to stdout, letting us fprintf for funsies.
 	stdin = stdout = stderr = &uart_str;
@@ -78,7 +78,7 @@ int main(void) {
 	}
 	
 	// Prints key
-	fprintf(stdout, "\nKey:\t\t\t");
+	fprintf(stdout, "\nKey@%x:\t\t", (unsigned int)key);
 	
 	for(int i = 0; i < 32; i++) {
 		fprintf(stdout, "%d ", key[i]);
