@@ -16,7 +16,6 @@
  */
 
 #define F_CPU 20000000UL
-#define SPM_PAGESIZE 256UL
 
 /*** INCLUDES ***/
 
@@ -47,7 +46,7 @@ void programFlashPage(uint32_t pageAddress, uint8_t *data);
 FILE uart_str = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
 
 // AES Setup
-#define MESSAGE_LENGTH 32768UL
+#define MESSAGE_LENGTH 40960UL
 #define KEY_LENGTH     32
 #define BLOCK_LENGTH   16
 
@@ -100,10 +99,10 @@ int main(void) {
 		}		
 		
 		// Stores page
-		programFlashPage(MESSAGE_LENGTH * 0UL + j * SPM_PAGESIZE, plaintext);
+		programFlashPage(MESSAGE_LENGTH * 0UL + (uint32_t)j * SPM_PAGESIZE, plaintext);
 			
 		// Prints page
-		fprintf(stdout, "\n\nPlaintext Page Stored@%X:\n", (uint16_t)(MESSAGE_LENGTH * 0UL + j * SPM_PAGESIZE));
+		fprintf(stdout, "\n\nPlaintext Page Stored@%X:\n", (uint16_t)(MESSAGE_LENGTH * 0UL + (uint32_t)j * SPM_PAGESIZE));
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			fprintf(stdout, "%X ", plaintext[i]);
 		}	
@@ -115,7 +114,7 @@ int main(void) {
 	for(uint8_t j = 0; j < (MESSAGE_LENGTH / SPM_PAGESIZE); j++) {
 		// Reads page of plaintext from flash
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
-			plaintext[i] = pgm_read_byte_far(MESSAGE_LENGTH * 0UL + j * SPM_PAGESIZE + i);
+			plaintext[i] = pgm_read_byte_far(MESSAGE_LENGTH * 0UL + (uint32_t)j * SPM_PAGESIZE + i);
 		}
 		
 		// Encrypts page
@@ -138,10 +137,10 @@ int main(void) {
 		}
 		
 		// Stores page
-		programFlashPage(MESSAGE_LENGTH * 1UL + j * SPM_PAGESIZE, &ciphertext[0]);
+		programFlashPage(MESSAGE_LENGTH * 1UL + (uint32_t)j * SPM_PAGESIZE, &ciphertext[0]);
 		
 		// Prints page
-		fprintf(stdout, "\n\nCiphertext Page@%X Stored@%X:\n", (uint16_t)(MESSAGE_LENGTH * 0UL + j * SPM_PAGESIZE), (uint16_t)(MESSAGE_LENGTH * 1UL + j * SPM_PAGESIZE));
+		fprintf(stdout, "\n\nCiphertext Page@%X Stored@%X:\n", (uint16_t)(MESSAGE_LENGTH * 0UL + (uint32_t)j * SPM_PAGESIZE), (uint16_t)(MESSAGE_LENGTH * 1UL + (uint32_t)j * SPM_PAGESIZE));
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			fprintf(stdout, "%X ", ciphertext[i]);
 		}
@@ -153,7 +152,7 @@ int main(void) {
 	for(uint8_t j = 0; j < (MESSAGE_LENGTH / SPM_PAGESIZE); j++) {
 		// Reads page of ciphertext from flash
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
-			ciphertext[i] = pgm_read_byte_far(MESSAGE_LENGTH * 1UL + j * SPM_PAGESIZE + i);
+			ciphertext[i] = pgm_read_byte_far(MESSAGE_LENGTH * 1UL + (uint32_t)j * SPM_PAGESIZE + i);
 		}
 		
 		// Decrypts page
@@ -176,10 +175,10 @@ int main(void) {
 		}
 		
 		// Stores page
-		programFlashPage(MESSAGE_LENGTH * 2UL + j * SPM_PAGESIZE, &plaintext[0]);
+		programFlashPage(MESSAGE_LENGTH * 2UL + (uint32_t)j * SPM_PAGESIZE, &plaintext[0]);
 		
 		// Prints page
-		fprintf(stdout, "\n\nDecrypted Page@%X Stored@%X:\n", (uint16_t)(MESSAGE_LENGTH * 1UL + j * SPM_PAGESIZE), (uint16_t)(MESSAGE_LENGTH * 2UL + j * SPM_PAGESIZE));
+		fprintf(stdout, "\n\nDecrypted Page@%X Stored@%X:\n", (uint16_t)(MESSAGE_LENGTH * 1UL + (uint32_t)j * SPM_PAGESIZE), (uint16_t)(MESSAGE_LENGTH * 2UL + (uint32_t)j * SPM_PAGESIZE));
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			fprintf(stdout, "%X ", plaintext[i]);
 		}		
@@ -191,14 +190,14 @@ int main(void) {
 	for(uint8_t j = 0; j < (MESSAGE_LENGTH / SPM_PAGESIZE); j++) {
 		// Reads page of ciphertext from flash
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
-			plaintext[i] = pgm_read_byte_far(MESSAGE_LENGTH * 2UL + j * SPM_PAGESIZE + i);
+			plaintext[i] = pgm_read_byte_far(MESSAGE_LENGTH * 2UL + (uint32_t)j * SPM_PAGESIZE + i);
 		}
 		
 		// Hash it
 		hashCBC(key, plaintext, hash, SPM_PAGESIZE);
 		
 		// Print current status
-		fprintf(stdout, "\nHash after page@%X:", (uint16_t)(MESSAGE_LENGTH * 2UL + j * SPM_PAGESIZE));
+		fprintf(stdout, "\nHash after page@%X:", (uint16_t)(MESSAGE_LENGTH * 2UL + (uint32_t)j * SPM_PAGESIZE));
 		for(int i = 0; i < BLOCK_LENGTH; i++) {
 			fprintf(stdout, "%X ", hash[i]);
 		}
