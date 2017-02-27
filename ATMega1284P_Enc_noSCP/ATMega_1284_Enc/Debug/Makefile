@@ -39,16 +39,17 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../AES_lib.c \
+../AES_lib/aes256_enc.c \
+../AES_lib/aes_enc.c \
+../AES_lib/aes_keyschedule.c \
+../AES_lib/aes_sbox.c \
 ../AES_lib/keysize_descriptor.c \
 ../main.c \
 ../uart.c
 
 
 PREPROCESSING_SRCS +=  \
-../AES_lib/aes_enc-asm.S \
-../AES_lib/aes_keyschedule-asm.S \
-../AES_lib/aes_sbox-asm.S \
-../AES_lib/avr-asm-macros.S
+../AES_lib/gf256mul.S
 
 
 ASM_SRCS += 
@@ -56,40 +57,44 @@ ASM_SRCS +=
 
 OBJS +=  \
 AES_lib.o \
-AES_lib/aes_enc-asm.o \
-AES_lib/aes_keyschedule-asm.o \
-AES_lib/aes_sbox-asm.o \
-AES_lib/avr-asm-macros.o \
+AES_lib/aes256_enc.o \
+AES_lib/aes_enc.o \
+AES_lib/aes_keyschedule.o \
+AES_lib/aes_sbox.o \
+AES_lib/gf256mul.o \
 AES_lib/keysize_descriptor.o \
 main.o \
 uart.o
 
 OBJS_AS_ARGS +=  \
 AES_lib.o \
-AES_lib/aes_enc-asm.o \
-AES_lib/aes_keyschedule-asm.o \
-AES_lib/aes_sbox-asm.o \
-AES_lib/avr-asm-macros.o \
+AES_lib/aes256_enc.o \
+AES_lib/aes_enc.o \
+AES_lib/aes_keyschedule.o \
+AES_lib/aes_sbox.o \
+AES_lib/gf256mul.o \
 AES_lib/keysize_descriptor.o \
 main.o \
 uart.o
 
 C_DEPS +=  \
 AES_lib.d \
-AES_lib/aes_enc-asm.d \
-AES_lib/aes_keyschedule-asm.d \
-AES_lib/aes_sbox-asm.d \
-AES_lib/avr-asm-macros.d \
+AES_lib/aes256_enc.d \
+AES_lib/aes_enc.d \
+AES_lib/aes_keyschedule.d \
+AES_lib/aes_sbox.d \
+AES_lib/gf256mul.d \
 AES_lib/keysize_descriptor.d \
 main.d \
 uart.d
 
 C_DEPS_AS_ARGS +=  \
 AES_lib.d \
-AES_lib/aes_enc-asm.d \
-AES_lib/aes_keyschedule-asm.d \
-AES_lib/aes_sbox-asm.d \
-AES_lib/avr-asm-macros.d \
+AES_lib/aes256_enc.d \
+AES_lib/aes_enc.d \
+AES_lib/aes_keyschedule.d \
+AES_lib/aes_sbox.d \
+AES_lib/gf256mul.d \
 AES_lib/keysize_descriptor.d \
 main.d \
 uart.d
@@ -117,17 +122,25 @@ LINKER_SCRIPT_DEP+=
 
 
 
+
+
+
+
+
+
+
+
 ./%.o: .././%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 4.9.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\include"  -O1 -ffunction-sections -fdata-sections -fshort-enums -mrelax -g2 -Wall -mmcu=atmega1284p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\include"  -Os -fno-inline-small-functions -fno-tree-scev-cprop -ffunction-sections -fdata-sections -fshort-enums -mrelax -g2 -Wall -mmcu=atmega1284p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
 AES_lib/%.o: ../AES_lib/%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 4.9.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\include"  -O1 -ffunction-sections -fdata-sections -fshort-enums -mrelax -g2 -Wall -mmcu=atmega1284p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\include"  -Os -fno-inline-small-functions -fno-tree-scev-cprop -ffunction-sections -fdata-sections -fshort-enums -mrelax -g2 -Wall -mmcu=atmega1284p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
@@ -138,28 +151,7 @@ AES_lib/%.o: ../AES_lib/%.c
 
 
 # AVR32/GNU Assembler
-AES_lib/aes_enc-asm.o: ../AES_lib/aes_enc-asm.S
-	@echo Building file: $<
-	@echo Invoking: AVR/GNU Assembler : 4.9.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -Wa,-gdwarf2 -x assembler-with-cpp -c -mmcu=atmega1284p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p" -I "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\include"  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -mrelax -Wa,-g   -o "$@" "$<" 
-	@echo Finished building: $<
-	
-
-AES_lib/aes_keyschedule-asm.o: ../AES_lib/aes_keyschedule-asm.S
-	@echo Building file: $<
-	@echo Invoking: AVR/GNU Assembler : 4.9.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -Wa,-gdwarf2 -x assembler-with-cpp -c -mmcu=atmega1284p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p" -I "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\include"  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -mrelax -Wa,-g   -o "$@" "$<" 
-	@echo Finished building: $<
-	
-
-AES_lib/aes_sbox-asm.o: ../AES_lib/aes_sbox-asm.S
-	@echo Building file: $<
-	@echo Invoking: AVR/GNU Assembler : 4.9.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -Wa,-gdwarf2 -x assembler-with-cpp -c -mmcu=atmega1284p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p" -I "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\include"  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -mrelax -Wa,-g   -o "$@" "$<" 
-	@echo Finished building: $<
-	
-
-AES_lib/avr-asm-macros.o: ../AES_lib/avr-asm-macros.S
+AES_lib/gf256mul.o: ../AES_lib/gf256mul.S
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU Assembler : 4.9.2
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -Wa,-gdwarf2 -x assembler-with-cpp -c -mmcu=atmega1284p -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\gcc\dev\atmega1284p" -I "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.0.106\include"  -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -mrelax -Wa,-g   -o "$@" "$<" 

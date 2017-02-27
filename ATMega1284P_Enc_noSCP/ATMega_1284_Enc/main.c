@@ -100,8 +100,16 @@ int main(void) {
 	// Encryption
 	//encCFB(key, ciphertext, IV, MESSAGE_LENGTH);
 	strtEncCFB(key, plaintext, IV, &ctx, ciphertext);
+	
+	// Prints Initialization Vector
+	fprintf(stdout, "\nIntermediate ciphertext:\t\t");
+	
+	for(int i = 0; i < 32; i++) {
+		fprintf(stdout, "%X ", ciphertext[i]);
+	}
+	
 	for(int i = 16; i < MESSAGE_LENGTH; i += 16) {
-		contEncCFB(&ctx, &plaintext[i], ciphertext, &ciphertext[i]);
+		contEncCFB(&ctx, &plaintext[i], &ciphertext[i - 16], &ciphertext[i]);
 	}
 	
 	// Prints ciphertext

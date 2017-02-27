@@ -4,15 +4,13 @@
 
 AES_lib.c
 
-AES_lib\aes256_enc.c
+AES_lib\aes_enc-asm.S
 
-AES_lib\aes_enc.c
+AES_lib\aes_keyschedule-asm.S
 
-AES_lib\aes_keyschedule.c
+AES_lib\aes_sbox-asm.S
 
-AES_lib\aes_sbox.c
-
-AES_lib\gf256mul.S
+AES_lib\avr-asm-macros.S
 
 AES_lib\keysize_descriptor.c
 

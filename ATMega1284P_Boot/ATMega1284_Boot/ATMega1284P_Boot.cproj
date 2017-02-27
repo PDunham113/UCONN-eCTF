@@ -143,6 +143,48 @@
     </PreBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AES_lib.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\aes.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\aes256_enc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\aes_enc-asm.S">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\aes_enc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\aes_keyschedule-asm.S">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\aes_keyschedule.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\aes_sbox-asm.S">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\aes_sbox.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\aes_types.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\avr-asm-macros.S">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\keysize_descriptor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="AES_lib\keysize_descriptor.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
@@ -152,6 +194,9 @@
     <Compile Include="uart.h">
       <SubType>compile</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="AES_lib" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>
