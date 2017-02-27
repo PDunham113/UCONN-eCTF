@@ -23,11 +23,14 @@
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
-#include "avr/boot.h"
 #include "uart.h"
 
 // For AES lib
 #include "AES_lib.h"
+
+// For Flash Read/Write
+#include "avr/boot.h"
+#include "avr/pgmspace.h"
 
 
 /*** FUNCTION DECLARATIONS ***/
@@ -35,18 +38,20 @@
 // Standard Starting Code
 void disableWDT(void);
 
+// Flash read/write code
+void programFlashPage(uint32_t pageAddress, uint8_t *data);
 
 /***  DEFINITIONS ***/
 
 FILE uart_str = FDEV_SETUP_STREAM(uart_putchar, uart_getchar, _FDEV_SETUP_RW);
 
 // AES Setup
-#define MESSAGE_LENGTH 64
+#define MESSAGE_LENGTH 1024
 
 uint8_t hash[16]       = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-uint8_t plaintext[MESSAGE_LENGTH]  = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-uint8_t key[32]		   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t IV[16]         = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+uint8_t key[32]		   = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t plaintext[MESSAGE_LENGTH];
 uint8_t ciphertext[MESSAGE_LENGTH];
 uint8_t newPlaintext[MESSAGE_LENGTH];
 
@@ -63,14 +68,45 @@ int main(void) {
 	
 	// Initializes UART0
 	uart_init();
-
 	
 	// Maps UART0 to stdout, letting us fprintf for funsies.
 	stdin = stdout = stderr = &uart_str;
 	fprintf(stdout, "\n\nHello, world! You ready for some AES Encryption? \n\n");
 	
+	// Generates deterministic plaintext
+	for(int i = 0; i < MESSAGE_LENGTH; i++) {
+		plaintext[i] = (uint8_t)i;
+	}
+	
 	// Prints plaintext
-	fprintf(stdout, "Plaintext:\t\t");
+	fprintf(stdout, "\nDeterministic Plaintext:\t");
+	for(int i = 0; i < MESSAGE_LENGTH; i++) {
+		fprintf(stdout, "%d ", plaintext[i]);
+	}
+	
+	// Stores plaintext in FLASH
+	for(int i = 0; i < MESSAGE_LENGTH; i += SPM_PAGESIZE) {
+		programFlashPage(0x0000 + i, &plaintext[i]);
+	}
+	
+	// Erases plaintext
+	for(int i = 0; i < MESSAGE_LENGTH; i++) {
+		plaintext[i] = 0;
+	}
+	
+	// Prints plaintext
+	fprintf(stdout, "\nErased Plaintext:\t");
+	for(int i = 0; i < MESSAGE_LENGTH; i++) {
+		fprintf(stdout, "%d ", plaintext[i]);
+	}
+	
+	// Reads page of plaintext from FLASH
+	for(int i = 0; i < MESSAGE_LENGTH; i++) {
+		plaintext[i] = pgm_read_byte(i);
+	}
+	
+	// Prints plaintext
+	fprintf(stdout, "\nPlaintext:\t\t");
 	for(int i = 0; i < MESSAGE_LENGTH; i++) {
 		fprintf(stdout, "%d ", plaintext[i]);
 	}
@@ -102,7 +138,7 @@ int main(void) {
 	/* DECRYPTION */
 	strtDecCFB(key, ciphertext, IV, &ctx, newPlaintext);
 	for(int i = 16; i < MESSAGE_LENGTH; i += 16) {
-		contDecCFB(&ctx, &ciphertext[i], ciphertext, &newPlaintext[i]);
+		contDecCFB(&ctx, &ciphertext[i], &ciphertext[i - 16], &newPlaintext[i]);
 	}
 	
 	// Prints decrypted ciphertext
@@ -152,4 +188,31 @@ void disableWDT(void) {
 	// Then, we clear the WDT Control register. Now it's off for good.
 	WDTCSR |= (1<<WDCE)|(1<<WDE);
 	WDTCSR = 0x00;
+}
+
+
+
+// Programs a 128-byte flash page
+void programFlashPage(uint32_t pageAddress, uint8_t *data) {
+	int i = 0;
+	uint8_t sreg;
+
+	// Disable interrupts
+	sreg = SREG;
+	cli();
+
+	boot_page_erase_safe(pageAddress);
+
+	for(i = 0; i < SPM_PAGESIZE; i += 2)
+	{
+		uint16_t w = data[i];    // Make a word out of two bytes
+		w += data[i+1] << 8;
+		boot_page_fill_safe(pageAddress+i, w);
+	}
+
+	boot_page_write_safe(pageAddress);
+	boot_rww_enable_safe(); // We can just enable it after every program too
+
+	//Re-enable interrupts
+	SREG = sreg;
 }

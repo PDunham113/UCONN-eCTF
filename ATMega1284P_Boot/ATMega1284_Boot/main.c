@@ -400,6 +400,11 @@ void boot_firmware(void)
 void program_flash(uint32_t page_address, unsigned char *data)
 {
     int i = 0;
+    uint8_t sreg;
+
+    // Disable interrupts
+    sreg = SREG;
+    cli();
 
     boot_page_erase_safe(page_address);
 
@@ -412,4 +417,7 @@ void program_flash(uint32_t page_address, unsigned char *data)
 
     boot_page_write_safe(page_address);
     boot_rww_enable_safe(); // We can just enable it after every program too
+
+    //Re-enable interrupts
+    SREG = sreg;
 }
