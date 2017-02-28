@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Memory Readback Tool
+"""Memory Readback Tool
 
 A frame consists of four sections:
 1. One byte for the length of the password.
@@ -18,11 +17,14 @@ import serial
 import struct
 import sys
 import argparse
+import AESandRandNums
 
 RESP_OK = b'\x00'
 RESP_ERROR = b'\x01'
 
 def construct_request(start_addr, num_bytes):
+    """Construct a request frame to send the the AVR.
+    """
     # Read in secret password from file.
     SECRET_PASSWORD = ''
     secret = 'secret_configure_output.txt'
@@ -33,6 +35,7 @@ def construct_request(start_addr, num_bytes):
             SECRET_PASSWORD = SECRET_PASSWORD.rstrip()
     except:
         print("File not found")
+        exit()
     formatstring = '>' + str(len(SECRET_PASSWORD)) + 'sII'
     return struct.pack(formatstring, SECRET_PASSWORD, start_addr, num_bytes)
 
@@ -49,7 +52,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     request = construct_request(int(args.address), int(args.num_bytes))
-
+    request = encryptFileAES(request)
     # Open serial port. Set baudrate to 115200. Set timeout to 2 seconds.
     ser = serial.Serial(args.port, baudrate=115200, timeout=2)
 
