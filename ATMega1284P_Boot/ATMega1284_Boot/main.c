@@ -99,6 +99,9 @@ void configure(void);
 #define ENCRYPTED_SECTION	1UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define DECRYPTED_SECTION	2UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define HASH_SECTION        479UL * SPM_PAGESIZE
+#define BOOTLDR_SECTION		0x1E000UL
+#define BOOTLDR_SIZE		8192UL
+#define EEPROM_SIZE			4096UL
 
 uint16_t fw_version EEMEM;
 
@@ -126,10 +129,12 @@ int main(void) {
 	wdt_reset();
 	
 	// Printing all sorts of things
+	/*
 	for(int i = 0; i < BLOCK_SIZE; i++) {
-		UART0_putchar(readbackIV[i]);
+		//UART0_putchar(readbackIV[i]);
 	}
 	UART0_putchar('\n');
+	*/
 	
 	// Configure Port B Pins 2 and 3 as inputs.
 	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
@@ -178,6 +183,9 @@ int main(void) {
 */
 void configure()
 {
+	uint8_t pageBuffer[SPM_PAGESIZE];
+	uint8_t hash[BLOCK_SIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+		
 	//Start the Watchdog Timer
 	wdt_enable(WDTO_2S);
 	
@@ -187,40 +195,91 @@ void configure()
 	//reset Watchdog Timer
 	wdt_reset();
 	
-	//generate hash of bootloader and eeprom
 	
-	//reset Watchdog Timer
-	wdt_reset();
+	//generate hash of bootloader
+	for (int j = 0; j < BOOTLDR_SIZE; j+=SPM_PAGESIZE)
+	{	
+		// Get a page of data
+		for(int i = 0; i < SPM_PAGESIZE; i++) {
+			pageBuffer[i] = pgm_read_byte_far(BOOTLDR_SECTION+i+(uint32_t)j*SPM_PAGESIZE);
+		}
 	
-	//send hash over UART1
-	
-	//reset Watchdog Timer
-	wdt_reset();
-	
-	//Wait for OK or ERROR
-	while(!UART1_data_available());
-	unsigned char result = UART1_getchar();
-	//reset Watchdog Timer
-	wdt_reset();
-	
-	if(result == OK)
-	{
-		//send counter
-		
-		//stall for reset
-		while(1) __asm__ __volatile__(""); // Wait for watchdog timer to reset.
-		
+		// Add to the hash
+		hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
 	}
 	
-	else
+	//reset Watchdog Timer
+	wdt_reset();
+	
+	//send bootloader hash over UART1
+	for(int i = 0; i < BLOCK_SIZE; i++)
 	{
-		CONFIG_ERROR_FLAG = ERROR;
-		//stall for reset
-		while(1) __asm__ __volatile__(""); // Wait for watchdog timer to reset.
-		
+		UART1_putchar(hash[i]);
 	}
 	
+	//reset Watchdog Timer
+	wdt_reset();
 	
+	//Wait for ACK
+	while(!UART1_data_available())
+	{
+		__asm__ __volatile__("");
+	}
+	
+	//reset Watchdog Timer
+	wdt_reset();
+	
+	//pc will ack if hash is correct
+	if(UART1_getchar() == ACK)
+	{	
+		//calculate eeprom hash
+		for(int i = 0; i < EEPROM_SIZE; i++)
+		{
+			// Get a page of data
+			for(uint8_t i = 0; i < SPM_PAGESIZE; i++) {
+				pageBuffer[i] = eeprom_read_byte(&i);
+			}
+					
+			// Add to the hash
+			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
+		}
+		
+		//reset Watchdog Timer
+		wdt_reset();
+			
+		//send eeprom hash over UART1
+		for(int i = 0; i < BLOCK_SIZE; i++)
+		{
+			UART1_putchar(hash[i]);
+		}
+		
+		//reset Watchdog Timer
+		wdt_reset();
+		
+		//Wait for ACK
+		while(!UART1_data_available())
+		{
+			__asm__ __volatile__("");
+		}
+		
+		//reset Watchdog Timer
+		wdt_reset();
+		
+		//pc will ack if hash is correct
+		if(UART1_getchar() == ACK)
+		{
+			//send counter here
+			while(1){__asm__ __volatile__("");}		//wait for reset
+			
+		}
+		
+		else
+		{
+			CONFIG_ERROR_FLAG = ERROR;
+			while(1){__asm__ __volatile__("");}		//wait for reset
+		}
+	}	
+
 }
 
 
