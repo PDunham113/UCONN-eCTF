@@ -124,11 +124,11 @@ if __name__ == '__main__':
     # finalBytes += (os.urandom(padSize))
     
     # Encrypt bytes
-    finalBytes = encryptAES(b'\x00'*32,b'\x00'*16,finalBytes)
+    finalBytes = encryptAES(b'\x01\x08\x06\x07\x05\x03\x00\x09'*4,b'\x00'*16,finalBytes)
     print(len(finalBytes))
     with open("CBC.hash","wb+") as CBCCypherText:
-        encryptCBC(b'\x00'*32,b'\x00'*16,finalBytes,CBCCypherText)
-    CBCHash = CMACHash(b'\x00'*32,finalBytes)
+        encryptCBC(b'\x31\x38\x36\x37\x35\x33\x30\x39'*4,b'\x00'*16,finalBytes,CBCCypherText)
+    CBCHash = CMACHash(b'\x31\x38\x36\x37\x35\x33\x30\x39'*4,finalBytes)
     finalBytes += CBCHash
     padSize = 126*256 - len(finalBytes)
     with open(args.outfile,'wb+') as outfile:

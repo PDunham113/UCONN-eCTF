@@ -60,7 +60,7 @@ if __name__ == '__main__':
             ser.write(chunk)  # Write the frame...
 
             resp = ser.read()  # Wait for an OK from the bootloader
-            # while ser.read(1) != RESP_OK
+            # while ser.read() != RESP_OK:
             #    pass
             time.sleep(0.1)
 
