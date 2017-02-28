@@ -92,7 +92,7 @@ void configure(void);
 #define BLOCK_SIZE 16
 #define KEY_SIZE   32
 
-#define MAX_PAGE_NUMBER 122UL
+#define MAX_PAGE_NUMBER 126UL
 
 #define APPLICATION_SECTION 0UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define MESSAGE_SECTION     1UL * (MAX_PAGE_NUMBER - 6) * SPM_PAGESIZE
@@ -127,15 +127,10 @@ int main(void) {
 	UART0_init();
 	
 	wdt_reset();
+	MCUSR &= ~(1<<WDRF);
 	
-	// Printing all sorts of things
-	/*
-	for(int i = 0; i < BLOCK_SIZE; i++) {
-		//UART0_putchar(readbackIV[i]);
-	}
-	UART0_putchar('\n');
-	*/
-	
+	wdt_disable();
+		
 	// Configure Port B Pins 2 and 3 as inputs.
 	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
 
@@ -362,8 +357,10 @@ void load_firmware(void) {
 		// Write data to Encrypted Section
 		program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
 		
-		// Add to the hash
-		hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
+		if(j != (MAX_PAGE_NUMBER - 1)) {
+			// Add to the hash
+			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
+		}
 		
 		// Get ready for next page
 		UART1_putchar(ACK);
@@ -371,6 +368,8 @@ void load_firmware(void) {
 		// Reset WDT
 		wdt_reset();
 	}
+	
+	
 	
 	/* CHECK HASH */
 	for(int i = 0; i < BLOCK_SIZE; i++) {
@@ -383,6 +382,9 @@ void load_firmware(void) {
 	if(hashFlag) {
 		// Send NACK
 		UART1_putchar(NACK);
+		
+		// DEBUG - Tell us hash failed
+		UART0_putstring("Hash failed\n");
 		
 		// Fill pageBuffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
@@ -405,6 +407,9 @@ void load_firmware(void) {
 	
 	wdt_reset();
 	UART1_putchar(ACK);
+	
+	// DEBUG - Tell us hash succeeded
+	UART0_putstring("Hash succeeded\n");
 	
 	
 	
@@ -446,6 +451,8 @@ void load_firmware(void) {
 	wdt_reset();
 	UART1_putchar(ACK);
 	
+	// DEBUG - Decrypt successful
+	UART0_putstring("Decrypt succeeded\n");
 	
 	
 	/* CHECK VERSION */
@@ -456,6 +463,9 @@ void load_firmware(void) {
 	if((newVersion != 0) && (newVersion <= currentVersion)) {
 		// Firmware Too Old
 		UART1_putchar(NACK);
+		
+		// DEBUG - Version failed
+		UART0_putstring("Version failed\n");
 		
 		// Erase Encrypted Section
 		for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
@@ -492,7 +502,13 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
+	
+	// DEBUG - Decrypt successful
+	UART0_putstring("Version succeeded\n");
+	
 	UART1_putchar(ACK);
+	
+	
 	
 	
 	
@@ -512,7 +528,7 @@ void load_firmware(void) {
 	
 	
 	/* STORE PROGRAM */
-	for(int j = 5; j < MAX_PAGE_NUMBER; j++) {
+	for(int j = 5; j < MAX_PAGE_NUMBER - 1; j++) {
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			// Read out firmware
 			pageBuffer[i] = pgm_read_byte_far(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE + i);
@@ -525,12 +541,11 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
-	UART1_putchar(ACK);
 	
 	
 	
 	/* ERASE FLASH */
-	for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
+	for(int j = 0; j < MAX_PAGE_NUMBER * 2; j++) {
 		// Fill pagebuffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = 0xFF;
@@ -542,15 +557,10 @@ void load_firmware(void) {
 	
 	wdt_reset();
 	
-	for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
-		// Fill pagebuffer with 0xFF
-		for(int i = 0; i < SPM_PAGESIZE; i++) {
-			pageBuffer[i] = 0xFF;
-		}
-		
-		// Write over Encrypted Section
-		program_flash(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
-	}
+	// DEBUG - Firmware loaded
+	UART0_putstring("Firmware loaded\n");
+	
+	UART1_putchar(ACK);
 	
 	// Reset and boot
 	while(1) {
@@ -569,27 +579,26 @@ void boot_firmware(void)
     wdt_enable(WDTO_2S);
 
     // Write out the release message.
-    uint8_t cur_byte;
+    uint8_t cur_byte = pgm_read_byte_far(MESSAGE_SECTION);
+	
 
-    //wdt_reset();
-
-    // Write out release message to UART0.
-	int addr = MESSAGE_SECTION;
-    do
-    {
-        cur_byte = pgm_read_byte_far(addr);
-        UART0_putchar(cur_byte);
-        ++addr;
-    } while (cur_byte != 0);
-	UART0_putchar('\n');
+	if(cur_byte != 0xFF) {
+		// Write out release message to UART0.
+		UART0_putstring("Release Message:\n");
+		int addr = MESSAGE_SECTION;
+	
+		while ((cur_byte != 0x00)) {
+			cur_byte = pgm_read_byte_far(addr);
+			UART0_putchar(cur_byte);
+			++addr;
+		}
+	
+		UART0_putchar('\n');
+	}
 	
     // Stop the Watchdog Timer.
     wdt_reset();
     wdt_disable();
-
-	while(1) {
-		__asm__ __volatile__("");
-	}
 
     /* Make the leap of faith. */
     asm ("jmp 0000");

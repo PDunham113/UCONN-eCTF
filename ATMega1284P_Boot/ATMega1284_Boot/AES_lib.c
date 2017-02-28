@@ -14,6 +14,7 @@
 
 #include "AES_lib.h"
 #include "AES_lib/aes.h"
+#include "uart.h"
 
 
 
@@ -282,7 +283,7 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
  * \param hash Pointer to a 16-byte hash array. Must be initialized to all zeros.
  * \param size Size in bytes of data array. Must be divisible by 16.
  */
-void hashCBC(uint8_t* key, uint8_t* data, uint8_t* hash, uint16_t size) {
+void hashCBC(uint8_t *key, uint8_t *data, uint8_t *hash, uint16_t size) {
 	uint16_t     _address = 0;
 	aes256_ctx_t ctx;
 	
@@ -293,7 +294,7 @@ void hashCBC(uint8_t* key, uint8_t* data, uint8_t* hash, uint16_t size) {
 	while(_address < size) {
 		// XOR current hash with plaintext
 		for(uint8_t i = 0; i < 16; i++) {
-			hash[i] ^= data[i];
+			hash[i] ^= data[_address + i];
 		}
 		
 		// Encrypt current hash in place
