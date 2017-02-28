@@ -127,6 +127,9 @@ int main(void) {
 	UART0_init();
 	
 	wdt_reset();
+	MCUSR &= ~(1<<WDRF);
+	
+	wdt_disable();
 		
 	// Configure Port B Pins 2 and 3 as inputs.
 	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
@@ -571,6 +574,7 @@ void load_firmware(void) {
 	
 	// Reset and boot
 	while(1) {
+		UART1_putchar('A');
 		__asm__ __volatile__("");
 	}
 	
