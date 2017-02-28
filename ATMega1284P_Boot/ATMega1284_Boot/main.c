@@ -92,7 +92,7 @@ void configure(void);
 #define BLOCK_SIZE 16
 #define KEY_SIZE   32
 
-#define MAX_PAGE_NUMBER 122UL
+#define MAX_PAGE_NUMBER 126UL
 
 #define APPLICATION_SECTION 0UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define MESSAGE_SECTION     1UL * (MAX_PAGE_NUMBER - 6) * SPM_PAGESIZE
@@ -125,11 +125,8 @@ int main(void) {
 	
 	wdt_reset();
 	
-	// Printing all sorts of things
-	for(int i = 0; i < BLOCK_SIZE; i++) {
-		UART0_putchar(readbackIV[i]);
-	}
-	UART0_putchar('\n');
+	// We're debugging on UART0
+	//UART0_putstring("We're in #DEBUGMODE\n\n");
 	
 	// Configure Port B Pins 2 and 3 as inputs.
 	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
@@ -303,8 +300,14 @@ void load_firmware(void) {
 		// Write data to Encrypted Section
 		program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
 		
-		// Add to the hash
-		hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
+		if(j != (MAX_PAGE_NUMBER - 1)) {
+			// Add to the hash
+			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
+			
+			for(int k = 0; k < BLOCK_SIZE; k++) {
+				UART0_putchar(hash[k]);
+			}
+		}
 		
 		// Get ready for next page
 		UART1_putchar(ACK);
@@ -312,6 +315,8 @@ void load_firmware(void) {
 		// Reset WDT
 		wdt_reset();
 	}
+	
+	
 	
 	/* CHECK HASH */
 	for(int i = 0; i < BLOCK_SIZE; i++) {
@@ -324,8 +329,9 @@ void load_firmware(void) {
 	if(hashFlag) {
 		// Send NACK
 		UART1_putchar(NACK);
+
 		
-		// Fill pageBuffer with 0xFF
+		/*// Fill pageBuffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = 0xFF;
 		}
@@ -336,7 +342,7 @@ void load_firmware(void) {
 		for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
 			program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
 			wdt_reset();
-		}
+		}*/
 		
 		// Reset
 		while(1) {
@@ -510,19 +516,19 @@ void boot_firmware(void)
     wdt_enable(WDTO_2S);
 
     // Write out the release message.
-    uint8_t cur_byte;
+    //uint8_t cur_byte;
 
     //wdt_reset();
 
     // Write out release message to UART0.
-	int addr = MESSAGE_SECTION;
+	/*int addr = MESSAGE_SECTION;
     do
     {
         cur_byte = pgm_read_byte_far(addr);
         UART0_putchar(cur_byte);
         ++addr;
     } while (cur_byte != 0);
-	UART0_putchar('\n');
+	UART0_putchar('\n');*/
 	
     // Stop the Watchdog Timer.
     wdt_reset();
