@@ -127,20 +127,7 @@ int main(void) {
 	UART0_init();
 	
 	wdt_reset();
-	
-<<<<<<< HEAD
-	// We're debugging on UART0
-	//UART0_putstring("We're in #DEBUGMODE\n\n");
-=======
-	// Printing all sorts of things
-	/*
-	for(int i = 0; i < BLOCK_SIZE; i++) {
-		//UART0_putchar(readbackIV[i]);
-	}
-	UART0_putchar('\n');
-	*/
->>>>>>> origin/master
-	
+		
 	// Configure Port B Pins 2 and 3 as inputs.
 	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
 
@@ -370,10 +357,6 @@ void load_firmware(void) {
 		if(j != (MAX_PAGE_NUMBER - 1)) {
 			// Add to the hash
 			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
-			
-			for(int k = 0; k < BLOCK_SIZE; k++) {
-				UART0_putchar(hash[k]);
-			}
 		}
 		
 		// Get ready for next page
@@ -396,9 +379,11 @@ void load_firmware(void) {
 	if(hashFlag) {
 		// Send NACK
 		UART1_putchar(NACK);
-
 		
-		/*// Fill pageBuffer with 0xFF
+		// DEBUG - Tell us hash failed
+		UART0_putstring("Hash failed\n");
+		
+		// Fill pageBuffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = 0xFF;
 		}
@@ -409,7 +394,7 @@ void load_firmware(void) {
 		for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
 			program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
 			wdt_reset();
-		}*/
+		}
 		
 		// Reset
 		while(1) {
@@ -419,6 +404,9 @@ void load_firmware(void) {
 	
 	wdt_reset();
 	UART1_putchar(ACK);
+	
+	// DEBUG - Tell us hash succeeded
+	UART0_putstring("Hash succeeded\n");
 	
 	
 	
@@ -460,6 +448,8 @@ void load_firmware(void) {
 	wdt_reset();
 	UART1_putchar(ACK);
 	
+	// DEBUG - Decrypt successful
+	UART0_putstring("Decrypt succeeded\n");
 	
 	
 	/* CHECK VERSION */
@@ -470,6 +460,9 @@ void load_firmware(void) {
 	if((newVersion != 0) && (newVersion <= currentVersion)) {
 		// Firmware Too Old
 		UART1_putchar(NACK);
+		
+		// DEBUG - Version failed
+		UART0_putstring("Version failed\n");
 		
 		// Erase Encrypted Section
 		for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
@@ -506,7 +499,13 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
+	
+	// DEBUG - Decrypt successful
+	UART0_putstring("Version succeeded\n");
+	
 	UART1_putchar(ACK);
+	
+	
 	
 	
 	
@@ -539,12 +538,11 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
-	UART1_putchar(ACK);
 	
 	
 	
 	/* ERASE FLASH */
-	for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
+	/*for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
 		// Fill pagebuffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = 0xFF;
@@ -552,11 +550,11 @@ void load_firmware(void) {
 		
 		// Write over Encrypted Section
 		program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
-	}
+	}*/
 	
 	wdt_reset();
 	
-	for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
+	/*for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
 		// Fill pagebuffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = 0xFF;
@@ -564,7 +562,12 @@ void load_firmware(void) {
 		
 		// Write over Encrypted Section
 		program_flash(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
-	}
+	}*/
+	
+	// DEBUG - Firmware loaded
+	UART0_putstring("Firmware loaded\n");
+	
+	UART1_putchar(ACK);
 	
 	// Reset and boot
 	while(1) {
@@ -600,10 +603,6 @@ void boot_firmware(void)
     // Stop the Watchdog Timer.
     wdt_reset();
     wdt_disable();
-
-	while(1) {
-		__asm__ __volatile__("");
-	}
 
     /* Make the leap of faith. */
     asm ("jmp 0000");

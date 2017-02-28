@@ -14,6 +14,7 @@
 
 #include "AES_lib.h"
 #include "AES_lib/aes.h"
+#include "uart.h"
 
 
 
@@ -293,7 +294,7 @@ void hashCBC(uint8_t *key, uint8_t *data, uint8_t *hash, uint16_t size) {
 	while(_address < size) {
 		// XOR current hash with plaintext
 		for(uint8_t i = 0; i < 16; i++) {
-			hash[i] ^= data[i];
+			hash[i] ^= data[_address + i];
 		}
 		
 		// Encrypt current hash in place
