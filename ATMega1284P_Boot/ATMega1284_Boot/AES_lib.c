@@ -282,7 +282,7 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
  * \param hash Pointer to a 16-byte hash array. Must be initialized to all zeros.
  * \param size Size in bytes of data array. Must be divisible by 16.
  */
-void hashCBC(uint8_t* key, uint8_t* data, uint8_t* hash, uint16_t size) {
+void hashCBC(uint8_t *key, uint8_t *data, uint8_t *hash, uint16_t size) {
 	uint16_t     _address = 0;
 	aes256_ctx_t ctx;
 	
