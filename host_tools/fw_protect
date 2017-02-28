@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 """
 Firmware Bundle-and-Protect Tool
 
@@ -36,6 +36,14 @@ def CMACHash(key,inBytes):
         block = inBytes
     output = (encryptor.encrypt(block))
     return output[-16:]
+def encryptCBC(key, iv, inBytes,outfile):
+    """ Takes in a key, initialization vector, and a file location of the     input, and location of the output"""
+    encryptor = AES.new(key, AES.MODE_CBC, iv,segment_size=128)
+    if len(inBytes) % 16 != 0:
+        block = inBytes + b'\x00'*(len(inBytes)%16)
+    else:
+        block = inBytes
+    outfile.write(encryptor.encrypt(block))
 def encryptAES(key, iv, inBytes):
     """ Takes in a key, initialization vector, and a file location of the     input, and location of the output"""
     encryptor = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
@@ -110,6 +118,8 @@ if __name__ == '__main__':
     # Encrypt bytes
     finalBytes = encryptAES(b'\x00'*32,b'\x00'*16,finalBytes)
     print(len(finalBytes))
+    with open("CBC.hash","wb+") as CBCCypherText:
+        encryptCBC(b'\x00'*32,b'\x00'*16,finalBytes,CBCCypherText)
     CBCHash = CMACHash(b'\x00'*32,finalBytes)
     finalBytes += CBCHash
     padSize = 126*256 - len(finalBytes)
