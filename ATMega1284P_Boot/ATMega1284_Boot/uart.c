@@ -62,9 +62,9 @@ void UART1_putstring(char* str)
     int i = 0;
     while(str[i] != 0){
         UART1_putchar(str[i]);
-        i += 1;
+        i++;
     }
-    UART1_putchar((unsigned char)0);  // make sure we send out the null terminator
+    //UART1_putchar((unsigned char)0);  // make sure we send out the null terminator
 }
 
 
@@ -123,7 +123,7 @@ void UART0_putstring(char* str)
     int i = 0;
     while(str[i] != 0){
         UART0_putchar(str[i]);
-        i += 1;
+        i++;
     }
-    UART0_putchar((unsigned char)0);  // make sure we send out the null terminator
+    //UART0_putchar((unsigned char)0);  // make sure we send out the null terminator
 }
