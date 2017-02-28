@@ -528,7 +528,7 @@ void load_firmware(void) {
 	
 	
 	/* STORE PROGRAM */
-	for(int j = 5; j < MAX_PAGE_NUMBER; j++) {
+	for(int j = 5; j < MAX_PAGE_NUMBER - 1; j++) {
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			// Read out firmware
 			pageBuffer[i] = pgm_read_byte_far(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE + i);
@@ -545,7 +545,7 @@ void load_firmware(void) {
 	
 	
 	/* ERASE FLASH */
-	/*for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
+	for(int j = 0; j < MAX_PAGE_NUMBER * 2; j++) {
 		// Fill pagebuffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = 0xFF;
@@ -553,19 +553,9 @@ void load_firmware(void) {
 		
 		// Write over Encrypted Section
 		program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
-	}*/
+	}
 	
 	wdt_reset();
-	
-	/*for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
-		// Fill pagebuffer with 0xFF
-		for(int i = 0; i < SPM_PAGESIZE; i++) {
-			pageBuffer[i] = 0xFF;
-		}
-		
-		// Write over Encrypted Section
-		program_flash(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
-	}*/
 	
 	// DEBUG - Firmware loaded
 	UART0_putstring("Firmware loaded\n");
@@ -574,7 +564,6 @@ void load_firmware(void) {
 	
 	// Reset and boot
 	while(1) {
-		UART1_putchar('A');
 		__asm__ __volatile__("");
 	}
 	
@@ -590,19 +579,22 @@ void boot_firmware(void)
     wdt_enable(WDTO_2S);
 
     // Write out the release message.
-    //uint8_t cur_byte;
+    uint8_t cur_byte = pgm_read_byte_far(MESSAGE_SECTION);
+	
 
-    //wdt_reset();
-
-    // Write out release message to UART0.
-	/*int addr = MESSAGE_SECTION;
-    do
-    {
-        cur_byte = pgm_read_byte_far(addr);
-        UART0_putchar(cur_byte);
-        ++addr;
-    } while (cur_byte != 0);
-	UART0_putchar('\n');*/
+	if(cur_byte != 0xFF) {
+		// Write out release message to UART0.
+		UART0_putstring("Release Message:\n");
+		int addr = MESSAGE_SECTION;
+	
+		while ((cur_byte != 0x00)) {
+			cur_byte = pgm_read_byte_far(addr);
+			UART0_putchar(cur_byte);
+			++addr;
+		}
+	
+		UART0_putchar('\n');
+	}
 	
     // Stop the Watchdog Timer.
     wdt_reset();
