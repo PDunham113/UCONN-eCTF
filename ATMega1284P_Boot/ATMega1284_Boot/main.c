@@ -8,16 +8,14 @@
  *
  * External Hardware:
  *		- 20MHz Crystal (soon to be removed)
- *		- Jumper to ground on PINB2, PINB3
- *		- LED on PINB0
- *		- LED on PINB1
- *		- UART <-> USB cable on UART0
+ *		- Jumper to ground on PINB2, PINB3, PINB4
+ *		- UART <-> USB cable on UART0 (DEBUG)
  *		- UART <-> USB cable on UART1
  *
  */
 
 /*
- * bootloader.c
+ * bootloader.c [THIS IS TERRIBLY INCORRECT]
  *
  * If Port B Pin 2 (PB2 on the protostack board) is pulled to ground the 
  * bootloader will wait for data to appear on UART1 (which will be interpretted
@@ -89,21 +87,23 @@ void configure(void);
 #define ACK ((unsigned char)0x06)
 #define NACK ((unsigned char)0x15)
 
-#define BLOCK_SIZE 16
-#define KEY_SIZE   32
-
+#define BLOCK_SIZE 16UL
+#define KEY_SIZE   32UL
+#define BOOTLDR_SIZE		8192UL
+#define EEPROM_SIZE			4096UL
 #define MAX_PAGE_NUMBER 126UL
 
 #define APPLICATION_SECTION 0UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define MESSAGE_SECTION     1UL * (MAX_PAGE_NUMBER - 6) * SPM_PAGESIZE
 #define ENCRYPTED_SECTION	1UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define DECRYPTED_SECTION	2UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
-#define HASH_SECTION        479UL * SPM_PAGESIZE
 #define BOOTLDR_SECTION		0x1E000UL
-#define BOOTLDR_SIZE		8192UL
-#define EEPROM_SIZE			4096UL
 
-uint16_t fw_version EEMEM;
+#define FIRM_HASH_SECTION   479UL * SPM_PAGESIZE
+#define BOOT_HASH_SECTION	511UL * SPM_PAGESIZE
+#define EPRM_HASH_SECTION	
+
+uint16_t fw_version EEMEM = 0;
 
 unsigned char CONFIG_ERROR_FLAG = OK;
 
@@ -172,10 +172,14 @@ int main(void) {
 
 
 
-/*** Function Bodies ***/
-/*
-*  Interface with host configure tool
-*/
+/*** FUNCTION BODIES ***/
+
+
+
+/**
+ * \brief Interfaces with host configure tool
+ *
+ */
 void configure()
 {
 	uint8_t pageBuffer[SPM_PAGESIZE];
@@ -278,8 +282,10 @@ void configure()
 }
 
 
-/*
- * Interface with host readback tool.
+
+/**
+ * \brief Interfaces with host readback tool. [INCOMPLETE]
+ *
  */
 void readback(void)
 {
@@ -318,8 +324,27 @@ void readback(void)
 }
 
 
-/*
- * Loads firmware
+
+/**
+ * \brief Loads a new firmware image and release message
+ * 
+ * This function securely loads a new firmware image onto flash, following the
+ * procedure outlined below.
+ * 
+ * 1 - The encrypted firmware image is loaded into the ENCRYPTED_SECTION of flash.
+ * 2 - The CBC-MAC of the encrypted firmware image is computed, and compared to the
+ *	   CBC-MAC sent.
+ *		IF   CORRECT - The bootloader proceeds with the firmware upload.
+ *		IF INCORRECT - The bootloader erases ENCRYPTED_SECTION and terminates.
+ * 3 - The firmware image is decrypted and stored in the DECRYPTED_SECTION of flash.
+ * 4 - The version number is checked versus the current version, and updated in EEPROM
+ *		IF   CORRECT - The bootloader proceeds with the firmware upload.
+ *		IF INCORRECT - The bootloader erases ENCRYPTED_SECTION and DECRYPTED_SECTION and
+ *					   terminate.
+ * 5 - The release message is written to the MESSAGE_SECTION
+ * 6 - The firmware is written to the APPLICATION_SECTION
+ * 7 - The bootloader erases ENCRYPTED_SECTION and DECRYPTED_SECTION and terminates
+ *
  */
 void load_firmware(void) {
 	uint8_t pageBuffer[SPM_PAGESIZE];
@@ -570,17 +595,28 @@ void load_firmware(void) {
 }
 
 
-/*
- * Ensure the firmware is loaded correctly and boot it up.
+
+/**
+ * \brief Ensures the firmware is loaded correctly and boots it up.
+ * 
+ * This function calculates the hash of the firmware section and compares it to
+ * the one currently stored.
+ *
+ * HASH CORRECT   -  The function prints a release message if available, and boots. The
+ *					 Watchdog Timer is disabled before boot.
+ *
+ * HASH INCORRECT -  The function sets a EEPROM flag indicating firmware error and resets.
+ *
  */
 void boot_firmware(void)
 {
     // Start the Watchdog Timer.
     wdt_enable(WDTO_2S);
 
-    // Write out the release message.
+
+
+    /* RELEASE MESSAGE */
     uint8_t cur_byte = pgm_read_byte_far(MESSAGE_SECTION);
-	
 
 	if(cur_byte != 0xFF) {
 		// Write out release message to UART0.
@@ -596,16 +632,23 @@ void boot_firmware(void)
 		UART0_putchar('\n');
 	}
 	
-    // Stop the Watchdog Timer.
+	
+	
+    /* DISABLE WATCHDOG */
     wdt_reset();
     wdt_disable();
 
-    /* Make the leap of faith. */
+
+
+    /* JUMP TO FIRMWARE */
     asm ("jmp 0000");
 }
 
 
-/*
+
+/**
+ * \brief Programs a page of ATMega1284P flash memory
+ *
  * To program flash, you need to access and program it in pages
  * On the atmega1284p, each page is 128 words, or 256 bytes
  *
@@ -616,6 +659,9 @@ void boot_firmware(void)
  * 4. When you are done programming all of your pages, enable the flash
  *
  * You must fill the buffer one word at a time
+ *
+ *\param page_address Starting address of page to be programmed
+ *\param data 256-byte array of data to be programmed
  */
 void program_flash(uint32_t page_address, unsigned char *data)
 {
@@ -641,3 +687,9 @@ void program_flash(uint32_t page_address, unsigned char *data)
     //Re-enable interrupts
     SREG = sreg;
 }
+
+/**
+ * \brief Calculates a hash of a memory section
+ *
+ */
+void calcHash(uintuint8_t* hash, uint8_t* data)
