@@ -173,9 +173,13 @@ int main(void) {
 
 
 /*** Function Bodies ***/
-/*
-*  Interface with host configure tool
-*/
+
+
+
+/**
+ * \brief Interfaces with host configure tool
+ *
+ */
 void configure()
 {
 	uint8_t pageBuffer[SPM_PAGESIZE];
@@ -278,8 +282,9 @@ void configure()
 }
 
 
-/*
- * Interface with host readback tool.
+/**
+ * \brief Interfaces with host readback tool. [INCOMPLETE]
+ *
  */
 void readback(void)
 {
@@ -318,8 +323,26 @@ void readback(void)
 }
 
 
-/*
- * Loads firmware
+/**
+ * \brief Loads a new firmware image and release message
+ * 
+ * This function securely loads a new firmware image onto flash, following the
+ * procedure outlined below.
+ * 
+ * 1 - The encrypted firmware image is loaded into the ENCRYPTED_SECTION of flash.
+ * 2 - The CBC-MAC of the encrypted firmware image is computed, and compared to the
+ *	   CBC-MAC sent.
+ *		IF   CORRECT - The bootloader proceeds with the firmware upload.
+ *		IF INCORRECT - The bootloader erases ENCRYPTED_SECTION and terminates.
+ * 3 - The firmware image is decrypted and stored in the DECRYPTED_SECTION of flash.
+ * 4 - The version number is checked versus the current version, and updated in EEPROM
+ *		IF   CORRECT - The bootloader proceeds with the firmware upload.
+ *		IF INCORRECT - The bootloader erases ENCRYPTED_SECTION and DECRYPTED_SECTION and
+ *					   terminate.
+ * 5 - The release message is written to the MESSAGE_SECTION
+ * 6 - The firmware is written to the APPLICATION_SECTION
+ * 7 - The bootloader erases ENCRYPTED_SECTION and DECRYPTED_SECTION and terminates
+ *
  */
 void load_firmware(void) {
 	uint8_t pageBuffer[SPM_PAGESIZE];
@@ -570,17 +593,27 @@ void load_firmware(void) {
 }
 
 
-/*
- * Ensure the firmware is loaded correctly and boot it up.
+/**
+ * \brief Ensures the firmware is loaded correctly and boots it up.
+ * 
+ * This function calculates the hash of the firmware section and compares it to
+ * the one currently stored.
+ *
+ * HASH CORRECT   -  The function prints a release message if available, and boots. The
+ *					 Watchdog Timer is disabled before boot.
+ *
+ * HASH INCORRECT -  The function sets a EEPROM flag indicating firmware error and resets.
+ *
  */
 void boot_firmware(void)
 {
     // Start the Watchdog Timer.
     wdt_enable(WDTO_2S);
 
-    // Write out the release message.
+
+
+    /* RELEASE MESSAGE */
     uint8_t cur_byte = pgm_read_byte_far(MESSAGE_SECTION);
-	
 
 	if(cur_byte != 0xFF) {
 		// Write out release message to UART0.
@@ -596,16 +629,22 @@ void boot_firmware(void)
 		UART0_putchar('\n');
 	}
 	
-    // Stop the Watchdog Timer.
+	
+	
+    /* DISABLE WATCHDOG */
     wdt_reset();
     wdt_disable();
 
-    /* Make the leap of faith. */
+
+
+    /* JUMP TO FIRMWARE */
     asm ("jmp 0000");
 }
 
 
-/*
+/**
+ * \brief Programs a page of ATMega1284P flash memory
+ *
  * To program flash, you need to access and program it in pages
  * On the atmega1284p, each page is 128 words, or 256 bytes
  *
@@ -616,6 +655,9 @@ void boot_firmware(void)
  * 4. When you are done programming all of your pages, enable the flash
  *
  * You must fill the buffer one word at a time
+ *
+ *\param page_address Starting address of page to be programmed
+ *\param data 256-byte array of data to be programmed
  */
 void program_flash(uint32_t page_address, unsigned char *data)
 {
