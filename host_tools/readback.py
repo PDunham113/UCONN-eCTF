@@ -17,6 +17,7 @@ import serial
 import struct
 import sys
 import argparse
+import AESandRandNums
 
 RESP_OK = b'\x00'
 RESP_ERROR = b'\x01'
@@ -51,7 +52,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     request = construct_request(int(args.address), int(args.num_bytes))
-
+    request = encryptFileAES(request)
     # Open serial port. Set baudrate to 115200. Set timeout to 2 seconds.
     ser = serial.Serial(args.port, baudrate=115200, timeout=2)
 
