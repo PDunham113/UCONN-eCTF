@@ -1,7 +1,7 @@
 /* aes.h */
 /*
     This file is part of the AVR-Crypto-Lib.
-    Copyright (C) 2008  Daniel Otte (daniel.otte@rub.de)
+    Copyright (C) 2006-2015 Daniel Otte (bg@nerilex.org)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 */
 /**
  * \file     aes_types.h
- * \email    daniel.otte@rub.de
+ * \email    bg@nerilex.org
  * \author   Daniel Otte
  * \date     2008-12-30
  * \license  GPLv3 or later
@@ -32,6 +32,14 @@
 typedef struct{
 	uint8_t ks[16];
 } aes_roundkey_t;
+
+typedef struct{
+	aes_roundkey_t key[10+1];
+} aes128_ctx_t;
+
+typedef struct{
+	aes_roundkey_t key[12+1];
+} aes192_ctx_t;
 
 typedef struct{
 	aes_roundkey_t key[14+1];

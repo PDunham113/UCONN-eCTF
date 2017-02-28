@@ -383,6 +383,7 @@ void load_firmware(void) {
 		if(j != (MAX_PAGE_NUMBER - 1)) {
 			// Add to the hash
 			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
+
 		}
 		
 		// Get ready for next page
