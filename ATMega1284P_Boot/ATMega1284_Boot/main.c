@@ -385,7 +385,6 @@ void load_firmware(void) {
 		if(j != (MAX_PAGE_NUMBER - 1)) {
 			// Add to the hash
 			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
-
 		}
 		
 		// Get ready for next page
@@ -688,3 +687,9 @@ void program_flash(uint32_t page_address, unsigned char *data)
     //Re-enable interrupts
     SREG = sreg;
 }
+
+/**
+ * \brief Calculates a hash of a memory section
+ *
+ */
+void calcHash(uintuint8_t* hash, uint8_t* data)
