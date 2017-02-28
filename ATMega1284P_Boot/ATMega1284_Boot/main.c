@@ -8,16 +8,14 @@
  *
  * External Hardware:
  *		- 20MHz Crystal (soon to be removed)
- *		- Jumper to ground on PINB2, PINB3
- *		- LED on PINB0
- *		- LED on PINB1
- *		- UART <-> USB cable on UART0
+ *		- Jumper to ground on PINB2, PINB3, PINB4
+ *		- UART <-> USB cable on UART0 (DEBUG)
  *		- UART <-> USB cable on UART1
  *
  */
 
 /*
- * bootloader.c
+ * bootloader.c [THIS IS TERRIBLY INCORRECT]
  *
  * If Port B Pin 2 (PB2 on the protostack board) is pulled to ground the 
  * bootloader will wait for data to appear on UART1 (which will be interpretted
@@ -89,21 +87,23 @@ void configure(void);
 #define ACK ((unsigned char)0x06)
 #define NACK ((unsigned char)0x15)
 
-#define BLOCK_SIZE 16
-#define KEY_SIZE   32
-
+#define BLOCK_SIZE 16UL
+#define KEY_SIZE   32UL
+#define BOOTLDR_SIZE		8192UL
+#define EEPROM_SIZE			4096UL
 #define MAX_PAGE_NUMBER 126UL
 
 #define APPLICATION_SECTION 0UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define MESSAGE_SECTION     1UL * (MAX_PAGE_NUMBER - 6) * SPM_PAGESIZE
 #define ENCRYPTED_SECTION	1UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define DECRYPTED_SECTION	2UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
-#define HASH_SECTION        479UL * SPM_PAGESIZE
 #define BOOTLDR_SECTION		0x1E000UL
-#define BOOTLDR_SIZE		8192UL
-#define EEPROM_SIZE			4096UL
 
-uint16_t fw_version EEMEM;
+#define FIRM_HASH_SECTION   479UL * SPM_PAGESIZE
+#define BOOT_HASH_SECTION	511UL * SPM_PAGESIZE
+#define EPRM_HASH_SECTION	
+
+uint16_t fw_version EEMEM = 0;
 
 unsigned char CONFIG_ERROR_FLAG = OK;
 
@@ -172,7 +172,7 @@ int main(void) {
 
 
 
-/*** Function Bodies ***/
+/*** FUNCTION BODIES ***/
 
 
 
@@ -282,6 +282,7 @@ void configure()
 }
 
 
+
 /**
  * \brief Interfaces with host readback tool. [INCOMPLETE]
  *
@@ -321,6 +322,7 @@ void readback(void)
 
     while(1) __asm__ __volatile__(""); // Wait for watchdog timer to reset.
 }
+
 
 
 /**
@@ -594,6 +596,7 @@ void load_firmware(void) {
 }
 
 
+
 /**
  * \brief Ensures the firmware is loaded correctly and boots it up.
  * 
@@ -641,6 +644,7 @@ void boot_firmware(void)
     /* JUMP TO FIRMWARE */
     asm ("jmp 0000");
 }
+
 
 
 /**
