@@ -26,7 +26,8 @@ def stripLine(intelLine):
     intLine = intelLine[9:-3]
     if len(intLine) == 0:
         return b''
-    return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
+    return struct.pack(">{}s".format(len(intLine)),intLine)
+    # return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
 def CMACHash(key,iv,inBytes):
     encryptor = AES.new(key,AES.MODE_CBC,iv,segment_size=128)
     output = None
@@ -82,23 +83,26 @@ if __name__ == '__main__':
 
 
     # Get version 
-    version = (int(args.version)).to_bytes(2,byteorder='big')
+    version = struct.pack(">h",int(args.version))
 
     # Pack version into finalList first
     finalList.append(version)
     # Pad to page end
-    finalList.append(os.urandom(254))
+    finalList.append(b'\x00'*254)
+    # finalList.append(os.urandom(254))
 
     
     # Pack firmware message into finalList message
     if len(args.message) < 1024:
-        finalList.append(args.message.encode())
+        finalList.append(struct.pack(">{}s".format(len(args.message)),args.message))
 
         # Pad to 4th page
-        finalList.append(os.urandom(1024-len(args.message)-1))
+        finalList.append(b'\x00'*(1023-len(args.message)))
+        # finalList.append(os.urandom(1024-len(args.message)-1))
     else:
         print("Message truncated to fit in 1KB")
-        tempMSG = (args.message)[:1024]
+        tempMSG = (args.message)[:1023]
+        finalList.append(struct.pack(">{}s".format(len(args.message)),args.message))
     
     # Enforce CSTRING encoding
     finalList.append(b'\x00')
@@ -109,12 +113,13 @@ if __name__ == '__main__':
     # finalList is [version (0x2)][message (1KB)][firmware (30KB)]
     finalBytes = b''.join(finalList)
     print("finalBytes size:",len(finalBytes))
-    padSize = 121*256-len(finalBytes)
+    padSize = 125*256-len(finalBytes)
     if padSize < 0:
         print("firmware size error")
-    finalBytes += (os.urandom(padSize))
-
-    with open("finalHEX.dat",'wb') as hexFile:
+    finalBytes += (b'\x00'*padSize)
+    # finalBytes += (os.urandom(padSize))
+    
+    with open("finalHEX.dat",'wb+') as hexFile:
         hexFile.write(finalBytes)
 
     # Encrypt bytes
@@ -122,11 +127,12 @@ if __name__ == '__main__':
     CBCHash = None
     with open(args.outfile,'rb') as outfile:
         finalBytes = outfile.read()
+        print(len(finalBytes))
         CBCHash = CMACHash(b'\x00'*32,b'\x00'*16,finalBytes)
         finalBytes += CBCHash
-    padSize = 122*256 - len(finalBytes)
-    with open(args.outfile,'wb') as outfile:
-        outfile.write(finalBytes + b"\xff"*padSize)
+    padSize = 126*256 - len(finalBytes)
+    with open(args.outfile,'wb+') as outfile:
+        outfile.write(finalBytes + b"\x06"*padSize)
 #    # Add release message to end of hex (null-terminated).
 #    sio = StringIO()
 #    firmware.putsz(firmware_size, (args.message + '\0'))

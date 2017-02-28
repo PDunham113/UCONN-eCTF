@@ -26,10 +26,9 @@ import sys
 import zlib
 import time
 
-from cStringIO import StringIO
 from intelhex import IntelHex
 
-RESP_OK = b'\ACK'
+RESP_OK = b'\x06'
 
 
 if __name__ == '__main__':
@@ -57,8 +56,8 @@ if __name__ == '__main__':
         while (len(chunk)!=0):
             if args.debug:
                 print("Writing frame {} ({} bytes)...".format(i, len(chunk)))
-
-            ser.write(chunk)  # Write the frame...
+            ser.write(b'\x00'*256)
+            # ser.write(chunk)  # Write the frame...
 
             resp = ser.read()  # Wait for an OK from the bootloader
 
@@ -66,6 +65,7 @@ if __name__ == '__main__':
 
             if resp != RESP_OK:
                 raise RuntimeError("ERROR: Bootloader responded with {}".format(repr(resp)))
+
             i+=1
             chunk = firmware.read(256)
     print("Done writing firmware.")
