@@ -17,7 +17,7 @@ import os, struct
 
 def bytesToHexList(data):
     #data_new = ["{:x}".format(x) for x in data]
-    data_new = ["{:02x}".format(x) for x in data]
+    data_new = ["{:02x}".format(ord(x)) for x in data]
     return ["\\x{}".format(b) for b in data_new]
 def bytesToCString(data):
     return "".join(bytesToHexList(data))
@@ -76,7 +76,7 @@ def generate_secrets():
     FW_IV = generate128Entropy()
     RB_IV = generate128Entropy()
     H_IV = generate128Entropy()
-    RB_PW = os.random(24)
+    RB_PW = os.urandom(24)
     all_keys_and_ivs = [("FW_KEY", FW_KEY),
                     ("RB_KEY",RB_KEY),
                     ("H_KEY", H_KEY),
@@ -96,7 +96,6 @@ def make_secrets_file(secrets):
 if __name__ == '__main__':
     secrets = generate_secrets()
     make_secrets_file(secrets)
-    password = generate_readback_password()
     if not make_bootloader():
         print "ERROR: Failed to compile bootloader."
         sys.exit(1)

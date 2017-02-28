@@ -56,11 +56,12 @@ if __name__ == '__main__':
         while (len(chunk)!=0):
             if args.debug:
                 print("Writing frame {} ({} bytes)...".format(i, len(chunk)))
-            ser.write(b'\x00'*256)
-            # ser.write(chunk)  # Write the frame...
+            # ser.write(b''.join([chr(x) for x in range(256)]))
+            ser.write(chunk)  # Write the frame...
 
             resp = ser.read()  # Wait for an OK from the bootloader
-
+            # while ser.read(1) != RESP_OK
+            #    pass
             time.sleep(0.1)
 
             if resp != RESP_OK:

@@ -26,7 +26,13 @@ def stripLine(intelLine):
     intLine = intelLine[9:-3]
     if len(intLine) == 0:
         return b''
-    return struct.pack(">{}s".format(len(intLine)),intLine)
+    if intelLine[7:9] == "00":
+        final = b''
+        for i in range(len(intLine)//2):
+            final += struct.pack(">B",int(intLine[(2*i):(2*i+2)],16))
+        return struct.pack(">{}s".format(len(intLine)//2),final)
+    else:
+        return b''
     # return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
 def CMACHash(key,inBytes):
     encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
@@ -70,7 +76,7 @@ if __name__ == '__main__':
     finalList = []
 
     # Parse Intel hex file.
-    firmware = IntelHex(args.infile)
+    # firmware = IntelHex(args.infile)
     firmwareSections = []
     with open(args.infile) as hexFile:
         for line in hexFile:
@@ -86,7 +92,7 @@ if __name__ == '__main__':
     # Pad to page end
     finalList.append(b'\x00'*254)
     # finalList.append(os.urandom(254))
-
+    print(len(b''.join(finalList)))
     
     # Pack firmware message into finalList message
     if len(args.message) < 1024:
@@ -98,10 +104,12 @@ if __name__ == '__main__':
     else:
         print("Message truncated to fit in 1KB")
         tempMSG = (args.message)[:1023]
-        finalList.append(struct.pack(">{}s".format(len(args.message)),args.message))
+        finalList.append(struct.pack(">{}s".format(len(args.message)),tempMSG))
     
     # Enforce CSTRING encoding
     finalList.append(b'\x00')
+    print("length after msg appended")
+    print(len(b''.join(finalList)))
 
     # Pack firmware into finalList
     for line in firmwareSections:
