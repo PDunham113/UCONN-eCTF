@@ -3,7 +3,6 @@
 
 # In[2]:
 
-import SecretsAndBytes
 import os
 import random
 import shutil
@@ -124,7 +123,7 @@ def generate_secrets():
     FW_IV = generate128Entropy()
     RB_IV = generate128Entropy()
     H_IV = generate128Entropy()
-    RB_PW = generate128Entropy()
+    RB_PW = os.random(24)
     all_keys_and_ivs = [("FW_KEY", FW_KEY),
                     ("RB_KEY",RB_KEY),
                     ("H_KEY", H_KEY),

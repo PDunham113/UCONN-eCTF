@@ -17,7 +17,78 @@ import serial
 import struct
 import sys
 import argparse
-import AESandRandNums
+import SecretsAndBytes
+import os
+import random
+import shutil
+import subprocess
+
+from intelhex import IntelHex
+
+from Crypto.Cipher import AES
+from Crypto.Random.random import StrongRandom
+import os, struct
+
+# inlined code
+def bytesToHexList(data):
+    #data_new = ["{:x}".format(x) for x in data]
+    data_new = ["{:02x}".format(x) for x in data]
+    return ["\\x{}".format(b) for b in data_new]
+def bytesToCString(data):
+    return "".join(bytesToHexList(data))
+def encryptFileAES(key, iv, input_file, output_file):
+    """ Takes in a key, initialization vector, and a file location of the input, and location of the output"""
+    encryptor = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
+    with open(input_file, 'rb') as infile:
+        with open(output_file, 'wb') as outfile:
+            while True:
+                chunk = infile.read(16)
+                if len(chunk) == 0:
+                    break
+                elif len(chunk) % 16 != 0:
+                    chunk += b' ' * (16-len(chunk)%16)
+                outfile.write(encryptor.encrypt(chunk))
+def decryptFileAES(key, iv, input_file, output_file):
+    """ Takes in a key, initialization vector, and a file location of the input, and location of the output"""
+    decryptAES = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
+    with open(input_file, 'rb') as infile:
+        with open(output_file, 'wb') as outfile:
+            while True:
+                chunk = infile.read(16)
+                if len(chunk)==0:
+                    break
+                outfile.write(decryptAES.decrypt(chunk))
+
+def generate128Entropy():
+    return os.urandom(16) 
+def generate256Entropy():
+    return os.urandom(32) 
+# end inlined code
+
+# copy pasted encrypt function modified to not write to file
+def encryptStringAES(key, iv, input_string):
+    """ Takes in a key, initialization vector, and a file location of the input, and location of the output"""
+    outString = ""
+    encryptor = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
+        for i in range(len(input_string) // 16):
+            chunk = infile.read(16)
+                if len(chunk) == 0:
+                    break
+                elif len(chunk) % 16 != 0:
+                    chunk += b' ' * (16-len(chunk)%16)
+            outString += encryptor.encrypt(chunk)
+    return outString
+
+def readFromFile(filename):
+    # Read in secret key from file.
+    try:
+        with open(filename, 'rb') as secret_file:
+            contents = secret_file.read()
+            # remove those pesky newlines
+            return contents.rstrip()
+    except:
+        print("File not found")
+        exit()
 
 RESP_OK = b'\x00'
 RESP_ERROR = b'\x01'
@@ -25,17 +96,7 @@ RESP_ERROR = b'\x01'
 def construct_request(start_addr, num_bytes):
     """Construct a request frame to send the the AVR.
     """
-    # Read in secret password from file.
-    SECRET_PASSWORD = ''
-    secret = 'secret_configure_output.txt'
-    try:
-        with open(secret, 'rb') as secret_file:
-            SECRET_PASSWORD = secret_file.read()
-            # remove those pesky newlines
-            SECRET_PASSWORD = SECRET_PASSWORD.rstrip()
-    except:
-        print("File not found")
-        exit()
+    SECRET_PASSWORD = readFile('secret_configure_output.txt')
     formatstring = '>' + str(len(SECRET_PASSWORD)) + 'sII'
     return struct.pack(formatstring, SECRET_PASSWORD, start_addr, num_bytes)
 
@@ -52,7 +113,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     request = construct_request(int(args.address), int(args.num_bytes))
-    request = encryptFileAES(request)
+    # Read in secret key from file.
+    SECRET_KEY = readFile('secret_readback_key.txt')
+    IV = readFile('secret_initialization_vector.txt')
+    request = encryptStringAES(SECRET_KEY, IV, request)
+
     # Open serial port. Set baudrate to 115200. Set timeout to 2 seconds.
     ser = serial.Serial(args.port, baudrate=115200, timeout=2)
 

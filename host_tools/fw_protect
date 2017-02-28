@@ -26,35 +26,24 @@ def stripLine(intelLine):
     intLine = intelLine[9:-3]
     if len(intLine) == 0:
         return b''
-    return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
-def CMACHash(key,iv,inBytes):
-    encryptor = AES.new(key,AES.MODE_CBC,iv,segment_size=128)
-    output = None
-    for i in range((len(inBytes)//16) + 1):
-        block = inBytes[i*16:(i+1)*16]
-        if len(block) == 0:
-            return output
-        elif len(block) % 16 != 0:
-            print("This shouldnt run")
-            block += b'\x00'* (16 - len(block)%16)
-        output = (encryptor.encrypt(block))
-    return output
-def encryptFileAES(key, iv, input_file, output_file):
+    return struct.pack(">{}s".format(len(intLine)),intLine)
+    # return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
+def CMACHash(key,inBytes):
+    encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
+    if len(inBytes) % 16 != 0:
+        block = inBytes + b'\x00'*(len(inBytes)%16)
+    else:
+        block = inBytes
+    output = (encryptor.encrypt(block))
+    return output[-16:]
+def encryptAES(key, iv, inBytes):
     """ Takes in a key, initialization vector, and a file location of the     input, and location of the output"""
     encryptor = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
-    with open(input_file, 'rb') as infile:
-        with open(output_file, 'wb') as outfile:
-            while True:
-                chunk = infile.read(16)
-                if len(chunk) == 0:
-                    break
-                elif len(chunk) % 16 != 0:
-                    chunk += b' ' * (16-len(chunk)%16)
-                outfile.write(encryptor.encrypt(chunk))
-def generate128Key():
-    return os.urandom(16)
-def generate256Key():
-    return os.urandom(32)
+    if len(inBytes) % 16 != 0:
+        block = inBytes + b'\x00'*(len(inBytes)%16)
+    else:
+        block = inBytes
+    return encryptor.encrypt(block)
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Firmware Update Tool')
 
@@ -82,23 +71,26 @@ if __name__ == '__main__':
 
 
     # Get version 
-    version = (int(args.version)).to_bytes(2,byteorder='big')
+    version = struct.pack(">h",int(args.version))
 
     # Pack version into finalList first
     finalList.append(version)
     # Pad to page end
-    finalList.append(os.urandom(254))
+    finalList.append(b'\x00'*254)
+    # finalList.append(os.urandom(254))
 
     
     # Pack firmware message into finalList message
     if len(args.message) < 1024:
-        finalList.append(args.message.encode())
+        finalList.append(struct.pack(">{}s".format(len(args.message)),args.message))
 
         # Pad to 4th page
-        finalList.append(os.urandom(1024-len(args.message)-1))
+        finalList.append(b'\x00'*(1023-len(args.message)))
+        # finalList.append(os.urandom(1024-len(args.message)-1))
     else:
         print("Message truncated to fit in 1KB")
-        tempMSG = (args.message)[:1024]
+        tempMSG = (args.message)[:1023]
+        finalList.append(struct.pack(">{}s".format(len(args.message)),args.message))
     
     # Enforce CSTRING encoding
     finalList.append(b'\x00')
@@ -109,24 +101,20 @@ if __name__ == '__main__':
     # finalList is [version (0x2)][message (1KB)][firmware (30KB)]
     finalBytes = b''.join(finalList)
     print("finalBytes size:",len(finalBytes))
-    padSize = 121*256-len(finalBytes)
+    padSize = 125*256-len(finalBytes)
     if padSize < 0:
         print("firmware size error")
-    finalBytes += (os.urandom(padSize))
-
-    with open("finalHEX.dat",'wb') as hexFile:
-        hexFile.write(finalBytes)
-
+    finalBytes += (b'\x00'*padSize)
+    # finalBytes += (os.urandom(padSize))
+    
     # Encrypt bytes
-    encryptFileAES(b'\x00'*32,b'\x00'*16,'finalHEX.dat',args.outfile)
-    CBCHash = None
-    with open(args.outfile,'rb') as outfile:
-        finalBytes = outfile.read()
-        CBCHash = CMACHash(b'\x00'*32,b'\x00'*16,finalBytes)
-        finalBytes += CBCHash
-    padSize = 122*256 - len(finalBytes)
-    with open(args.outfile,'wb') as outfile:
-        outfile.write(finalBytes + b"\xff"*padSize)
+    finalBytes = encryptAES(b'\x00'*32,b'\x00'*16,finalBytes)
+    print(len(finalBytes))
+    CBCHash = CMACHash(b'\x00'*32,finalBytes)
+    finalBytes += CBCHash
+    padSize = 126*256 - len(finalBytes)
+    with open(args.outfile,'wb+') as outfile:
+        outfile.write(finalBytes + b"\x06"*padSize)
 #    # Add release message to end of hex (null-terminated).
 #    sio = StringIO()
 #    firmware.putsz(firmware_size, (args.message + '\0'))
