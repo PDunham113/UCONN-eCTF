@@ -13,7 +13,21 @@ from intelhex import IntelHex
 from Crypto.Cipher import AES
 from Crypto.Random.random import StrongRandom
 import os, struct
-
+def grabKeys():
+    with open("secret_build_output.txt",'r') as keyFile:
+        keyDefinition = keyFile.readline()
+        keyValues = {}
+        while len(keyDefinition) > 0:
+            keyDefinition = keyDefinition.split(" ")
+            z = keyDefinition[2]
+            z=z[1:-2]
+            key = []
+            for i in range(len(z)//4):
+                    key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
+            key = b''.join(key)
+            keyValues[keyDefinition[1]] = key 
+            keyDefinition = keyFile.readline()
+        return keyValues
 def CMACHash(key,inBytes):
     encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
     if len(inBytes) % 16 != 0:
@@ -120,12 +134,13 @@ def addrOf(intHexLine):
     return int(intHexLine[3:7],16)
 def dataLen(intHexLine):
     # Extract the length of the true data section to be safe
-    return len(intHexLine[9:-3]//2)
+    return len(intHexLine[9:-3])//2
 def genMem(intHex):
     with open(intHex,'r') as hexFile:
         dump = []
         prevAddr = -16
         prevLen = 16
+        bytesADDED = 0
         for currentLine in hexFile:
             recordType = currentLine[7:9]
             if recordType != '00':
@@ -133,10 +148,11 @@ def genMem(intHex):
             else:
                 # Extend the line to its appropriate length.
                 # this won't append any lines if the lines line up well
-                for i in range(addrOf(currentLine)-prevLen-prevAddr):
-                    # ff is default value of eeprom and flash
-                    dump.append(b'\xff')
-                prevLen = addrof(currentLine)-prevAddr
+                # for i in range(addrOf(currentLine)-prevLen-prevAddr):
+                #     # ff is default value of eeprom and flash
+                #     dump.append(b'\xff')
+                #     bytesADDED =+ 1
+                prevLen = addrOf(currentLine)-prevAddr
             
                 if prevAddr + prevLen == addrOf(currentLine):
                     # If the last line is now continuos append it's data as is
@@ -147,20 +163,25 @@ def genMem(intHex):
             prevLine = currentLine
         return b''.join(dump)
 if __name__ == '__main__':
-    secrets = generate_secrets()
-    make_secrets_file(secrets)
-    if not make_bootloader():
-        print "ERROR: Failed to compile bootloader."
-        sys.exit(1)
+#     secrets = generate_secrets()
+#     make_secrets_file(secrets)
+#     if not make_bootloader():
+#         print "ERROR: Failed to compile bootloader."
+#         sys.exit(1)
+    secrets = grabKeys()
     bootFlash = genMem("flash.hex")
+    print(len(bootFlash))
     bootFlash += b'\xff'*((7936) - len(bootFlash))
-    flashHash = CMACHash(secrets,secrets[2][1])
-    bootEeprom = genMen("eeprom.hex")
-    bootEeprom += b'\xff' * ((3584) - len(bootFlash))
-    eepromHash = CMACHash(secrets,secrets[2][1])
+    print("\n")
+    print(len(bootFlash))
+    flashHash = CMACHash(secrets["H_KEY"],bootFlash)
+    # flashHash = CMACHash(secrets[2][1],bootFlash)
+#     bootEeprom = genMen("eeprom.hex")
+#     bootEeprom += b'\xff' * ((3584) - len(bootFlash))
+#     eepromHash = CMACHash(secrets,secrets[2][1])
     with open("secret_build_output.txt","a") as secFile:
-        secFile.write("#define flashHash " + "\"" + flashHash + "\"")
-        secFile.write("#define eepromHash " + "\"" + eepromHash + "\"")
+        secFile.write("#define flashHash " + "\"" + bytesToCString(flashHash) + "\"")
+#         secFile.write("#define eepromHash " + "\"" + eepromHash + "\"")
     copy_artifacts()
     write_fuse_file('lfuse', 0xFF)
     write_fuse_file('hfuse', 0x18)

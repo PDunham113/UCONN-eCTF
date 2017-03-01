@@ -24,6 +24,8 @@ def generate_secret_file():
     # If there were additional secret parameters to output, the file could be
     # edited here.
 
+
+
 def configure_bootloader(serial_port):
     """
     Configure bootloader using serial connection.
@@ -32,32 +34,46 @@ def configure_bootloader(serial_port):
     # the serial port it could be added here.
 
     while serial_port.read(1) != 'C':
-	pass
+        pass
 
+    keyValPairs = grabKeys()
     # Send an ACK to the device.
     serial_port.write('\x06') # return ACK
     
     # Waits and reads Hash into object buf.
     buf = serial_port.read(16)
 
-    
+    comp = keyValPairs["flashHash"] 
     check = True;
     for i in range(0, len(buf)):
-	if buf[i] != comp[i]:
-	   check = False;
-
+        if buf[i] != comp[i]:
+            check = False;
+    
     if check == True:
-	serial_port.write('\x06')
+        serial_port.write('\x06')
     else:
         serial_port.write('\x15')
-
+def grabKeys():
+    with open("secret_build_output.txt",'r') as keyFile:
+        keyDefinition = keyFile.readline()
+        keyValues = {}
+        while len(keyDefinition) > 0:
+            keyDefinition = keyDefinition.split(" ")
+            z = keyDefinition[2]
+            z=z[1:-2]
+            key = []
+            for i in range(len(z)//4):
+                    key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
+            key = b''.join(key)
+            keyValues[keyDefinition[1]] = key 
+            keyDefinition = keyFile.readline()
+        return keyValues
 if __name__ == '__main__':
     # Argument parser setup.
     parser = argparse.ArgumentParser(description='Bootloader Config Tool')
     parser.add_argument('--port', help='Serial port to use for configuration.',
                         required=True)
     args = parser.parse_args()
-
     # Create serial connection using specified port.
     serial_port = serial.Serial(args.port)
 
