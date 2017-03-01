@@ -72,27 +72,33 @@ def encryptAES(key, iv, inBytes):
         block = inBytes
     return encryptor.encrypt(block)
 
-
-def readFromFile(filename):
-    # Read in secret key from file.
-    try:
-        with open(filename, 'rb') as secret_file:
-            contents = secret_file.read()
-            # remove those pesky newlines
-            return contents.rstrip()
-    except:
-        print("File not found")
-        exit()
-
+def readSecrets():
+    with open("secret_build_output.txt",'r') as keyFile:
+        y = keyFile.readline()
+        while len(y) > 5:
+            y = y.split(" ")
+            z = y[2]
+            z=z[1:-2]
+            keyValues = {}
+            key = []
+            for i in range(len(z)//4):
+                    key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
+            key = b''.join(key)
+            keyValues[y[1]] = key
+            y = keyFile.readline()
+        return keyValues
+     
 RESP_OK = b'\x00'
 RESP_ERROR = b'\x01'
+#secrets = readSecrets()
 
 def construct_request(start_addr, num_bytes):
     """Construct a request frame to send the the AVR.
     """
-    SECRET_PASSWORD = "000000000000000000000000"
-    formatstring = '>' + str(len(SECRET_PASSWORD)) + 'sII'
-    return struct.pack(formatstring, SECRET_PASSWORD, start_addr, num_bytes)
+    # yeah, this function depends on variables defined outside of it. Sorry. 
+    PASSWORD = "000000000000000000000000" # secrets['RB_PW']
+    formatstring = '>' + str(len(PASSWORD)) + 'sII'
+    return struct.pack(formatstring, PASSWORD, start_addr, num_bytes)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Memory Readback Tool')
@@ -108,10 +114,11 @@ if __name__ == '__main__':
 
     request = construct_request(int(args.address), int(args.num_bytes))
     # Read in secret key from file.
-    SECRET_KEY = "0000000000000000"
-    IV = "0000000000000000"
+    SECRET_KEY = "0000000000000000" # secrets['RB_KEY']
+    IV = "0000000000000000" # secrets['RB_IV']
+    HASH_KEY = secrets['RBH_KEY']
     request = encryptAES(SECRET_KEY, IV, request)
-    request_hash = CMACHash(SECRET_KEY, request)
+    request_hash = CMACHash(HASH_KEY, request)
     request = struct.pack('>' + str(len(request)) + 's' +
         str(len(request_hash)) + 's', request, request_hash)
     # Open serial port. Set baudrate to 115200. Set timeout to 2 seconds.
