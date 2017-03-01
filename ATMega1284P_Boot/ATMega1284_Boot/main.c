@@ -2,45 +2,41 @@
  ATMega1284P_Boot.c
  *
  * Created: 2/21/2017 12:01:23 PM
- * Author : Patrick Dunham
+ * Author : Patrick Dunham, Brian Marquis, Cameron Morris, James Steel, Luke Malinowski, Chenglu Jin
  *
  * Info   : ATMega1284P bootloader. It boots, it loads, it does everything!
  *
  * External Hardware:
- *		- 20MHz Crystal (soon to be removed)
  *		- Jumper to ground on PINB2, PINB3, PINB4
  *		- UART <-> USB cable on UART0 (DEBUG)
- *		- UART <-> USB cable on UART1
+ *		- UART <-> USB cable on UART1 (COMMS)
  *
  */
 
-/*
- * bootloader.c [THIS IS TERRIBLY INCORRECT]
+/**
+ * bootloader.c
  *
- * If Port B Pin 2 (PB2 on the protostack board) is pulled to ground the 
- * bootloader will wait for data to appear on UART1 (which will be interpretted
+ * If Port B Pin 2 (PB2 on the ProtoStack board) is pulled to ground the 
+ * bootloader will wait for data to appear on UART1 (which will be interpreted
  * as an updated firmware package).
  * 
  * If the PB2 pin is NOT pulled to ground, but 
- * Port B Pin 3 (PB3 on the protostack board) is pulled to ground, then the 
+ * Port B Pin 3 (PB3 on the ProtoStack board) is pulled to ground, then the 
  * bootloader will enter flash memory readback mode. 
+ *
+ * If the PB3 pin is NOT pulled to ground, but
+ * Port B Pin 4 (PB4 on the ProtoStack board) is pulled to ground, then the
+ * bootloader will enter bootloader configure mode.
  * 
  * If NEITHER of these pins are pulled to ground, then the bootloader will 
  * execute the application from flash.
  *
- * If data is sent on UART for an update, the bootloader will expect that data 
- * to be sent in frames. A frame consists of two sections:
- * 1. Two bytes for the length of the data section
- * 2. A data section of length defined in the length section
+ * The load_firmware function details the structure of the firmware upload messages.
  *
- * [ 0x02 ]  [ variable ]
- * ----------------------
- * |  Length |  Data... |
- *
- * Frames are stored in an intermediate buffer until a complete page has been
- * sent, at which point the page is written to flash. See program_flash() for
- * information on the process of programming the flash memory. Note that if no
- * frame is received after 2 seconds, the bootloader will time out and reset.
+ * The readback function details the structure of the readback request messages.
+ * 
+ * See program_flash() for information on the process of programming the flash memory.
+ * Note that if no data is received after 2 seconds, the bootloader will time out and reset.
  *
  */
 
@@ -52,14 +48,15 @@
 /*** INCLUDES ***/
 
 #include <avr/io.h>
-//#include <stdint.h>
-//#include <stdio.h>
 #include <util/delay.h>
-#include "uart.h"
 #include <avr/boot.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+
+#include "uart.h"
 #include "AES_lib.h"
 #include "secret_build_output.txt"
 
@@ -67,6 +64,9 @@
 
 /*** FUNCTION DECLARATIONS ***/
 
+void initTimer0(void);
+void enableClockSwitching(void);
+void disableClockSwitching(void);
 void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash, uint8_t EEFlag);
 void program_flash(uint32_t page_address, unsigned char *data);
 void load_firmware(void);
@@ -82,6 +82,8 @@ void configure(void);
 #define UPDATE_PIN PINB2
 #define READBACK_PIN PINB3
 #define CONFIGURE_PIN PINB4
+
+#define RAND_CLOCK_SWITCH 10
 
 #define OK    ((unsigned char)0x00)
 #define ERROR ((unsigned char)0x01)
@@ -102,24 +104,26 @@ void configure(void);
 #define MESSAGE_SECTION     1UL * (MAX_PAGE_NUMBER - 6) * SPM_PAGESIZE
 #define ENCRYPTED_SECTION	1UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define DECRYPTED_SECTION	2UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
-#define BOOTLDR_SECTION		0x1E000UL
+#define BOOTLDR_SECTION		480UL * SPM_PAGESIZE
 
 #define FIRM_HASH_SECTION   479UL * SPM_PAGESIZE
 #define BOOT_HASH_SECTION	511UL * SPM_PAGESIZE
 #define EPRM_HASH_SECTION	
 
 uint16_t fw_version EEMEM = 0;
+uint8_t  fastClock        = 0;
 
 unsigned char CONFIG_ERROR_FLAG = OK;
 
-uint8_t hashKey[KEY_SIZE]     = H_KEY;
-uint8_t firmwareKey[KEY_SIZE] = FW_KEY;
-uint8_t readbackKey[KEY_SIZE] = RB_KEY;
+uint8_t hashKey[KEY_SIZE]			  = H_KEY;
+uint8_t readbackHashKey[KEY_SIZE]     = RBH_KEY;
+uint8_t firmwareKey[KEY_SIZE]	      = FW_KEY;
+uint8_t readbackKey[KEY_SIZE]		  = RB_KEY;
 
 uint8_t firmwareIV[BLOCK_SIZE] = FW_IV;
 uint8_t readbackIV[BLOCK_SIZE] = RB_IV;
 
-uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PASS;
+uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PW;
 
 
 
@@ -136,6 +140,9 @@ int main(void) {
 
 	UART0_init();
 	
+	// Enable Timer0 for clock switching
+	initTimer0();
+	
 	wdt_reset();
 	MCUSR &= ~(1<<WDRF);
 	
@@ -146,6 +153,9 @@ int main(void) {
 
 	// Enable pullups - give port time to settle.
 	PORTB |= (1 << UPDATE_PIN) | (1 << READBACK_PIN) | (1 << CONFIGURE_PIN);
+	
+	// Enable interrupts for clock switching
+	// sei();
 	
 	
 
@@ -179,18 +189,52 @@ int main(void) {
 
 
 /*** Interrupt Service Routines ***/
-
+ISR(TIMER0_COMPA_vect) {
+	if(fastClock) {
+		// Sets /8 clock divisor
+		CLKPR = (1<<CLKPCE);
+		CLKPR = (1<<CLKPS1)|(1<<CLKPS0);
+		
+		// Updates Timer 0
+		TCCR0B &= ~(1<<CS00);
+		
+		fastClock = 0;
+	}
+	else {
+		// Removes clock divisor
+		CLKPR = (1<<CLKPCE);
+		CLKPR = 0;
+		
+		// Updates Timer 0
+		TCCR0B |= (1<<CS00);
+		
+		fastClock = 1;
+	}
+	
+	OCR0A = rand() % RAND_CLOCK_SWITCH;
+}
 
 
 /*** FUNCTION BODIES ***/
 
-
-
 /**
  * \brief Interfaces with host configure tool
  *
+ * The procedure followed is outlined below.
+ *
+ * 1 - The routine waits to receive an ACK from the configure tool.
+ * 2 - The bootloader now calculates the hash of the bootloader in memory.
+ * 3 - The hash is now sent to the tools over UART1.
+ *		IF   CORRECT - The bootloader proceeds to check the EEPROM installation
+ *		IF INCORRECT - The bootloader sets a flag and terminates
+ * 3 - The routine waits for an ACK from the host tools.
+ * 4 - The hash of the EEPROM is now calculated.
+ * 5 - That hash is sent over UART1 to the host tools.
+ *		IF   CORRECT - The bootloader terminates.
+ *		IF INCORRECT - A flag is set and the bootloader terminates.
+ *
  */
-void configure()
+void configure(void)
 {
 	uint8_t pageBuffer[SPM_PAGESIZE];
 	uint8_t hash[BLOCK_SIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -198,38 +242,25 @@ void configure()
 	//Start the Watchdog Timer
 	wdt_enable(WDTO_2S);
 	
-	//Wait for ACK
+	/*WAIT FOR ACK*/
 	while(UART1_getchar()!=ACK);
 	
-	//reset Watchdog Timer
 	wdt_reset();
+		
+	/* CALCULATE HASH */
+	calcHash(hashKey, BOOTLDR_SECTION /SPM_PAGESIZE, (BOOTLDR_SECTION / SPM_PAGESIZE) + 33, hash, 0);
 	
-	
-	//generate hash of bootloader
-	for (int j = 0; j < BOOTLDR_SIZE; j+=SPM_PAGESIZE)
-	{	
-		// Get a page of data
-		for(int i = 0; i < SPM_PAGESIZE; i++) {
-			pageBuffer[i] = pgm_read_byte_far(BOOTLDR_SECTION+i+(uint32_t)j*SPM_PAGESIZE);
-		}
-	
-		// Add to the hash
-		hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
-	}
-	
-	//reset Watchdog Timer
 	wdt_reset();
-	
-	//send bootloader hash over UART1
+		
+	/* SEND HASH */
 	for(int i = 0; i < BLOCK_SIZE; i++)
 	{
 		UART1_putchar(hash[i]);
 	}
 	
-	//reset Watchdog Timer
 	wdt_reset();
-	
-	//Wait for ACK
+		
+	/*WAIT FOR ACK*/
 	while(!UART1_data_available())
 	{
 		__asm__ __volatile__("");
@@ -238,10 +269,10 @@ void configure()
 	//reset Watchdog Timer
 	wdt_reset();
 	
-	//pc will ack if hash is correct
+	/*PC WILL ACK IF HASH IS CORRECT*/
 	if(UART1_getchar() == ACK)
 	{	
-		//calculate eeprom hash
+		/*CALCULATE EEPROM HASH*/
 		for(int i = 0; i < EEPROM_SIZE; i++)
 		{
 			// Get a page of data
@@ -256,7 +287,7 @@ void configure()
 		//reset Watchdog Timer
 		wdt_reset();
 			
-		//send eeprom hash over UART1
+		/*SEND EEPROM HASH OVER UART1*/
 		for(int i = 0; i < BLOCK_SIZE; i++)
 		{
 			UART1_putchar(hash[i]);
@@ -265,7 +296,7 @@ void configure()
 		//reset Watchdog Timer
 		wdt_reset();
 		
-		//Wait for ACK
+		/*WAIT FOR ACK*/
 		while(!UART1_data_available())
 		{
 			__asm__ __volatile__("");
@@ -274,10 +305,9 @@ void configure()
 		//reset Watchdog Timer
 		wdt_reset();
 		
-		//pc will ack if hash is correct
+		/*PC WILL ACK IF CORRECT*/
 		if(UART1_getchar() == ACK)
 		{
-			//send counter here
 			while(1){__asm__ __volatile__("");}		//wait for reset
 			
 		}
@@ -319,7 +349,7 @@ void configure()
  * 1 - The encrypted readback request is received
  * 2 - The CBC-MAC of the encrypted readback request is calculated, and compared to the
  *	   CBC-MAC sent.
- *		IF   CORRECT - The bootloader proceeds with the readback request
+ *		IF   CORRECT - The bootloader proceeds with the Readback Request
  *		IF INCORRECT - The bootloader terminates
  * 3 - The readback request is decrypted using the Readback Key and IV
  * 4 - The readback password is checked versus the password stored in the bootloader
@@ -373,7 +403,7 @@ void readback(void)
 
 	/* COMPUTE HASH */
 	
-	hashCBC(hashKey, readbackRequest, hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
+	hashCBC(readbackHashKey, readbackRequest, hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
 
     wdt_reset();
 	
@@ -390,7 +420,7 @@ void readback(void)
 	// If hash is wrong, reset
 	if(hashFlag) {
 		UART1_putchar(NACK);
-		UART0_putstring("Improper readback request");
+		UART0_putstring("Wrong RBH");
 		
 		// Reset
 		while(1) {
@@ -428,7 +458,7 @@ void readback(void)
 	// If password is wrong, reset
 	if(hashFlag) {
 			UART1_putchar(NACK);
-			UART0_putstring("Improper readback password");
+			UART0_putstring("Wrong RBPW");
 			
 			// Reset
 			while(1) {
@@ -452,8 +482,14 @@ void readback(void)
 		size |= (decryptdRequest[READBACK_PASSWORD_SIZE + 4 + i] << (8 * (3-i)));
 	}
 	
+	// Convert to start page and end page
 	startPage = (startAddress / SPM_PAGESIZE);
 	endPage   = (startAddress + size) / SPM_PAGESIZE;
+	
+	// If end page is outside application section, truncate
+	if(endPage > (MESSAGE_SECTION - 1)) {
+		endPage = MESSAGE_SECTION - 1;
+	}
 	
 	wdt_reset();
 	
@@ -618,7 +654,7 @@ void load_firmware(void) {
 		UART1_putchar(NACK);
 		
 		// DEBUG - Tell us hash failed
-		UART0_putstring("Hash failed\n");
+		UART0_putstring("Wrong H\n");
 		
 		// Fill pageBuffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
@@ -643,7 +679,7 @@ void load_firmware(void) {
 	UART1_putchar(ACK);
 	
 	// DEBUG - Tell us hash succeeded
-	UART0_putstring("Hash succeeded\n");
+	UART0_putstring("Good H\n");
 	
 	
 	
@@ -686,7 +722,7 @@ void load_firmware(void) {
 	UART1_putchar(ACK);
 	
 	// DEBUG - Decrypt successful
-	UART0_putstring("Decrypt succeeded\n");
+	UART0_putstring("Good DCPT\n");
 	
 	
 	/* CHECK VERSION */
@@ -699,7 +735,7 @@ void load_firmware(void) {
 		UART1_putchar(NACK);
 		
 		// DEBUG - Version failed
-		UART0_putstring("Version failed\n");
+		UART0_putstring("Failed\n");
 		
 		// Erase Encrypted Section
 		for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
@@ -738,7 +774,7 @@ void load_firmware(void) {
 	wdt_reset();
 	
 	// DEBUG - Decrypt successful
-	UART0_putstring("Version succeeded\n");
+	UART0_putstring("Success\n");
 	
 	UART1_putchar(ACK);
 	
@@ -792,7 +828,7 @@ void load_firmware(void) {
 	wdt_reset();
 	
 	// DEBUG - Firmware loaded
-	UART0_putstring("Firmware loaded\n");
+	UART0_putstring("Loaded\n");
 	
 	UART1_putchar(ACK);
 	
@@ -814,22 +850,57 @@ void load_firmware(void) {
  * HASH CORRECT   -  The function prints a release message if available, and boots. The
  *					 Watchdog Timer is disabled before boot.
  *
- * HASH INCORRECT -  The function sets a EEPROM flag indicating firmware error and resets.
+ * HASH INCORRECT -  The function indicates firmware error and resets.
  *
  */
 void boot_firmware(void)
 {
+	uint8_t computedHash[BLOCK_SIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	uint8_t realHash[BLOCK_SIZE];
+	uint8_t hashFlag = 0;
+		
+	
     // Start the Watchdog Timer.
     wdt_enable(WDTO_2S);
 
 
 
+	/* CHECK HASH */
+	
+	// Calculate hash
+	calcHash(hashKey, 0, FIRM_HASH_SECTION / SPM_PAGESIZE, computedHash, 0);
+	
+	// Read hash
+	for(int i = 0; i < BLOCK_SIZE; i++) {
+		realHash[i] = pgm_read_byte_far(FIRM_HASH_SECTION + (uint32_t)i);
+	}
+	
+	// Check hash
+	for(int i = 0; i < BLOCK_SIZE; i++) {
+		if(realHash[i] != computedHash[i]) {
+			hashFlag = 1;
+		}
+	}
+	
+	// If wrong, reset
+	if(hashFlag) {
+		UART0_putstring("FW Corrupted");
+		
+		// Reset
+		while(1) {
+			__asm__ __volatile__("");
+		}
+	}
+	
+	
+	
+
     /* RELEASE MESSAGE */
+	
     uint8_t cur_byte = pgm_read_byte_far(MESSAGE_SECTION);
 
 	if(cur_byte != 0xFF) {
 		// Write out release message to UART0.
-		UART0_putstring("Release Message:\n");
 		int addr = MESSAGE_SECTION;
 	
 		while ((cur_byte != 0x00)) {
@@ -844,12 +915,14 @@ void boot_firmware(void)
 	
 	
     /* DISABLE WATCHDOG */
+	
     wdt_reset();
     wdt_disable();
 
 
 
     /* JUMP TO FIRMWARE */
+	
     asm ("jmp 0000");
 }
 
@@ -941,4 +1014,35 @@ void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash,
 		hashCBC(key, pageBuffer, hash, SPM_PAGESIZE);
 		
 	}
+}
+
+
+
+/**
+ * \brief Initialize Timer0 for clock switching
+ *
+ */
+void initTimer0(void) {
+	// Configure to CTC Mode
+	TCCR0A = (1 << WGM01);
+	TIMSK0 = (1 << OCIE0A);
+	
+	// Overflow at a random amount
+	OCR0A = rand() % RAND_CLOCK_SWITCH;
+}
+
+/**
+ * \brief Starts Timer0, enabling Clock Switching
+ *
+ */
+void enableClockSwitching(void) {
+	TCCR0B = (1 << CS01)|(1 << CS00); // Enable /64 divider
+}
+
+/**
+ * \brief Stops Timer0, disabling Clock Switching
+ *
+ */
+void disableClockSwitching(void) {
+	TCCR0B = 0;
 }
