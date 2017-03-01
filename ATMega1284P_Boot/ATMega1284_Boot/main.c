@@ -446,11 +446,17 @@ void readback(void)
 		for(int i = 0; i < BLOCK_SIZE; i++) {
 			blockBuffer[i] = pageBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}		
+		
+		// Print data
+		for(int i = 0; i < SPM_PAGESIZE; i++) {
+			UART1_putchar(pageBuffer[i]);
+		}
+
 	}
 
 	
 	wdt_reset();
-			
+	/*		
     // Read the memory out to UART1.
     for(uint32_t addr = startAddress; addr < startAddress + size; ++addr)
     {
@@ -462,6 +468,7 @@ void readback(void)
         UART1_putchar(byte);
         wdt_reset();
     }
+	*/
 
     while(1) __asm__ __volatile__(""); // Wait for watchdog timer to reset.
 }
