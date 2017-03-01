@@ -17,24 +17,24 @@ from Crypto.Random.random import StrongRandom
 # Check the following file for byte manipulation functions
 
 from intelhex import IntelHex
-# grabKeys() takes the secret_build_ouput.txt file and parse it
-# to acquire all secret names and secret values. The names and 
-# values are stored as a hash map
-# def grabKeys():
-#     with open("secret_build_output.txt",'r') as keyFile:
-#         keyDefinition = keyFile.readline()
-#         while len(keyDefinition) > 5:
-#             keyDefinition = keyDefinition.split(" ")
-#             z = keyDefinition[2]
-#             z=z[1:-2]
-#             keyValues = {}
-#             key = []
-#             for i in range(len(z)//4):
-#                     key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
-#             key = b''.join(key)
-#             keyValues[keyDefinition[1]] = key 
-#             keyDefinition = keyFile.readline()
-#         return keyValues
+grabKeys() takes the secret_build_ouput.txt file and parse it
+to acquire all secret names and secret values. The names and 
+values are stored as a hash map
+def grabKeys():
+    with open("secret_build_output.txt",'r') as keyFile:
+        keyDefinition = keyFile.readline()
+        while len(keyDefinition) > 5:
+            keyDefinition = keyDefinition.split(" ")
+            z = keyDefinition[2]
+            z=z[1:-2]
+            keyValues = {}
+            key = []
+            for i in range(len(z)//4):
+                    key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
+            key = b''.join(key)
+            keyValues[keyDefinition[1]] = key 
+            keyDefinition = keyFile.readline()
+        return keyValues
 
 # This function takes a bytes object representing the HEX file
 # and strips the appropriate data that nobody wants/needs.
@@ -90,19 +90,18 @@ if __name__ == '__main__':
                         required=True)
     args = parser.parse_args()
 
-    # keyMap = grabKeys()
+    keyMap = grabKeys()
 
-    #finalList will be the output data file with the firmware/headers packed in
+    # finalList will be the output data file and then encrypted and writtin
+    # to outfile 
     finalList = []
 
     # Parse Intel hex file.
-    # firmware = IntelHex(args.infile)
     firmwareSections = []
     with open(args.infile) as hexFile:
         for line in hexFile:
+            # strip all excess data and inline everything
             firmwareSections.append(stripLine(line))
-  #  random.shuffle(firmwareSections)
-
 
     # Get version 
     version = struct.pack(">h",int(args.version))
@@ -110,8 +109,8 @@ if __name__ == '__main__':
     # Pack version into finalList first
     finalList.append(version)
     # Pad to page end
-    finalList.append(b'\x00'*254)
-    # finalList.append(os.urandom(254))
+    # finalList.append(b'\x00'*254)
+    finalList.append(os.urandom(254))
     print(len(b''.join(finalList)))
     
     # Pack firmware message into finalList message
@@ -120,7 +119,7 @@ if __name__ == '__main__':
 
         # Pad to 4th page
         finalList.append(b'\x00'*(1023-len(args.message)))
-        # finalList.append(os.urandom(1024-len(args.message)-1))
+        # finalList.append(os.urandom(1023-len(args.message)))
     else:
         print("Message truncated to fit in 1KB")
         tempMSG = (args.message)[:1023]
@@ -129,7 +128,6 @@ if __name__ == '__main__':
     # Enforce CSTRING encoding
     finalList.append(b'\x00')
     print("length after msg appended")
-    print(len(b''.join(finalList)))
 
     # Pack firmware into finalList
     for line in firmwareSections:
@@ -144,16 +142,16 @@ if __name__ == '__main__':
     # finalBytes += (os.urandom(padSize))
     
     # Encrypt bytes
-    finalBytes = encryptAES(b'\x00'*32,b'\x00'*16,finalBytes)
-    # finalBytes = encryptAES(keyMap["FW_KEY"],keyMap["FW_IV"],finalBytes)
+    # finalBytes = encryptAES(b'\x00'*32,b'\x00'*16,finalBytes)
+    finalBytes = encryptAES(keyMap["FW_KEY"],keyMap["FW_IV"],finalBytes)
 
     print(len(finalBytes))
     with open("CBC.hash","wb+") as CBCCypherText:
-    # encryptCBC(keyMap["H_KEY"],b'\x00'*16,finalBytes,CBCCypherText)
-        encryptCBC(b'\x00'*32,b'\x00'*16,finalBytes,CBCCypherText)
+        encryptCBC(keyMap["H_KEY"],b'\x00'*16,finalBytes,CBCCypherText)
+        # encryptCBC(b'\x00'*32,b'\x00'*16,finalBytes,CBCCypherText)
 
-    # CBChash = CMACHash(keyMap["H_KEY"],finalBytes)
-    CBCHash = CMACHash(b'\x00'*32,finalBytes)
+    CBChash = CMACHash(keyMap["H_KEY"],finalBytes)
+    # CBCHash = CMACHash(b'\x00'*32,finalBytes)
     finalBytes += CBCHash
     padSize = 126*256 - len(finalBytes)
     with open(args.outfile,'wb+') as outfile:
