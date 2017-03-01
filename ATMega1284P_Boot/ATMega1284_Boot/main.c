@@ -119,7 +119,7 @@ uint8_t readbackKey[KEY_SIZE] = RB_KEY;
 uint8_t firmwareIV[BLOCK_SIZE] = FW_IV;
 uint8_t readbackIV[BLOCK_SIZE] = RB_IV;
 
-uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PASS;
+uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PW;
 
 
 
