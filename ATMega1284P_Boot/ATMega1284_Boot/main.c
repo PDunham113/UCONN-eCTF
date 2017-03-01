@@ -418,8 +418,8 @@ void readback(void)
 		
 	/* ENCRYPT & SEND FLASH */
 	
-	startPage = startAddress / SPM_PAGESIZE;
-	endPage   = (startAddress + size) / SPM_PAGESIZE;
+	startPage = floor(startAddress / SPM_PAGESIZE);
+	endPage   = ceil((startAddress + size) / SPM_PAGESIZE);
 	
 	for(int j = startPage; j < endPage; j++) {
 		// Reads page
