@@ -40,14 +40,7 @@ def configure_bootloader(serial_port):
     # Waits and reads Hash into object buf.
     buf = serial_port.read(16)
 
-    #while open(filename, mode='rb') as file:
-    #	fileBytes = file.read()
-
-    #key = '\x00'*32
-
-    #comp = CMACHash(key,fileBytes)
-    # Need to generate or obtain CBC-MAC for .hex file (Bootloader)
-
+    
     check = True;
     for i in range(0, len(buf)):
 	if buf[i] != comp[i]:
@@ -57,27 +50,6 @@ def configure_bootloader(serial_port):
 	serial_port.write('\x06')
     else:
         serial_port.write('\x15')
-def stripLine(intelLine):
-    # intLine = intelLine[1:7] + intelLine[9:-3]
-    intLine = intelLine[9:-3]
-    if len(intLine) == 0:
-        return b'' 
-    if intelLine[7:9] == "00":
-        final = b'' 
-        for i in range(len(intLine)//2):
-            final += struct.pack(">B",int(intLine[(2*i):(2*i+2)],16))
-        return struct.pack(">{}s".format(len(intLine)//2),final)
-    else:
-        return b'' 
-    # return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
-def CMACHash(key,inBytes):
-    encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
-    if len(inBytes) % 16 != 0:
-        block = inBytes + b'\x00'*(len(inBytes)%16)
-    else:
-        block = inBytes
-    output = (encryptor.encrypt(block))
-    return output[-16:]
 
 if __name__ == '__main__':
     # Argument parser setup.

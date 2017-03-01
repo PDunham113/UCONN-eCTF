@@ -17,9 +17,9 @@ from Crypto.Random.random import StrongRandom
 # Check the following file for byte manipulation functions
 
 from intelhex import IntelHex
-grabKeys() takes the secret_build_ouput.txt file and parse it
-to acquire all secret names and secret values. The names and 
-values are stored as a hash map
+# grabKeys() takes the secret_build_ouput.txt file and parse it
+# to acquire all secret names and secret values. The names and 
+# values are stored as a hash map
 def grabKeys():
     with open("secret_build_output.txt",'r') as keyFile:
         keyDefinition = keyFile.readline()
