@@ -1,0 +1,113 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# In Windows/MinGW we need to use NUL instead of /dev/null. This does not apply
+# in Cygwin (where 'host_os' below would return as 'cygwin').
+require 'rbconfig'
+is_windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw/)
+if is_windows
+  devnull = 'NUL'
+else
+  devnull = '/dev/null'
+end
+
+################################################################################
+# Local Configuration Parameters
+################################################################################
+
+# Configure the VM name within the provider. VM instances are identified using
+# their unique names.
+$vm_name = "mitre-ectf"
+
+# Specify the number of CPU cores to allocate to the VM.
+$num_cpus = 2
+
+# Specify the amount of RAM to allocate to the VM (in MB).
+$memory_size = 2048
+
+# Set to 'true' to enable the VM's graphical interface and install the Ubuntu
+# Desktop package (ubuntu-desktop). By default, the VM operates in headless
+# mode.
+$enable_gui_mode = false
+
+# Specify the hostname for this machine.
+$hostname = "mitre-ectf-vm"
+
+# Set to 'true' to enable bridged networking.
+$network_bridged = false
+
+# Set to the desired static IP address to be used by the bridged network
+# interface. Leave empty to use DHCP. Ignored if $network_bridged == false.
+$network_ip = ""
+
+# Configure an HTTP/HTTPS proxy to use. Defaults to the host machine's
+# http_proxy setting. Ignored if empty.
+$http_proxy = "#{ENV['http_proxy']}"
+
+# Specify the path where your public and private SSH key files are located.
+# Defaults to '~/.ssh'.
+$ssh_key_location = "#{ENV['HOME']}/.ssh"
+
+# Specify the name of your SSH public key file. If unspecified, the public key
+# file will not be copied. Defaults to 'id_rsa.pub'.
+$ssh_public_key = "id_rsa.pub"
+
+# Specify the desired Git user name to be used by the VM. Defaults to the
+# current (host) user's setting, if set.
+$git_name = `git config --get user.name 2> #{devnull}`
+
+# Specify the desired Git user email to be used by the VM. Defaults to the
+# current (host) user's setting, if set.
+$git_email = `git config --get user.email 2> #{devnull}`
+
+# A list of files to be copied to the VM during provisioning. Each file will be
+# placed at the same path as the source file.
+$files = ["~/.gitconfig",]
+
+# Set to 'true' to disable vagrant box download verification.
+$download_insecure = false
+
+################################################################################
+# Local Dependencies
+################################################################################
+
+# Custom Ubuntu packages installed with apt-get.
+$local_apt_packages = "vim"
+
+# Custom Python packages installed iwth pip.
+$local_pip_packages = ""
+
+
+################################################################################
+# Local Provisioning Scripts
+################################################################################
+
+# Configure machine-specific settings.
+$configure_local_settings = <<EOT
+# Local configuration code goes here.
+EOT
+
+# Configure the machine and installed tools:
+#   git: Configure the system-wide proxy settings and set the user name/email to
+#        the ones for the host machine (if available).
+$configure_local_tools = <<EOT
+echo "Configuring installed tools."
+
+git config --system core.editor vim
+git config --system core.filemode false
+git config --system http.proxy $http_proxy
+git config --system https.proxy $https_proxy
+
+if [ ! -z "#{$git_name}" ]; then
+    git config --global user.name "#{$git_name}"
+else
+    echo "Warning: Git user name not configured." >&2
+fi
+if [ ! -z "#{$git_email}" ]; then
+    git config --global user.email "#{$git_email}"
+else
+    echo "Warning: Git user email not configured." >&2
+fi
+
+# Tool configurations go here.
+EOT
+
