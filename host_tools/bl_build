@@ -14,7 +14,14 @@ from intelhex import IntelHex
 from Crypto.Cipher import AES
 from Crypto.Random.random import StrongRandom
 import os, struct
-
+def CMACHash(key,inBytes):
+    encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
+    if len(inBytes) % 16 != 0:
+        block = inBytes + b'\x00'*(len(inBytes)%16)
+    else:
+        block = inBytes
+    output = (encryptor.encrypt(block))
+    return output[-16:]
 def bytesToHexList(data):
     #data_new = ["{:x}".format(x) for x in data]
     data_new = ["{:02x}".format(ord(x)) for x in data]
@@ -87,20 +94,73 @@ def generate_secrets():
                     ("VERIFY_KEY",VERIFY_KEY),
                     ("RB_PW",RB_PW)]
     return all_keys_and_ivs
-
+# make_secrets_file constructs secret_build_output,txt with all the necessary randomly
+# generated keys.
 def make_secrets_file(secrets):
     with open('secret_build_output.txt', 'w') as secret_file:
         for data in secrets:
-            secret_file.write("#DEFINE " + data[0] + " \"" + bytesToCString(data[1])+'\"')
+            secret_file.write("#define " + data[0] + " \"" + bytesToCString(data[1])+'\"')
             secret_file.write("\n")
-    
-
+# stripLine pulls the data out of a line of intel hex and packs it as bytes
+def stripLine(intelLine):
+    intLine = intelLine[9:-3]
+    if len(intLine) == 0:
+        return b'' 
+    # if it is a data line
+    if intelLine[7:9] == "00":
+        final = b'' 
+        for i in range(len(intLine)//2):
+            final += struct.pack(">B",int(intLine[(2*i):(2*i+2)],16))
+        return struct.pack(">{}s".format(len(intLine)//2),final)
+    # if it is not a data line
+    else:
+        return b''
+def addrOf(intHexLine):
+    # Extract the address bytes from an intel hex line
+    return int(intHexLine[3:7],16)
+def dataLen(intHexLine):
+    # Extract the length of the true data section to be safe
+    return len(intHexLine[9:-3]//2)
+def genMem(intHex):
+    with open(intHex,'r') as hexFile:
+        dump = []
+        prevAddr = -16
+        prevLen = 16
+        for currentLine in hexFile:
+            recordType = currentLine[7:9]
+            if recordType != '00':
+                pass
+            else:
+                # Extend the line to its appropriate length.
+                # this won't append any lines if the lines line up well
+                for i in range(addrOf(currentLine)-prevLen-prevAddr):
+                    # ff is default value of eeprom and flash
+                    dump.append(b'\xff')
+                prevLen = addrof(currentLine)-prevAddr
+            
+                if prevAddr + prevLen == addrOf(currentLine):
+                    # If the last line is now continuos append it's data as is
+                    dump.append(stripLine(currentLine))
+                    # Initialize values for previous line as current line
+                    prevAddr = addrOf(currentLine)
+                    prevLen = dataLen(currentLine)
+            prevLine = currentLine
+        return b''.join(dump)
 if __name__ == '__main__':
     secrets = generate_secrets()
     make_secrets_file(secrets)
     if not make_bootloader():
         print "ERROR: Failed to compile bootloader."
         sys.exit(1)
+    bootFlash = genMem("flash.hex")
+    bootFlash += b'\xff'*((7936) - len(bootFlash))
+    flashHash = CMACHash(secrets,secrets[2][1])
+    bootEeprom = genMen("eeprom.hex")
+    bootEeprom += b'\xff' * ((3584) - len(bootFlash))
+    eepromHash = CMACHash(secrets,secrets[2][1])
+    with open("secret_build_output.txt","a") as secFile:
+        secFile.write("#define flashHash " + "\"" + flashHash + "\"")
+        secFile.write("#define eepromHash " + "\"" + eepromHash + "\"")
     copy_artifacts()
     write_fuse_file('lfuse', 0xFF)
     write_fuse_file('hfuse', 0x18)
