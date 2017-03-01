@@ -48,7 +48,7 @@ def configure_bootloader(serial_port):
     for i in range(0, len(buf)):
         if buf[i] != comp[i]:
             check = False;
-    
+    print(''.join(['{}'.format(x) for x in buf]))
     if check == True:
         serial_port.write('\x06')
     else:
