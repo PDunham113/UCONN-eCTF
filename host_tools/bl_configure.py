@@ -32,7 +32,6 @@ def configure_bootloader(serial_port):
     """
     # If there were online configuration or checking of the bootloader using
     # the serial port it could be added here.
-
     while serial_port.read(1) != 'C':
         pass
 
@@ -75,7 +74,7 @@ if __name__ == '__main__':
                         required=True)
     args = parser.parse_args()
     # Create serial connection using specified port.
-    serial_port = serial.Serial(args.port)
+    serial_port = serial.Serial(args.port,baudrate=115200,timeout=2)
 
     # Do configuration and then close port.
     try:
