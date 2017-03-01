@@ -36,6 +36,7 @@ def grabKeys():
             keyDefinition = keyFile.readline()
         return keyValues
 
+
 # This function takes a bytes object representing the HEX file
 # and strips the appropriate data that nobody wants/needs.
 # Returns a bytes object [size (0x2)][addr (0x4)][data (size)]
