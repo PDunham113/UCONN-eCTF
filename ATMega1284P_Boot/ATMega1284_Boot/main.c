@@ -336,7 +336,7 @@ void readback(void)
 
 	/* COMPUTE HASH */
 	
-	hashCBC(hashKey, &readbackRequest[0], hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
+	hashCBC(hashKey, readbackRequest, hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
 
     wdt_reset();
 	
@@ -405,12 +405,12 @@ void readback(void)
 	
 	// Gather start address
 	for(int i = 0; i < 4; i++) {
-		startAddress |= (decryptdRequest[READBACK_PASSWORD_SIZE + i] << 8 * i);
+		startAddress |= (decryptdRequest[READBACK_PASSWORD_SIZE + i] << (8 * (3-i)));
 	}
 	
 	// Gather size
 	for(int i = 0; i < 4; i++) {
-		size |= (decryptdRequest[READBACK_PASSWORD_SIZE + 4 + i] << 8 * i);
+		size |= (decryptdRequest[READBACK_PASSWORD_SIZE + 4 + i] << (8 * (3-i)));
 	}
 	
 	wdt_reset();
@@ -426,6 +426,8 @@ void readback(void)
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = pgm_read_byte_far((uint32_t)j * SPM_PAGESIZE + i);
 		}
+		
+		wdt_reset();
 		
 		// Encrypts page
 		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
@@ -445,9 +447,12 @@ void readback(void)
 			blockBuffer[i] = pageBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}		
 	}
+
 	
+	wdt_reset();
+			
     // Read the memory out to UART1.
-    /*for(uint32_t addr = start_addr; addr < start_addr + size; ++addr)
+    for(uint32_t addr = startAddress; addr < startAddress + size; ++addr)
     {
         // Read a byte from flash.
         unsigned char byte = pgm_read_byte_far(addr);
@@ -456,7 +461,7 @@ void readback(void)
         // Write the byte to UART1.
         UART1_putchar(byte);
         wdt_reset();
-    }*/
+    }
 
     while(1) __asm__ __volatile__(""); // Wait for watchdog timer to reset.
 }
