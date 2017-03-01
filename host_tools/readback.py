@@ -17,67 +17,61 @@ import serial
 import struct
 import sys
 import argparse
-import SecretsAndBytes
+import random
+import argparse
+import shutil
+import struct
+import json
+import zlib
 import os
 import random
-import shutil
-import subprocess
+from Crypto.Cipher import AES 
+from Crypto.Random.random import StrongRandom
+
+# Check the following file for byte manipulation functions
 
 from intelhex import IntelHex
-
-from Crypto.Cipher import AES
-from Crypto.Random.random import StrongRandom
-import os, struct
-
-# inlined code
-def bytesToHexList(data):
-    #data_new = ["{:x}".format(x) for x in data]
-    data_new = ["{:02x}".format(x) for x in data]
-    return ["\\x{}".format(b) for b in data_new]
-def bytesToCString(data):
-    return "".join(bytesToHexList(data))
-def encryptFileAES(key, iv, input_file, output_file):
-    """ Takes in a key, initialization vector, and a file location of the input, and location of the output"""
+# This function takes a bytes object representing the HEX file
+# and strips the appropriate data that nobody wants/needs.
+# Returns a bytes object [size (0x2)][addr (0x4)][data (size)]
+def stripLine(intelLine):
+    # intLine = intelLine[1:7] + intelLine[9:-3]
+    intLine = intelLine[9:-3]
+    if len(intLine) == 0:
+        return b''
+    if intelLine[7:9] == "00":
+        final = b''
+        for i in range(len(intLine)//2):
+            final += struct.pack(">B",int(intLine[(2*i):(2*i+2)],16))
+        return struct.pack(">{}s".format(len(intLine)//2),final)
+    else:
+        return b''
+    # return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
+def CMACHash(key,inBytes):
+    encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
+    if len(inBytes) % 16 != 0:
+        block = inBytes + b'\x00'*(len(inBytes)%16)
+    else:
+        block = inBytes
+    output = (encryptor.encrypt(block))
+    return output[-16:]
+def encryptCBC(key, iv, inBytes,outfile):
+    """ Takes in a key, initialization vector, and a file location of the     input, and location of the output"""
+    encryptor = AES.new(key, AES.MODE_CBC, iv,segment_size=128)
+    if len(inBytes) % 16 != 0:
+        block = inBytes + b'\x00'*(len(inBytes)%16)
+    else:
+        block = inBytes
+    outfile.write(encryptor.encrypt(block))
+def encryptAES(key, iv, inBytes):
+    """ Takes in a key, initialization vector, and a file location of the     input, and location of the output"""
     encryptor = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
-    with open(input_file, 'rb') as infile:
-        with open(output_file, 'wb') as outfile:
-            while True:
-                chunk = infile.read(16)
-                if len(chunk) == 0:
-                    break
-                elif len(chunk) % 16 != 0:
-                    chunk += b' ' * (16-len(chunk)%16)
-                outfile.write(encryptor.encrypt(chunk))
-def decryptFileAES(key, iv, input_file, output_file):
-    """ Takes in a key, initialization vector, and a file location of the input, and location of the output"""
-    decryptAES = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
-    with open(input_file, 'rb') as infile:
-        with open(output_file, 'wb') as outfile:
-            while True:
-                chunk = infile.read(16)
-                if len(chunk)==0:
-                    break
-                outfile.write(decryptAES.decrypt(chunk))
+    if len(inBytes) % 16 != 0:
+        block = inBytes + b'\x00'*(len(inBytes)%16)
+    else:
+        block = inBytes
+    return encryptor.encrypt(block)
 
-def generate128Entropy():
-    return os.urandom(16) 
-def generate256Entropy():
-    return os.urandom(32) 
-# end inlined code
-
-# copy pasted encrypt function modified to not write to file
-def encryptStringAES(key, iv, input_string):
-    """ Takes in a key, initialization vector, and a file location of the input, and location of the output"""
-    outString = ""
-    encryptor = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
-        for i in range(len(input_string) // 16):
-            chunk = infile.read(16)
-                if len(chunk) == 0:
-                    break
-                elif len(chunk) % 16 != 0:
-                    chunk += b' ' * (16-len(chunk)%16)
-            outString += encryptor.encrypt(chunk)
-    return outString
 
 def readFromFile(filename):
     # Read in secret key from file.
@@ -96,7 +90,7 @@ RESP_ERROR = b'\x01'
 def construct_request(start_addr, num_bytes):
     """Construct a request frame to send the the AVR.
     """
-    SECRET_PASSWORD = readFile('secret_configure_output.txt')
+    SECRET_PASSWORD = "000000000000000000000000"
     formatstring = '>' + str(len(SECRET_PASSWORD)) + 'sII'
     return struct.pack(formatstring, SECRET_PASSWORD, start_addr, num_bytes)
 
@@ -114,10 +108,12 @@ if __name__ == '__main__':
 
     request = construct_request(int(args.address), int(args.num_bytes))
     # Read in secret key from file.
-    SECRET_KEY = readFile('secret_readback_key.txt')
-    IV = readFile('secret_initialization_vector.txt')
-    request = encryptStringAES(SECRET_KEY, IV, request)
-
+    SECRET_KEY = "0000000000000000"
+    IV = "0000000000000000"
+    request = encryptAES(SECRET_KEY, IV, request)
+    request_hash = CMACHash(SECRET_KEY, request)
+    request = struct.pack('>' + str(len(request)) + 's' +
+        str(len(request_hash)) + 's', request, request_hash)
     # Open serial port. Set baudrate to 115200. Set timeout to 2 seconds.
     ser = serial.Serial(args.port, baudrate=115200, timeout=2)
 
