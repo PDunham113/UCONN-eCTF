@@ -46,7 +46,7 @@
 
 
 
-#define F_CPU 20000000UL
+#define F_CPU 7300000UL
 #define BAUD 115200UL
 
 /*** INCLUDES ***/
@@ -90,9 +90,13 @@ void configure(void);
 
 #define BLOCK_SIZE 16UL
 #define KEY_SIZE   32UL
+#define READBACK_PASSWORD_SIZE 24UL
 #define BOOTLDR_SIZE		8192UL
 #define EEPROM_SIZE			4096UL
+
 #define MAX_PAGE_NUMBER 126UL
+
+#define READBACK_REQUEST_SIZE 48UL
 
 #define APPLICATION_SECTION 0UL * MAX_PAGE_NUMBER * SPM_PAGESIZE
 #define MESSAGE_SECTION     1UL * (MAX_PAGE_NUMBER - 6) * SPM_PAGESIZE
@@ -115,12 +119,15 @@ uint8_t readbackKey[KEY_SIZE] = RB_KEY;
 uint8_t firmwareIV[BLOCK_SIZE] = FW_IV;
 uint8_t readbackIV[BLOCK_SIZE] = RB_IV;
 
+uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PASS;
 
 /*** Code ***/
 
 int main(void) {
 	/*** SETUP & INITIALIZATION ***/
 	
+	// Calibrate Internal RC Oscillator
+	OSCCAL = (OSCCAL / 3) + 40;
 	
 	// Init UARTs (virtual com port)
 	UART1_init();
@@ -290,27 +297,157 @@ void configure()
  */
 void readback(void)
 {
+	uint32_t startAddress = 0;
+	uint32_t size         = 0;
+	uint16_t startPage    = 0;
+	uint16_t endPage      = 0;
+	uint8_t  hashFlag = 0;
+	
+	uint8_t  readbackRequest[READBACK_REQUEST_SIZE];
+	uint8_t  decryptdRequest[READBACK_REQUEST_SIZE - BLOCK_SIZE];
+	uint8_t  hash[BLOCK_SIZE];
+
+	uint8_t blockBuffer[BLOCK_SIZE];
+	uint8_t pageBuffer[SPM_PAGESIZE];
+	uint8_t encryptedBuffer[SPM_PAGESIZE];
+	
+	aes256_ctx_t ctx;
+	
     // Start the Watchdog Timer
     wdt_enable(WDTO_2S);
+	
+	// Wait for data
+	while(!UART1_data_available()) {
+		__asm__ __volatile__("");
+	}
+	
+	
+	
+	/* GET READBACK REQUEST */
+	
+	for(int i = 0; i < READBACK_REQUEST_SIZE; i++) {
+		readbackRequest[i] = UART1_getchar();
+	}
+	
+	wdt_reset();
+	
+	
+	
 
-    // Read in start address (4 bytes).
-    uint32_t start_addr = ((uint32_t)UART1_getchar()) << 24;
-    start_addr |= ((uint32_t)UART1_getchar()) << 16;
-    start_addr |= ((uint32_t)UART1_getchar()) << 8;
-    start_addr |= ((uint32_t)UART1_getchar());
+	/* COMPUTE HASH */
+	
+	hashCBC(hashKey, &readbackRequest[0], hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
 
     wdt_reset();
-
-    // Read in size (4 bytes).
-    uint32_t size = ((uint32_t)UART1_getchar()) << 24;
-    size |= ((uint32_t)UART1_getchar()) << 16;
-    size |= ((uint32_t)UART1_getchar()) << 8;
-    size |= ((uint32_t)UART1_getchar());
-
-    wdt_reset();
-
+	
+	
+	
+	/* CHECK HASH */
+	
+	for(int i = 0; i < BLOCK_SIZE; i++) {
+		if(hash[i] != readbackRequest[READBACK_REQUEST_SIZE - BLOCK_SIZE + i]) {
+			hashFlag = 1;
+		}
+	}
+	
+	// If hash is wrong, reset
+	if(hashFlag) {
+		UART1_putchar(NACK);
+		UART0_putstring("Improper readback request");
+		
+		// Reset
+		while(1) {
+			__asm__ __volatile__("");
+		}
+	}
+	
+	wdt_reset();
+	
+	
+	
+	/* DECRYPT MESSAGE */
+	
+	for(int i = 0; i < (READBACK_REQUEST_SIZE - BLOCK_SIZE); i += BLOCK_SIZE) {
+		if(i == 0) {
+			strtDecCFB(readbackKey, &readbackRequest[i], readbackIV, &ctx, &decryptdRequest[i]);
+		}
+		else {
+			contDecCFB(&ctx, &readbackRequest[i], &readbackRequest[i - BLOCK_SIZE], &decryptdRequest[i]);
+		}
+	}
+	
+	wdt_reset();
+	
+	
+	
+	/* CHECK PASSWORD */
+	
+	for(int i = 0; i < READBACK_PASSWORD_SIZE; i++) {
+		if(readbackPassword[i] != decryptdRequest[i]) {
+			hashFlag = 1;
+		} 
+	}
+	
+	// If password is wrong, reset
+	if(hashFlag) {
+			UART1_putchar(NACK);
+			UART0_putstring("Improper readback password");
+			
+			// Reset
+			while(1) {
+				__asm__ __volatile__("");
+			}
+	}
+	
+	wdt_reset();
+	
+	/* GATHER PARAMETERS */
+	
+	// Gather start address
+	for(int i = 0; i < 4; i++) {
+		startAddress |= (decryptdRequest[READBACK_PASSWORD_SIZE + i] << 8 * i);
+	}
+	
+	// Gather size
+	for(int i = 0; i < 4; i++) {
+		size |= (decryptdRequest[READBACK_PASSWORD_SIZE + 4 + i] << 8 * i);
+	}
+	
+	wdt_reset();
+	
+		
+	/* ENCRYPT & SEND FLASH */
+	
+	startPage = startAddress / SPM_PAGESIZE;
+	endPage   = (startAddress + size) / SPM_PAGESIZE;
+	
+	for(int j = startPage; j < endPage; j++) {
+		// Reads page
+		for(int i = 0; i < SPM_PAGESIZE; i++) {
+			pageBuffer[i] = pgm_read_byte_far((uint32_t)j * SPM_PAGESIZE + i);
+		}
+		
+		// Encrypts page
+		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
+			if((j == 0) && (i == 0)) {
+				strtEncCFB(readbackKey, &pageBuffer[i], readbackIV, &ctx, &encryptedBuffer[i]);
+			}
+			else if(i == 0) {
+				contEncCFB(&ctx, &pageBuffer[i], blockBuffer, &encryptedBuffer[i]);
+			}
+			else {
+				contEncCFB(&ctx, &pageBuffer[i], &encryptedBuffer[i - BLOCK_SIZE], &encryptedBuffer[i]);
+			}
+		}
+		
+		// Save data for next page
+		for(int i = 0; i < BLOCK_SIZE; i++) {
+			blockBuffer[i] = pageBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
+		}		
+	}
+	
     // Read the memory out to UART1.
-    for(uint32_t addr = start_addr; addr < start_addr + size; ++addr)
+    /*for(uint32_t addr = start_addr; addr < start_addr + size; ++addr)
     {
         // Read a byte from flash.
         unsigned char byte = pgm_read_byte_far(addr);
@@ -319,7 +456,7 @@ void readback(void)
         // Write the byte to UART1.
         UART1_putchar(byte);
         wdt_reset();
-    }
+    }*/
 
     while(1) __asm__ __volatile__(""); // Wait for watchdog timer to reset.
 }
