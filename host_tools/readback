@@ -143,9 +143,13 @@ if __name__ == '__main__':
     # Send the request.
     ser.write(request)
     
-    data = []
+    data = ser.read(int(args.num_bytes)) # read raw data
+    data = encryptAES(SECRET_KEY, IV, data)
+    print(data) # print raw data
     # Read the data and write it to stdout (hex encoded).
-    data.append(ser.read())# int(args.num_bytes))
+    # for i in range(int(args.num_bytes)):
+    #     data.append(ser.read())# int(args.num_bytes))
+
     print(data)
     #print(data.encode('hex'))
 

@@ -1,0 +1,39 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# In Windows/MinGW we need to use NUL instead of /dev/null. This does not apply
+# in Cygwin (where 'host_os' below would return as 'cygwin').
+require 'rbconfig'
+is_windows = (RbConfig::CONFIG['host_os'] =~ /mswin|mingw/)
+if is_windows
+  devnull = 'NUL'
+else
+  devnull = '/dev/null'
+end
+
+
+################################################################################
+# Team Dependencies
+################################################################################
+
+# Custom Ubuntu packages installed with apt-get.
+$team_apt_packages = "gcc-avr avr-libc make avrdude python-serial"
+
+# Custom Python packages installed iwth pip.
+$team_pip_packages = "pyserial pycrypto intelhex"
+
+################################################################################
+# Teeam Provisioning Scripts
+################################################################################
+
+# Configure team-specific settings.
+$configure_team_settings = <<EOT
+# Team-specific provisioning code goes here.
+EOT
+
+# Configure the machine and installed tools:
+#   git: Configure the system-wide proxy settings and set the user name/email to
+#        the ones for the host machine (if available).
+$configure_team_tools = <<EOT
+# Team-specific tool setup code goes here.
+EOT
+
