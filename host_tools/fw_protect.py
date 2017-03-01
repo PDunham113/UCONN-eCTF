@@ -17,17 +17,17 @@ from Crypto.Random.random import StrongRandom
 # Check the following file for byte manipulation functions
 
 from intelhex import IntelHex
-grabKeys() takes the secret_build_ouput.txt file and parse it
-to acquire all secret names and secret values. The names and 
-values are stored as a hash map
+# grabKeys() takes the secret_build_ouput.txt file and parse it
+# to acquire all secret names and secret values. The names and 
+# values are stored as a hash map
 def grabKeys():
     with open("secret_build_output.txt",'r') as keyFile:
         keyDefinition = keyFile.readline()
-        while len(keyDefinition) > 5:
+        keyValues = {}
+        while len(keyDefinition) > 0:
             keyDefinition = keyDefinition.split(" ")
             z = keyDefinition[2]
             z=z[1:-2]
-            keyValues = {}
             key = []
             for i in range(len(z)//4):
                     key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
@@ -91,7 +91,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     keyMap = grabKeys()
-
     # finalList will be the output data file and then encrypted and writtin
     # to outfile 
     finalList = []
@@ -150,7 +149,7 @@ if __name__ == '__main__':
         encryptCBC(keyMap["H_KEY"],b'\x00'*16,finalBytes,CBCCypherText)
         # encryptCBC(b'\x00'*32,b'\x00'*16,finalBytes,CBCCypherText)
 
-    CBChash = CMACHash(keyMap["H_KEY"],finalBytes)
+    CBCHash = CMACHash(keyMap["H_KEY"],finalBytes)
     # CBCHash = CMACHash(b'\x00'*32,finalBytes)
     finalBytes += CBCHash
     padSize = 126*256 - len(finalBytes)
