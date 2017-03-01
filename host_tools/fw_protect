@@ -20,21 +20,21 @@ from intelhex import IntelHex
 # grabKeys() takes the secret_build_ouput.txt file and parse it
 # to acquire all secret names and secret values. The names and 
 # values are stored as a hash map
-def grabKeys():
-    with open("secret_build_output.txt",'r') as keyFile:
-        keyDefinition = keyFile.readline()
-        while len(keyDefinition) > 5:
-            keyDefinition = keyDefinition.split(" ")
-            z = keyDefinition[2]
-            z=z[1:-2]
-            keyValues = {}
-            key = []
-            for i in range(len(z)//4):
-                    key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
-            key = b''.join(key)
-            keyValues[keyDefinition[1]] = key 
-            keyDefinition = keyFile.readline()
-        return keyValues
+# def grabKeys():
+#     with open("secret_build_output.txt",'r') as keyFile:
+#         keyDefinition = keyFile.readline()
+#         while len(keyDefinition) > 5:
+#             keyDefinition = keyDefinition.split(" ")
+#             z = keyDefinition[2]
+#             z=z[1:-2]
+#             keyValues = {}
+#             key = []
+#             for i in range(len(z)//4):
+#                     key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
+#             key = b''.join(key)
+#             keyValues[keyDefinition[1]] = key 
+#             keyDefinition = keyFile.readline()
+#         return keyValues
 
 # This function takes a bytes object representing the HEX file
 # and strips the appropriate data that nobody wants/needs.
@@ -90,7 +90,7 @@ if __name__ == '__main__':
                         required=True)
     args = parser.parse_args()
 
-    keyMap = grabKeys()
+    # keyMap = grabKeys()
 
     #finalList will be the output data file with the firmware/headers packed in
     finalList = []
