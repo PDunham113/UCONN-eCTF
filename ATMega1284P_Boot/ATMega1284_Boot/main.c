@@ -67,6 +67,7 @@
 
 /*** FUNCTION DECLARATIONS ***/
 
+void calcHash(uint8_t* hash, uint8_t* data);
 void program_flash(uint32_t page_address, unsigned char *data);
 void load_firmware(void);
 void boot_firmware(void);
@@ -692,4 +693,4 @@ void program_flash(uint32_t page_address, unsigned char *data)
  * \brief Calculates a hash of a memory section
  *
  */
-void calcHash(uintuint8_t* hash, uint8_t* data)
+void calcHash(uint8_t* hash, uint8_t* data) {}
