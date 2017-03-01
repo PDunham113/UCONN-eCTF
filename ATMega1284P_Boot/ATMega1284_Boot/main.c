@@ -296,7 +296,8 @@ void configure()
 /**
  * \brief Interfaces with host readback tool.
  *
- * This function allows the factory to read back sections of application flash.
+ * This function allows the factory to read back sections of Application Flash.
+ * The tool DOES NOT read from EEPROM or Bootloader Flash.
  * The 48-byte readback request is sent in the following format:
  *
  * -----32 Bytes------ ------_16 Bytes-------   
@@ -320,7 +321,16 @@ void configure()
  *	   CBC-MAC sent.
  *		IF   CORRECT - The bootloader proceeds with the readback request
  *		IF INCORRECT - The bootloader terminates
- * 3 - The readback request is 
+ * 3 - The readback request is decrypted using the Readback Key and IV
+ * 4 - The readback password is checked versus the password stored in the bootloader
+ *		IF   CORRECT - The bootloader proceeds with the readback request
+ *		IF INCORRECT - The bootloader terminates
+ * 5 - The bootloader reads in the start address and end address and converts them to
+ *	   start page and end page. The end page is truncated to the page before the
+ *	   BOOTLOADER_SECTION. 
+ * 6 - The bootloader begins reading the flash data a page at a time. Each page is encrypted
+ *	   using AES-256 in CFB mode using the Readback Key and IV before being sent to PC.
+ *
  */
 void readback(void)
 {
@@ -365,7 +375,6 @@ void readback(void)
 	
 	hashCBC(hashKey, readbackRequest, hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
 
-	
     wdt_reset();
 	
 	
@@ -402,10 +411,7 @@ void readback(void)
 		else {
 			contDecCFB(&ctx, &readbackRequest[i], &readbackRequest[i - BLOCK_SIZE], &decryptdRequest[i]);
 		}
-	}
-	
-	//UART0_putstring("Decryption completed\n");
-	
+	}	
 	
 	wdt_reset();
 	
@@ -446,21 +452,18 @@ void readback(void)
 		size |= (decryptdRequest[READBACK_PASSWORD_SIZE + 4 + i] << (8 * (3-i)));
 	}
 	
+	startPage = (startAddress / SPM_PAGESIZE);
+	endPage   = (startAddress + size) / SPM_PAGESIZE;
+	
 	wdt_reset();
 	
 
 		
-	/* ENCRYPT & SEND FLASH */
+	/* ENCRYPT & SEND FLASH */	
 	
-	startPage = (startAddress / SPM_PAGESIZE);
-	endPage   = (startAddress + size) / SPM_PAGESIZE;
-	
-	if(endPage == startPage) {
-		endPage++;
-	}
-	
-	
-	for(int j = startPage; j < endPage; j++) {
+	// Unlike the other for loops in this format, this one terminates if j > endPage, not if j >= endPage.
+	// Pay attention to this.
+	for(int j = startPage; j <= endPage; j++) {
 		// Reads page
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = pgm_read_byte_far((uint32_t)j * SPM_PAGESIZE + i);
@@ -494,23 +497,12 @@ void readback(void)
 
 	}
 
-	
 	wdt_reset();
-	/*		
-    // Read the memory out to UART1.
-    for(uint32_t addr = startAddress; addr < startAddress + size; ++addr)
-    {
-        // Read a byte from flash.
-        unsigned char byte = pgm_read_byte_far(addr);
-        wdt_reset();
 
-        // Write the byte to UART1.
-        UART1_putchar(byte);
-        wdt_reset();
-    }
-	*/
-
-    while(1) __asm__ __volatile__(""); // Wait for watchdog timer to reset.
+	// Reset and boot
+    while(1) {
+		 __asm__ __volatile__("");
+	}
 }
 
 
@@ -518,8 +510,35 @@ void readback(void)
 /**
  * \brief Loads a new firmware image and release message
  * 
- * This function securely loads a new firmware image onto flash, following the
- * procedure outlined below.
+ * This function securely loads a new firmware image onto flash. Firmware is encrypted using
+ * AES-256 in CFB Mode, and sent one page at a time. It is in the following format:
+ *
+ * --------32000 Bytes-------- ----256 Bytes-----
+ * [Encrypted Firmware Update] [Message MAC Page]
+ *
+ * The Encrypted Firmware Update section is broken into the following pages:
+ *
+ * --256 Bytes--- --30720 Bytes--- --1024 Bytes---
+ * [Version Page] [Firmware Pages] [Message Pages]
+ *
+ * The version page is constructed in the following format:
+ *
+ * -----2 Bytes---- ---254 Bytes----
+ * [Version Number] [Random Padding]
+ *
+ * Each Firmware Page consists of 256 bytes of raw flash. These are obtained via the PC stripping
+ * the .hex file generated from the firmware Makefile. Address offsets are added, and blank Flash
+ * in the Application Section will be written to 0xFF.
+ *
+ * The Message Page is 1024 bytes input by the user at FW_PROTECT time. The string is null
+ * terminated, and empty bytes in the Message Section will be written to 0xFF
+ * 
+ * The Message MAC page is constructed in the following format:
+ *
+ * --16 Bytes--- ---240 Bytes----
+ * [Message MAC] [Random Padding]
+ *
+ * The procedure followed is outlined below.
  * 
  * 1 - The encrypted firmware image is loaded into the ENCRYPTED_SECTION of flash.
  * 2 - The CBC-MAC of the encrypted firmware image is computed, and compared to the
