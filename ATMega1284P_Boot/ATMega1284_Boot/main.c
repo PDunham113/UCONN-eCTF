@@ -52,8 +52,8 @@
 /*** INCLUDES ***/
 
 #include <avr/io.h>
-#include <stdint.h>
-#include <stdio.h>
+//#include <stdint.h>
+//#include <stdio.h>
 #include <util/delay.h>
 #include "uart.h"
 #include <avr/boot.h>
@@ -67,7 +67,7 @@
 
 /*** FUNCTION DECLARATIONS ***/
 
-void calcHash(uint8_t* hash, uint8_t* data);
+void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash, uint8_t EEFlag);
 void program_flash(uint32_t page_address, unsigned char *data);
 void load_firmware(void);
 void boot_firmware(void);
@@ -120,6 +120,8 @@ uint8_t firmwareIV[BLOCK_SIZE] = FW_IV;
 uint8_t readbackIV[BLOCK_SIZE] = RB_IV;
 
 uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PASS;
+
+
 
 /*** Code ***/
 
@@ -292,8 +294,33 @@ void configure()
 
 
 /**
- * \brief Interfaces with host readback tool. [INCOMPLETE]
+ * \brief Interfaces with host readback tool.
  *
+ * This function allows the factory to read back sections of application flash.
+ * The 48-byte readback request is sent in the following format:
+ *
+ * -----32 Bytes------ ------_16 Bytes-------   
+ * [Encrypted Request] [Readback Request MAC]
+ * 
+ * The Encrypted Request encrypted using AES-256 in CFB mode, with a specific
+ * Readback Key and Readback Initialization Vector. It is in the following format:
+ *
+ * ------24 Bytes----- ----4 Bytes---- ---4 Bytes---
+ * [Readback Password] [Start Address] [End Address]
+ *
+ * Although the addresses are byte-addressable, this function will dump flash pages
+ * (each of which is 256 bytes). The function will begin returning the page containing
+ * the starting address, and finish returning the page returning the ending address.
+ * Each page is encrypted using the same key and IV and sent back to the PC.
+ * 
+ * The procedure followed is outlined below.
+ * 
+ * 1 - The encrypted readback request is received
+ * 2 - The CBC-MAC of the encrypted readback request is calculated, and compared to the
+ *	   CBC-MAC sent.
+ *		IF   CORRECT - The bootloader proceeds with the readback request
+ *		IF INCORRECT - The bootloader terminates
+ * 3 - The readback request is 
  */
 void readback(void)
 {
@@ -851,8 +878,48 @@ void program_flash(uint32_t page_address, unsigned char *data)
     SREG = sreg;
 }
 
+
+
 /**
  * \brief Calculates a hash of a memory section
  *
+ * This function calculates the CBC-MAC hash of a section in flash or in EEPROM. The section is
+ * indexed by pages, where 1 page = 256 bytes. Both EEPROM and FLASH are indexed through the same
+ * method. The final byte is used as a flag to indicate which region of memory is being hashed.
+ *		
+ *		0 - Hash Flash  Memory
+ *		1 - Hash EEPROM Memory
+ *
+ * The hash array fed to this function MUST be filled with zeros initially, or the hashing will not
+ * work correctly. The startPage parameter refers to the first page to be hashed. The endPage
+ * parameter does not refer to the last page to be hashed, but to the first page to NOT hash.
+ *
+ * \param key Pointer to 32-byte array containing the AES-256 key.
+ * \param startPage Starting 256-byte page of memory to hash (this page WILL be hashed)
+ * \param endPage Ending 256-byte page of memory to hash (this page will NOT be hashed)
+ * \param hash Pointer to a 16-byte hash array. Must be initialized to all zeros.
+ * \param EEFlag Flag to indicate memory type. 0 - Flash; 1 - EEPROM 
  */
-void calcHash(uint8_t* hash, uint8_t* data) {}
+void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash, uint8_t EEFlag) {
+	uint8_t pageBuffer[SPM_PAGESIZE];
+	
+	
+	for(int j = startPage; j < endPage; j++) {
+		
+		// Read page to buffer
+		for(int i = 0; i < SPM_PAGESIZE; i++) {
+			
+			// Check for EEPROM flag
+			if(EEFlag) {
+				pageBuffer[i] = eeprom_read_byte((j * SPM_PAGESIZE + i));
+			}
+			else {
+				pageBuffer[i] = pgm_read_byte_far((uint32_t)j * SPM_PAGESIZE + i);
+			}
+		}
+		
+		// Add to hash
+		hashCBC(key, pageBuffer, hash, SPM_PAGESIZE);
+		
+	}
+}

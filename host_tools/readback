@@ -1,16 +1,6 @@
 #!/usr/bin/env python
 """Memory Readback Tool
-
-A frame consists of four sections:
-1. One byte for the length of the password.
-2. The variable-length password.
-3. Four bytes for the start address.
-4. Four bytes for the number of bytes to read.
-
-  [ 0x01 ]  [ variable ]  [ 0x04 ]    [ 0x04 ]
--------------------------------------------------
-| PW Length | Password | Start Addr | Num Bytes |
--------------------------------------------------
+The number of bytes you read must be a multiple of 16!
 """
 
 import serial
@@ -76,6 +66,16 @@ def encryptAES(key, iv, inBytes):
         block = inBytes
     return encryptor.encrypt(block)
 
+def decryptAES(key, iv, inBytes):
+    """ Takes in a key, initialization vector, and a file location of the     input, and location of the output"""
+    encryptor = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
+    if len(inBytes) % 16 != 0:
+        block = inBytes + b'\x00'*(len(inBytes)%16)
+    else:
+        block = inBytes
+    return encryptor.decrypt(block)
+
+
 def readSecrets():
     with open("secret_build_output.txt",'r') as keyFile:
         y = keyFile.readline()
@@ -102,8 +102,6 @@ def construct_request(start_addr, num_bytes):
     # yeah, this function depends on variables defined outside of it. Sorry. 
     PASSWORD = b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x20\x21\x22\x23' # secrets['RB_PW']
     formatstring = '>' + str(len(PASSWORD)) + 'sII'
-    print(start_addr)
-    print(num_bytes)
     return struct.pack(formatstring, PASSWORD, start_addr, num_bytes)
 
 if __name__ == '__main__':
@@ -119,18 +117,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     request = construct_request(int(args.address), int(args.num_bytes))
-    printablereq = ["{:02x}".format(ord(x)) for x in request]
-    print("".join(printablereq))
     # Read in secret key from file.
     SECRET_KEY = b'\0'*32 # secrets['RB_KEY']
     IV = b'\0'*16 # secrets['RB_IV']
     HASH_KEY = b'\0'*32 # secrets['RBH_KEY']
     request = encryptAES(SECRET_KEY, IV, request)
-    printablereq = ["{:02x}".format(ord(x)) for x in request]
-    print("".join(printablereq))
     request_hash = CMACHash(HASH_KEY, request)
-    printablereq = ["{:02x}".format(ord(x)) for x in request_hash]
-    print("".join(printablereq))
     request = struct.pack('>' + str(len(request)) + 's' +
         str(len(request_hash)) + 's', request, request_hash)
     # Open serial port. Set baudrate to 115200. Set timeout to 2 seconds.
@@ -144,13 +136,13 @@ if __name__ == '__main__':
     ser.write(request)
     
     data = ser.read(int(args.num_bytes)) # read raw data
-    data = encryptAES(SECRET_KEY, IV, data)
-    print(data) # print raw data
+    data = decryptAES(SECRET_KEY, IV, data)
     # Read the data and write it to stdout (hex encoded).
     # for i in range(int(args.num_bytes)):
     #     data.append(ser.read())# int(args.num_bytes))
+    printablereq = ["{:02x}".format(ord(x)) for x in data]
+    print(":".join(printablereq))
 
-    print(data)
     #print(data.encode('hex'))
 
     # Write raw data to file (optional).
