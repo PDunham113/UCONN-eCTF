@@ -10,10 +10,10 @@ import subprocess
 import sys
 
 from intelhex import IntelHex
-
 from Crypto.Cipher import AES
 from Crypto.Random.random import StrongRandom
 import os, struct
+
 def CMACHash(key,inBytes):
     encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
     if len(inBytes) % 16 != 0:

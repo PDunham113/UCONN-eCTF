@@ -18,29 +18,8 @@ import random
 from Crypto.Cipher import AES 
 from Crypto.Random.random import StrongRandom
 
-# Check the following file for byte manipulation functions
-def output_request(request):
-    output = ":".join(['%0X' % b for b in
-    request])
-    print(output)
    
 from intelhex import IntelHex
-# This function takes a bytes object representing the HEX file
-# and strips the appropriate data that nobody wants/needs.
-# Returns a bytes object [size (0x2)][addr (0x4)][data (size)]
-def stripLine(intelLine):
-    # intLine = intelLine[1:7] + intelLine[9:-3]
-    intLine = intelLine[9:-3]
-    if len(intLine) == 0:
-        return b''
-    if intelLine[7:9] == "00":
-        final = b''
-        for i in range(len(intLine)//2):
-            final += struct.pack(">B",int(intLine[(2*i):(2*i+2)],16))
-        return struct.pack(">{}s".format(len(intLine)//2),final)
-    else:
-        return b''
-    # return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
 def CMACHash(key,inBytes):
     encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
     if len(inBytes) % 16 != 0:
@@ -49,6 +28,7 @@ def CMACHash(key,inBytes):
         block = inBytes
     output = (encryptor.encrypt(block))
     return output[-16:]
+
 def encryptCBC(key, iv, inBytes,outfile):
     """ Takes in a key, initialization vector, and a file location of the     input, and location of the output"""
     encryptor = AES.new(key, AES.MODE_CBC, iv,segment_size=128)
@@ -57,6 +37,7 @@ def encryptCBC(key, iv, inBytes,outfile):
     else:
         block = inBytes
     outfile.write(encryptor.encrypt(block))
+
 def encryptAES(key, iv, inBytes):
     """ Takes in a key, initialization vector, and a file location of the     input, and location of the output"""
     encryptor = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
@@ -92,15 +73,14 @@ def readSecrets():
             y = keyFile.readline()
         return keyValues
      
-RESP_OK = b'\x00'
-RESP_ERROR = b'\x01'
-#secrets = readSecrets()
-
+secrets = readSecrets()
 def construct_request(start_addr, num_bytes):
     """Construct a request frame to send the the AVR.
+    The frame consists of a 24 byte password followed by the start address (4
+    bytes) and then the number of bytes to read (4 bytes).
     """
     # yeah, this function depends on variables defined outside of it. Sorry. 
-    PASSWORD = b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x20\x21\x22\x23' # secrets['RB_PW']
+    PASSWORD = secrets['RB_PW'] #b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x20\x21\x22\x23' 
     formatstring = '>' + str(len(PASSWORD)) + 'sII'
     return struct.pack(formatstring, PASSWORD, start_addr, num_bytes)
 
@@ -118,9 +98,9 @@ if __name__ == '__main__':
 
     request = construct_request(int(args.address), int(args.num_bytes))
     # Read in secret key from file.
-    SECRET_KEY = b'\0'*32 # secrets['RB_KEY']
-    IV = b'\0'*16 # secrets['RB_IV']
-    HASH_KEY = b'\0'*32 # secrets['RBH_KEY']
+    SECRET_KEY = secrets['RB_KEY']
+    IV = secrets['RB_IV']
+    HASH_KEY =  secrets['RBH_KEY']
     request = encryptAES(SECRET_KEY, IV, request)
     request_hash = CMACHash(HASH_KEY, request)
     request = struct.pack('>' + str(len(request)) + 's' +
@@ -137,15 +117,7 @@ if __name__ == '__main__':
     
     data = ser.read(int(args.num_bytes)) # read raw data
     data = decryptAES(SECRET_KEY, IV, data)
-    # Read the data and write it to stdout (hex encoded).
-    # for i in range(int(args.num_bytes)):
-    #     data.append(ser.read())# int(args.num_bytes))
-    printablereq = ["{:02x}".format(ord(x)) for x in data]
-    print(":".join(printablereq))
+    printable = ["{:02x}".format(ord(x)) for x in data]
+    print(":".join(printable))
 
-    #print(data.encode('hex'))
 
-    # Write raw data to file (optional).
-    #if args.datafile:
-    #    with open(args.datafile, 'wb+') as datafile:
-    #        datafile.write(data)
