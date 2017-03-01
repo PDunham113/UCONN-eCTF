@@ -337,7 +337,10 @@ void readback(void)
 	/* COMPUTE HASH */
 	
 	hashCBC(hashKey, readbackRequest, hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
-
+	for(int i = 0; i < BLOCK_SIZE; i++) {
+		UART0_putchar(hash[i]);
+	}
+	
     wdt_reset();
 	
 	
@@ -375,6 +378,9 @@ void readback(void)
 			contDecCFB(&ctx, &readbackRequest[i], &readbackRequest[i - BLOCK_SIZE], &decryptdRequest[i]);
 		}
 	}
+	
+	//UART0_putstring("Decryption completed\n");
+	
 	
 	wdt_reset();
 	
@@ -415,11 +421,22 @@ void readback(void)
 	
 	wdt_reset();
 	
+
 		
 	/* ENCRYPT & SEND FLASH */
 	
-	startPage = floor(startAddress / SPM_PAGESIZE);
-	endPage   = ceil((startAddress + size) / SPM_PAGESIZE);
+	startPage = (startAddress / SPM_PAGESIZE);
+	endPage   = (startAddress + size) / SPM_PAGESIZE;
+	
+	if(endPage == startPage) {
+		endPage++;
+	}
+	
+	//UART0_putstring("Got addresses\n");
+	UART0_putchar(startPage>>8);
+	UART0_putchar(startPage);
+	UART0_putchar(endPage>>8);
+	UART0_putchar(endPage);
 	
 	for(int j = startPage; j < endPage; j++) {
 		// Reads page
@@ -430,7 +447,7 @@ void readback(void)
 		wdt_reset();
 		
 		// Encrypts page
-		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
+		/*for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
 			if((j == 0) && (i == 0)) {
 				strtEncCFB(readbackKey, &pageBuffer[i], readbackIV, &ctx, &encryptedBuffer[i]);
 			}
@@ -445,7 +462,7 @@ void readback(void)
 		// Save data for next page
 		for(int i = 0; i < BLOCK_SIZE; i++) {
 			blockBuffer[i] = pageBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
-		}		
+		}*/
 		
 		// Print data
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
