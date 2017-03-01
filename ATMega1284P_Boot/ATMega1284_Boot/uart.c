@@ -5,7 +5,7 @@
 #include <avr/io.h>
 #include "uart.h"
 
-#define  F_CPU 20000000UL
+#define  F_CPU 7300000UL
 #define  BAUD 115200UL
 
 
@@ -16,7 +16,7 @@ void UART1_init(void)
 {
     //#include <util/setbaud.h>
     UBRR1H = 0; // Set the baud rate
-    UBRR1L = 21;
+    UBRR1L = 7;
 
     UCSR1A |= (1 << U2X1);
 
@@ -74,7 +74,7 @@ void UART1_putstring(char* str)
 void UART0_init(void) {
     //#include <util/setbaud.h>
     UBRR0H = 0; // Set the baud rate
-    UBRR0L = 21;
+    UBRR0L = 7;
 
     UCSR0A |= (1 << U2X0);
 
