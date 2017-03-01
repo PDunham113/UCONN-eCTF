@@ -57,7 +57,19 @@ def configure_bootloader(serial_port):
 	serial_port.write('\x06')
     else:
         serial_port.write('\x15')
-
+def stripLine(intelLine):
+    # intLine = intelLine[1:7] + intelLine[9:-3]
+    intLine = intelLine[9:-3]
+    if len(intLine) == 0:
+        return b'' 
+    if intelLine[7:9] == "00":
+        final = b'' 
+        for i in range(len(intLine)//2):
+            final += struct.pack(">B",int(intLine[(2*i):(2*i+2)],16))
+        return struct.pack(">{}s".format(len(intLine)//2),final)
+    else:
+        return b'' 
+    # return (int(intLine,16)).to_bytes(len(intLine),byteorder='big')
 def CMACHash(key,inBytes):
     encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
     if len(inBytes) % 16 != 0:

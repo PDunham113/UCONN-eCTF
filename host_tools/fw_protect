@@ -17,6 +17,24 @@ from Crypto.Random.random import StrongRandom
 # Check the following file for byte manipulation functions
 
 from intelhex import IntelHex
+# grabKeys() takes the secret_build_ouput.txt file and parse it
+# to acquire all secret names and secret values. The names and 
+# values are stored as a hash map
+def grabKeys():
+    with open("secret_build_output.txt",'r') as keyFile:
+        keyDefinition = keyFile.readline()
+        while len(keyDefinition) > 5:
+            keyDefinition = keyDefinition.split(" ")
+            z = keyDefinition[2]
+            z=z[1:-2]
+            keyValues = {}
+            key = []
+            for i in range(len(z)//4):
+                    key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
+            key = b''.join(key)
+            keyValues[keyDefinition[1]] = key 
+            keyDefinition = keyFile.readline()
+        return keyValues
 
 # This function takes a bytes object representing the HEX file
 # and strips the appropriate data that nobody wants/needs.
@@ -72,6 +90,8 @@ if __name__ == '__main__':
                         required=True)
     args = parser.parse_args()
 
+    keyMap = grabKeys()
+
     #finalList will be the output data file with the firmware/headers packed in
     finalList = []
 
@@ -124,11 +144,16 @@ if __name__ == '__main__':
     # finalBytes += (os.urandom(padSize))
     
     # Encrypt bytes
-    finalBytes = encryptAES(b'\x01\x08\x06\x07\x05\x03\x00\x09'*4,b'\x00'*16,finalBytes)
+    finalBytes = encryptAES(b'\x00'*32,b'\x00'*16,finalBytes)
+    # finalBytes = encryptAES(keyMap["FW_KEY"],keyMap["FW_IV"],finalBytes)
+
     print(len(finalBytes))
     with open("CBC.hash","wb+") as CBCCypherText:
-        encryptCBC(b'\x31\x38\x36\x37\x35\x33\x30\x39'*4,b'\x00'*16,finalBytes,CBCCypherText)
-    CBCHash = CMACHash(b'\x31\x38\x36\x37\x35\x33\x30\x39'*4,finalBytes)
+    # encryptCBC(keyMap["H_KEY"],b'\x00'*16,finalBytes,CBCCypherText)
+        encryptCBC(b'\x00'*32,b'\x00'*16,finalBytes,CBCCypherText)
+
+    # CBChash = CMACHash(keyMap["H_KEY"],finalBytes)
+    CBCHash = CMACHash(b'\x00'*32,finalBytes)
     finalBytes += CBCHash
     padSize = 126*256 - len(finalBytes)
     with open(args.outfile,'wb+') as outfile:
