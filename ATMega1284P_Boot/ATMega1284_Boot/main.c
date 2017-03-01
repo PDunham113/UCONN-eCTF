@@ -110,7 +110,7 @@ void configure(void);
 #define BOOT_HASH_SECTION	511UL * SPM_PAGESIZE
 #define EPRM_HASH_SECTION	
 
-uint16_t fw_version EEMEM = 0;
+uint16_t fw_version EEMEM = 1;
 uint8_t  fastClock        = 0;
 
 unsigned char CONFIG_ERROR_FLAG = OK;
@@ -730,7 +730,7 @@ void load_firmware(void) {
 	newVersion = pgm_read_word_far(DECRYPTED_SECTION);
 	
 	// Compare versions
-	if((newVersion != 0) && (newVersion <= currentVersion)) {
+	if((newVersion != 0) && (newVersion < currentVersion)) {
 		// Firmware Too Old
 		UART1_putchar(NACK);
 		
