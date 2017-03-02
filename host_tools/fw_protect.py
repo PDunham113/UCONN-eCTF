@@ -163,20 +163,3 @@ if __name__ == '__main__':
     padSize = 126*256 - len(finalBytes)
     with open(args.outfile,'wb+') as outfile:
         outfile.write(finalBytes + b"\x06"*padSize)
-#    # Add release message to end of hex (null-terminated).
-#    sio = StringIO()
-#    firmware.putsz(firmware_size, (args.message + '\0'))
-#    firmware.write_hex_file(sio)
-#    hex_data = sio.getvalue()
-#
-#    # Encode the data as json and write to outfile.
-#    data = {
-#        'firmware_size' : firmware_size,
-#        'version' : version,
-#        'hex_data' : hex_data
-#    }
-#
-#    with open(args.outfile, 'wb+') as outfile:
-#        data = json.dumps(data)
-#        data = zlib.compress(data)
-#        outfile.write(data) */
