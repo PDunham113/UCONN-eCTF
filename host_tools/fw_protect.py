@@ -28,8 +28,12 @@ def grabKeys():
         keyDefinition = keyFile.readline()
         keyValues = {}
         while len(keyDefinition) > 0:
+            # Lines in the .h file are composed of 3 space seperated params
+            # #define $VAR_NAME $VAR_VALUE
             keyDefinition = keyDefinition.split(" ")
             z = keyDefinition[2]
+            
+            # Cut away the " characters and \n
             z=z[1:-2]
             key = []
             for i in range(len(z)//4):
