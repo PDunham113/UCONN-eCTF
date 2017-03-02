@@ -157,12 +157,6 @@ def genMem(intHex):
             if recordType != '00':
                 pass
             else:
-                # Extend the line to its appropriate length.
-                # this won't append any lines if the lines line up well
-                # for i in range(addrOf(currentLine)-prevLen-prevAddr):
-                #     # ff is default value of eeprom and flash
-                #     dump.append(b'\xff')
-                #     bytesADDED =+ 1
                 prevLen = addrOf(currentLine)-prevAddr
             
                 if prevAddr + prevLen == addrOf(currentLine):
@@ -180,19 +174,18 @@ if __name__ == '__main__':
     if not make_bootloader():
         print "ERROR: Failed to compile bootloader."
         sys.exit(1)
-    secrets = grabKeys()
     bootFlash = genMem("flash.hex")
-    print(len(bootFlash))
     bootFlash += b'\xff'*((8192) - len(bootFlash))
     if len(bootFlash) > 8192:
         bootFlash = bootFlash[:8192]
-    print("\n")
-    print(len(bootFlash))
     # flashHash = CMACHash(secrets["H_KEY"],bootFlash)
     flashHash = CMACHash(secrets[2][1],bootFlash)
+    print(bytesToCString(flashHash))
+    secFile = open("sec","a")
+    secFile.write(bytesToCString(flashHash))
+    secFile.close()
     with open("secret_build_output.txt","a") as secFile:
         secFile.write("#define flashHash " + "\"" + bytesToCString(flashHash) + "\"")
-#         secFile.write("#define eepromHash " + "\"" + eepromHash + "\"")
     copy_artifacts()
     write_fuse_file('lfuse', 0xE2)
     write_fuse_file('hfuse', 0xD8)
