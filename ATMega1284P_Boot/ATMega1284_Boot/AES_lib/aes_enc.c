@@ -32,7 +32,7 @@
 #include "aes_enc.h"
 #include <avr/pgmspace.h>
 #include <stdlib.h>
-#define NUM_DUMMY_OP 5
+#define NUM_DUMMY_OP 2
 
 void aes_shiftcol(void *data, uint8_t shift)
 {

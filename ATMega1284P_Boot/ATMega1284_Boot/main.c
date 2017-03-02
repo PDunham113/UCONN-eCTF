@@ -48,7 +48,6 @@
 /*** INCLUDES ***/
 
 #include <avr/io.h>
-//#include <util/delay.h>
 #include <avr/boot.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
@@ -62,16 +61,19 @@
 
 /*** FUNCTION DECLARATIONS ***/
 
+// Clock Switching
 void initTimer0(void);
 void enableClockSwitching(void);
 void disableClockSwitching(void);
 
+// Bootloader Functionality
 void load_firmware(void);
 void boot_firmware(void);
 void readback(void);
 void configure(void);
 
-void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash, uint8_t EEFlag);
+// Generic
+void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash);
 void program_flash(uint32_t page_address, unsigned char *data);
 
 
@@ -87,43 +89,44 @@ void program_flash(uint32_t page_address, unsigned char *data);
 #define ACK ((unsigned char)0x06)
 #define NACK ((unsigned char)0x15)
 
+// Size of common arrays (in bytes)
 #define BLOCK_SIZE 16UL
 #define KEY_SIZE   32UL
 #define READBACK_PASSWORD_SIZE 24UL
-#define BOOTLDR_SIZE		8192UL
-#define EEPROM_SIZE			4096UL
 
+// Load Firmware Message Size (in PAGES)
 #define LOAD_FIRMWARE_PAGE_NUMBER 126UL
 
+// Readback Request Size (in bytes)
 #define READBACK_REQUEST_SIZE 48UL
 
+// Section Start Address Locations (in bytes)
 #define APPLICATION_SECTION 0UL * LOAD_FIRMWARE_PAGE_NUMBER * SPM_PAGESIZE
 #define MESSAGE_SECTION     1UL * (LOAD_FIRMWARE_PAGE_NUMBER - 6) * SPM_PAGESIZE
 #define ENCRYPTED_SECTION	1UL * LOAD_FIRMWARE_PAGE_NUMBER * SPM_PAGESIZE
 #define DECRYPTED_SECTION	2UL * LOAD_FIRMWARE_PAGE_NUMBER * SPM_PAGESIZE
 #define BOOTLDR_SECTION		480UL * SPM_PAGESIZE
 
-#define FIRM_HASH_SECTION   479UL * SPM_PAGESIZE
-#define BOOT_HASH_SECTION	511UL * SPM_PAGESIZE
-
-uint16_t fw_version EEMEM = 1;
+// Bootloader Control Flags
+ uint16_t fw_version EEMEM   = 1;
 //uint8_t  fastClock        = 0;
 
-//unsigned char CONFIG_ERROR_FLAG = OK;
-
+// AES-256 Keys
 uint8_t hashKey[KEY_SIZE]			  = H_KEY;
 uint8_t readbackHashKey[KEY_SIZE]     = RBH_KEY;
 uint8_t firmwareKey[KEY_SIZE]	      = FW_KEY;
 uint8_t readbackKey[KEY_SIZE]		  = RB_KEY;
 
+// Initialization Vectors
 uint8_t firmwareIV[BLOCK_SIZE] = FW_IV;
 uint8_t readbackIV[BLOCK_SIZE] = RB_IV;
 
+// Passwords
 uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PW;
 
 
 
-/*** Code ***/
+/*** CODE ***/
 
 int main(void) {
 	/*** SETUP & INITIALIZATION ***/
@@ -184,7 +187,7 @@ int main(void) {
 
 
 
-/*** Interrupt Service Routines ***/
+/*** INTERRUPT SERVICE ROUTINES ***/
 /*
 ISR(TIMER0_COMPA_vect) {
 	if(fastClock) {
@@ -261,7 +264,7 @@ void configure(void) {
 	
 	
 		/* CALCULATE HASH */
-		calcHash(hashKey, BOOTLDR_SECTION/SPM_PAGESIZE, BOOTLDR_SECTION/SPM_PAGESIZE + 32, hash, 0);
+		calcHash(hashKey, BOOTLDR_SECTION/SPM_PAGESIZE, BOOTLDR_SECTION/SPM_PAGESIZE + 32, hash);
 	
 		wdt_reset();
 		
@@ -432,11 +435,16 @@ void readback(void)
 	
 	// Convert to start page and end page
 	startPage = (startAddress / SPM_PAGESIZE);
-	endPage   = (startAddress + size) / SPM_PAGESIZE;
+	endPage   = (startAddress + size - 1) / SPM_PAGESIZE;
+	
+	// If start page is outside application section, truncate
+	if(startPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
+		startPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
+	}
 	
 	// If end page is outside application section, truncate
-	if(endPage > (MESSAGE_SECTION - 1)) {
-		endPage = MESSAGE_SECTION - 1;
+	if(endPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
+		endPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
 	}
 	
 	wdt_reset();
@@ -457,7 +465,7 @@ void readback(void)
 		
 		// Encrypts page
 		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
-			if((j == 0) && (i == 0)) {
+			if((j == startPage) && (i == 0)) {
 				strtEncCFB(readbackKey, &pageBuffer[i], readbackIV, &ctx, &encryptedBuffer[i]);
 			}
 			else if(i == 0) {
@@ -468,9 +476,14 @@ void readback(void)
 			}
 		}
 		
+		// DEBUG - Print page
+		for(int i = 0; i < SPM_PAGESIZE; i++) {
+			UART0_putchar(pageBuffer[i]);
+		}
+		
 		// Save data for next page
 		for(int i = 0; i < BLOCK_SIZE; i++) {
-			blockBuffer[i] = pageBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
+			blockBuffer[i] = encryptedBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}
 		
 		// Print data
@@ -589,13 +602,7 @@ void load_firmware(void) {
 	
 		// Write data to Encrypted Section
 		program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
-		
-		if(j != (LOAD_FIRMWARE_PAGE_NUMBER - 1)) {
-			
-			// Add to the hash
-			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
-		}
-		
+ 		
 		// Get ready for next page
 		UART1_putchar(ACK);
 		
@@ -603,7 +610,11 @@ void load_firmware(void) {
 		wdt_reset();
 	}
 	
+	calcHash(hashKey, ENCRYPTED_SECTION / SPM_PAGESIZE, ENCRYPTED_SECTION / SPM_PAGESIZE + LOAD_FIRMWARE_PAGE_NUMBER - 1, hash);
 	
+	wdt_reset();
+
+
 	
 	/* CHECK HASH */
 	
@@ -687,9 +698,6 @@ void load_firmware(void) {
 	wdt_reset();
 	UART1_putchar(ACK);
 	
-	// DEBUG - Decrypt successful
-	UART0_putstring("Good DCPT\n");
-	
 	
 	
 	/* CHECK VERSION */
@@ -709,7 +717,7 @@ void load_firmware(void) {
 		// Erase Encrypted Section
 		for(int j = 0; j < LOAD_FIRMWARE_PAGE_NUMBER; j++) {
 			
-			// Fill pagebuffer with 0xFF
+			// Fill page buffer with 0xFF
 			for(int i = 0; i < SPM_PAGESIZE; i++) {
 				pageBuffer[i] = 0xFF;
 			}
@@ -723,7 +731,7 @@ void load_firmware(void) {
 		// Erase Decrypted Section
 		for(int j = 0; j < LOAD_FIRMWARE_PAGE_NUMBER; j++) {
 			
-			// Fill pagebuffer with 0xFF
+			// Fill page buffer with 0xFF
 			for(int i = 0; i < SPM_PAGESIZE; i++) {
 				pageBuffer[i] = 0xFF;
 			}
@@ -794,7 +802,7 @@ void load_firmware(void) {
 	
 	for(int j = 0; j < LOAD_FIRMWARE_PAGE_NUMBER * 2; j++) {
 		
-		// Fill pagebuffer with 0xFF
+		// Fill page buffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = 0xFF;
 		}
@@ -823,52 +831,21 @@ void load_firmware(void) {
 
 /**
  * \brief Ensures the firmware is loaded correctly and boots it up.
- * 
- * This function calculates the hash of the firmware section and compares it to
- * the one currently stored.
- *
- * HASH CORRECT   -  The function prints a release message if available, and boots. The
- *					 Watchdog Timer is disabled before boot.
- *
- * HASH INCORRECT -  The function indicates firmware error and resets.
  *
  */
 void boot_firmware(void)
 {
-	//uint8_t computedHash[BLOCK_SIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	//uint8_t realHash[BLOCK_SIZE];
-	//uint8_t hashFlag = 0;
-		
+	
     // Start the Watchdog Timer.
     wdt_enable(WDTO_4S);
 
-	///* CHECK HASH */
-	
-	// Calculate hash
-	/*calcHash(hashKey, 0, FIRM_HASH_SECTION / SPM_PAGESIZE, computedHash, 0);
-	
-	// Read hash
-	for(int i = 0; i < BLOCK_SIZE; i++) {
-		realHash[i] = pgm_read_byte_far(FIRM_HASH_SECTION + (uint32_t)i);
-	}
-	
-	// Check hash
-	for(int i = 0; i < BLOCK_SIZE; i++) {
-		
-		if(realHash[i] != computedHash[i]) {
-			
-			// Reset
-			while(1) {__asm__ __volatile__("");}
-		}
-	}*/
-	
-	
 	
 
     /* RELEASE MESSAGE */
 	
     uint8_t cur_byte = pgm_read_byte_far(MESSAGE_SECTION);
 
+	// If there is a release message...
 	if(cur_byte != 0xFF) {
 		
 		// Write out release message to UART0.
@@ -932,7 +909,7 @@ void program_flash(uint32_t page_address, unsigned char *data)
         uint16_t w = data[i];    
         w += data[i+1] << 8;
 		
-		// Write to pagebuffer
+		// Write to page buffer
         boot_page_fill_safe(page_address+i, w);
     }
 
@@ -950,13 +927,8 @@ void program_flash(uint32_t page_address, unsigned char *data)
 /**
  * \brief Calculates a hash of a memory section
  *
- * This function calculates the CBC-MAC hash of a section in flash or in EEPROM. The section is
- * indexed by pages, where 1 page = 256 bytes. Both EEPROM and FLASH are indexed through the same
- * method. The final byte is used as a flag to indicate which region of memory is being hashed.
- *		
- *		0 - Hash Flash  Memory
- *
- *		1 - Hash EEPROM Memory
+ * This function calculates the CBC-MAC hash of a section in flash. The section is
+ * indexed by pages, where 1 page = 256 bytes.
  *
  * The hash array fed to this function MUST be filled with zeros initially, or the hashing will not
  * work correctly. The startPage parameter refers to the first page to be hashed. The endPage
@@ -966,9 +938,8 @@ void program_flash(uint32_t page_address, unsigned char *data)
  * \param startPage Starting 256-byte page of memory to hash (this page WILL be hashed)
  * \param endPage Ending 256-byte page of memory to hash (this page will NOT be hashed)
  * \param hash Pointer to a 16-byte hash array. Must be initialized to all zeros.
- * \param EEFlag Flag to indicate memory type. 0 - Flash; 1 - EEPROM 
  */
-void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash, uint8_t EEFlag) {
+void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash) {
 	uint8_t pageBuffer[SPM_PAGESIZE];
 	
 	
@@ -976,14 +947,7 @@ void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash,
 		
 		// Read page to buffer
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
-			
-			// Check for EEPROM flag
-			if(EEFlag) {
-				pageBuffer[i] = eeprom_read_byte((j * SPM_PAGESIZE + i));
-			}
-			else {
-				pageBuffer[i] = pgm_read_byte_far((uint32_t)j * SPM_PAGESIZE + i);
-			}
+			pageBuffer[i] = pgm_read_byte_far((uint32_t)j * SPM_PAGESIZE + i);
 		}
 		
 		wdt_reset();
