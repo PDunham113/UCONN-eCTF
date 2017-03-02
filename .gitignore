@@ -1,4 +1,12 @@
 #################
+## Doxygen
+#################
+
+# Doxygen's Output Directories
+Doc/html/
+Doc/latex/
+
+#################
 ## Vagrant
 #################
 
