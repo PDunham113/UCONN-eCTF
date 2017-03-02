@@ -174,11 +174,11 @@ def genMem(intHex):
         return b''.join(dump)
 
 if __name__ == '__main__':
-#     secrets = generate_secrets()
-#     make_secrets_file(secrets)
-#     if not make_bootloader():
-#         print "ERROR: Failed to compile bootloader."
-#         sys.exit(1)
+    secrets = generate_secrets()
+    make_secrets_file(secrets)
+    if not make_bootloader():
+        print "ERROR: Failed to compile bootloader."
+        sys.exit(1)
     secrets = grabKeys()
     bootFlash = genMem("flash.hex")
     print(len(bootFlash))
@@ -187,11 +187,8 @@ if __name__ == '__main__':
         bootFlash = bootFlash[:8192]
     print("\n")
     print(len(bootFlash))
-    flashHash = CMACHash(secrets["H_KEY"],bootFlash)
-    # flashHash = CMACHash(secrets[2][1],bootFlash)
-#     bootEeprom = genMen("eeprom.hex")
-#     bootEeprom += b'\xff' * ((3584) - len(bootFlash))
-#     eepromHash = CMACHash(secrets,secrets[2][1])
+    # flashHash = CMACHash(secrets["H_KEY"],bootFlash)
+    flashHash = CMACHash(secrets[2][1],bootFlash)
     with open("secret_build_output.txt","a") as secFile:
         secFile.write("#define flashHash " + "\"" + bytesToCString(flashHash) + "\"")
 #         secFile.write("#define eepromHash " + "\"" + eepromHash + "\"")
