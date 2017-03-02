@@ -106,8 +106,6 @@ void program_flash(uint32_t page_address, unsigned char *data);
 #define ENCRYPTED_SECTION	1UL * LOAD_FIRMWARE_PAGE_NUMBER * SPM_PAGESIZE
 #define DECRYPTED_SECTION	2UL * LOAD_FIRMWARE_PAGE_NUMBER * SPM_PAGESIZE
 #define BOOTLDR_SECTION		480UL * SPM_PAGESIZE
-#define FIRM_HASH_SECTION   479UL * SPM_PAGESIZE
-#define BOOT_HASH_SECTION	511UL * SPM_PAGESIZE
 
 // Bootloader Control Flags
  uint16_t fw_version EEMEM   = 1;
@@ -467,7 +465,7 @@ void readback(void)
 		
 		// Encrypts page
 		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
-			if((j == 0) && (i == 0)) {
+			if((j == startPage) && (i == 0)) {
 				strtEncCFB(readbackKey, &pageBuffer[i], readbackIV, &ctx, &encryptedBuffer[i]);
 			}
 			else if(i == 0) {
