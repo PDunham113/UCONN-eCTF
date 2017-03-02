@@ -2,6 +2,7 @@
 \usepackage{graphicx}
 \usepackage[section]{placeins}
 \usepackage{indentfirst}
+\usepackage{fancyvrb}
 \begin{document}
 \begin{titlepage}
 	\centering
@@ -37,18 +38,47 @@
 \end{center}
 \end{figure}
 \section{Encryption}
+The bootloader makes use of AES-256 as the standard method of encryption throughout. It is extremely secure, fast, and relatively lightweight, making it an excellent choice for this application. In addition, its longevity and widespread use means that countermeasures to common attacks are widely available. 
+
+As AES-256 is a block cipher, it requires a mode of operation to properly operate on more than 16 bytes. For encryption and decryption, Cipher Feedback Mode (CFB Mode) is the chosen method of operation. CFB Mode has a significantly smaller code size than other modes of operation, which is of extreme importance.\\
+
+Each round of CFB Encryption encrypts the previous block of ciphertext and XORs it with the next block of plaintext. This produces the next block of ciphertext.\\
+
+Equation: $Ciphertext[i] = AES( Ciphertext[i - 1] ) XOR Plaintext[i]$\\
+
+For the first round, as there is no previous ciphertext, an Initialization Vector (IV) is used. This value is randomly generated and stored on the AVR, and is known to the host tools.
+Decrypting a message encoded with CFB mode operates in much the same way, with a few minor changes. A brief outline of this mode is presented in the diagram below:
+
 \begin{figure}[!h]
 \begin{center}
 \includegraphics[scale = 0.6]{Cipher_Block_Feedback.png}
 \caption{Cipher Feedback Diagram}
 \end{center}
 \end{figure}
+
+Each round of CFB Decryption encrypts the previous block of ciphertext and XORs it with the next block of ciphertext. This produces the next block of plaintext.\\
+
+Equation: $Plaintext[i] = AES( Ciphertext[i - 1]) XOR Ciphertext[i]$\\
+
+Again, the IV is used during the first round, as there is no previous ciphertext. CFB Decryption is notable as it still uses the AES-256 block encryption method. Therefore, a significant amount of code can be reused, reducing code size.
+
+The AES-256 encryption algorithom is used again for computing of hashes and Message Authentication Codes (MACs). This is accomplished through a slightly different block cipher mode of operation. The CBC-MAC algorithm is chosen, as unlike CMAC, it does not require generation of a second keyschedule, leading to smaller code size. CBC-MAC is as simple as running AES-256 in the Cipher Block Chaining Mode (CBC Mode), and only preserving the last encrypted block. An outline of this process can be viewed in the diagram below:
+
 \begin{figure}[!h]
 \begin{center}
 \includegraphics[scale = 0.6]{Cipher_Block_Chaining.png}
 \caption{Cipher Block Chaining Diagram}
 \end{center}
 \end{figure}
+
+Each block of the message is XORed with the previous MAC result, and is then encrypted.\\ 
+
+Equation: $MAC[i] = AES( MAC[i - 1] XOR Message[i] )$\\
+
+As with CFB mode, the first run of the MAC algorithm uses an IV. 
+
+Unlike other modes of operation, the IV for CBC-MAC is always 0. A separate key from the encrypted message is always used to generate the MAC, and fixed-length messages are used throughout. This eliminates the commonly known weaknesses of CBC-MAC.
+
 \section{Bootloader}
 \subsection{Configure Bootloader}
 On reset, if PB4 is grounded, the bootloader will enter configure mode and will put a 'C' on UART1.  The bootloader will then wait for an ACK char (0x06) from the configure tool before proceeding.  Once an ACK is received, the bootloader will read each page of flash memory dedicated to the bootloader.  Each page of bootloader flash will also be iterated through a hash function.  Once each page is read and the final hash is generated, this value will be sent over UART1.  The tool will then check to see if the received value matches the hash calculated by the computer.  If it matches, the tool will send an ACK over UART1.  Otherwise, it will send a NACK (0x15).  If a NACK is received, the bootloader will set a flag indicating that either the bootloader or EEPROM has been installed incorrectly.  Then, it will wait for the Watchdog timer to reset the system.  If ACK is received, on the other hand, the bootloader will proceed to read the EEPROM section one page at a time.  Like before, the bootloader will generate a hash on this data and will send it to the configure tool over UART1.  As before, if the hash is correct, the tools will send an ACK; otherwise, it will send a NACK.  If an ACK is received by the bootloader, the system will wait for a Watchdog reset.  Otherwise, it will set the configuration error flag and then wait for the reset.
