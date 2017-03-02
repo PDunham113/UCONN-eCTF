@@ -1,18 +1,15 @@
 #!/usr/bin/env python2
-# coding: utf-8
-
-# In[2]:
 
 import os
+import struct
 import random
 import shutil
 import subprocess
 import sys
-
 from intelhex import IntelHex
 from Crypto.Cipher import AES
 from Crypto.Random.random import StrongRandom
-import os, struct
+
 def grabKeys():
     with open("secret_build_output.txt",'r') as keyFile:
         keyDefinition = keyFile.readline()
@@ -28,6 +25,7 @@ def grabKeys():
             keyValues[keyDefinition[1]] = key 
             keyDefinition = keyFile.readline()
         return keyValues
+
 def CMACHash(key,inBytes):
     encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
     if len(inBytes) % 16 != 0:
@@ -36,21 +34,25 @@ def CMACHash(key,inBytes):
         block = inBytes
     output = (encryptor.encrypt(block))
     return output[-16:]
+
 def bytesToHexList(data):
     #data_new = ["{:x}".format(x) for x in data]
     data_new = ["{:02x}".format(ord(x)) for x in data]
     return ["\\x{}".format(b) for b in data_new]
+
 def bytesToCString(data):
     return "".join(bytesToHexList(data))
+
 def generate128Entropy():
     return os.urandom(16) 
+
 def generate256Entropy():
     return os.urandom(32) 
+
 FILE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def make_bootloader(password=None):
-    """
-    Build the bootloader from source.
+    """Build the bootloader from source.
     Return:
         True if successful, False otherwise.
     """
@@ -68,8 +70,7 @@ def make_bootloader(password=None):
     return (status == 0)
 
 def copy_artifacts():
-    """
-    Copy bootloader build artifacts into the host tools directory.
+    """Copy bootloader build artifacts into the host tools directory.
     """
     # Get directory containing this file (host_tools).
     dst_dir = FILE_DIR
@@ -88,9 +89,9 @@ def write_fuse_file(fuse_name, fuse_value):
     with open(os.path.join(FILE_DIR, fuse_name + '.hex'), 'wb+') as outfile:
         hex_file.tofile(outfile, format='hex')
 
-#generate the keys and Password
 def generate_secrets():
-
+    """Generate the keys and Password.
+    """
     FW_KEY = generate256Entropy()
     RB_KEY = generate256Entropy()
     H_KEY = generate256Entropy()
@@ -108,15 +109,19 @@ def generate_secrets():
                     ("VERIFY_KEY",VERIFY_KEY),
                     ("RB_PW",RB_PW)]
     return all_keys_and_ivs
-# make_secrets_file constructs secret_build_output,txt with all the necessary randomly
-# generated keys.
+
 def make_secrets_file(secrets):
+    """Construct secret_build_output.txt with all of the necessary keys and
+    passwords.
+    """
     with open('secret_build_output.txt', 'w') as secret_file:
         for data in secrets:
             secret_file.write("#define " + data[0] + " \"" + bytesToCString(data[1])+'\"')
             secret_file.write("\n")
-# stripLine pulls the data out of a line of intel hex and packs it as bytes
+
 def stripLine(intelLine):
+    """Pulls the data out of a line of Intel hex and packs it as bytes.
+    """
     intLine = intelLine[9:-3]
     if len(intLine) == 0:
         return b'' 
@@ -129,12 +134,17 @@ def stripLine(intelLine):
     # if it is not a data line
     else:
         return b''
+
 def addrOf(intHexLine):
-    # Extract the address bytes from an intel hex line
+    """Extract the address bytes from an intel hex line.
+    """
     return int(intHexLine[3:7],16)
+
 def dataLen(intHexLine):
-    # Extract the length of the true data section to be safe
+    """Extract the length of the true data section to be safe.
+    """
     return len(intHexLine[9:-3])//2
+
 def genMem(intHex):
     with open(intHex,'r') as hexFile:
         dump = []
@@ -162,6 +172,7 @@ def genMem(intHex):
                     prevLen = dataLen(currentLine)
             prevLine = currentLine
         return b''.join(dump)
+
 if __name__ == '__main__':
 #     secrets = generate_secrets()
 #     make_secrets_file(secrets)
@@ -171,7 +182,9 @@ if __name__ == '__main__':
     secrets = grabKeys()
     bootFlash = genMem("flash.hex")
     print(len(bootFlash))
-    bootFlash += b'\xff'*((7936) - len(bootFlash))
+    bootFlash += b'\xff'*((8192) - len(bootFlash))
+    if len(bootFlash) > 8192:
+        bootFlash = bootFlash[:8192]
     print("\n")
     print(len(bootFlash))
     flashHash = CMACHash(secrets["H_KEY"],bootFlash)
