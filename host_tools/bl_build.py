@@ -15,6 +15,7 @@ def grabKeys():
         keyDefinition = keyFile.readline()
         keyValues = {}
         while len(keyDefinition) > 0:
+            # Split each line into its [define][name][value]
             keyDefinition = keyDefinition.split(" ")
             z = keyDefinition[2]
             z=z[1:-2]
