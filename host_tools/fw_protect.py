@@ -130,7 +130,7 @@ if __name__ == '__main__':
     else:
         print("Message truncated to fit in 1KB")
         tempMSG = (args.message)[:1023]
-        finalList.append(struct.pack(">{}s".format(len(args.message)),tempMSG))
+        finalList.append(struct.pack(">{}s".format(len(tempMSG)),tempMSG))
     
     # Enforce CSTRING encoding
     finalList.append(b'\x00')
