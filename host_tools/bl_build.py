@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import os
 import struct
@@ -82,6 +82,10 @@ def copy_artifacts():
     # Copy build artifacts from bootloader directory.
     shutil.copy(os.path.join(src_dir, 'flash.hex'), dst_dir)
     shutil.copy(os.path.join(src_dir, 'eeprom.hex'), dst_dir)
+    shutil.copy(os.path.join(src_dir, 'lfuse.hex'), dst_dir)
+    shutil.copy(os.path.join(src_dir, 'hfuse.hex'), dst_dir)
+    shutil.copy(os.path.join(src_dir, 'efuse.hex'), dst_dir) 
+    shutil.copy(os.path.join(src_dir, 'lock.hex'), dst_dir)
 
 def write_fuse_file(fuse_name, fuse_value):
     hex_file = IntelHex()
