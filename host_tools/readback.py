@@ -50,10 +50,11 @@ def encryptAES(key, iv, inBytes):
 def decryptAES(key, iv, inBytes):
     """ Takes in a key, initialization vector, and a file location of the     input, and location of the output"""
     encryptor = AES.new(key, AES.MODE_CFB, iv,segment_size=128)
-    if len(inBytes) % 16 != 0:
-        block = inBytes + b'\x00'*(len(inBytes)%16)
-    else:
-        block = inBytes
+#    if len(inBytes) % 16 != 0:
+#        block = inBytes + b'\x00'*(len(inBytes)%16)
+#    else:
+#        block = inBytes
+    block = inBytes
     return encryptor.decrypt(block)
 
 
@@ -101,12 +102,13 @@ if __name__ == '__main__':
     SECRET_KEY = secrets['RB_KEY']
     IV = secrets['RB_IV']
     HASH_KEY =  secrets['RBH_KEY']
+
     request = encryptAES(SECRET_KEY, IV, request)
     request_hash = CMACHash(HASH_KEY, request)
     request = struct.pack('>' + str(len(request)) + 's' +
         str(len(request_hash)) + 's', request, request_hash)
     # Open serial port. Set baudrate to 115200. Set timeout to 2 seconds.
-    ser = serial.Serial(args.port, baudrate=115200)
+    ser = serial.Serial(args.port, baudrate=115200,timeout=4)
 
     # Wait for bootloader to reset/enter readback mode.
     while ser.read(1) != 'R':
@@ -114,9 +116,18 @@ if __name__ == '__main__':
 
     # Send the request.
     ser.write(request)
+    data = ser.read(256)
+    prevLen = 256
+    while True:
+        data += ser.read(256) # read raw data
+        if len(data) == prevLen:
+            break
+        prevLen = len(data)
     
-    data = ser.read(int(args.num_bytes)) # read raw data
     data = decryptAES(SECRET_KEY, IV, data)
+    addr = int(args.address)
+    sz = int(args.num_bytes)
+    data = data[addr-(addr//256)*256:((addr+sz)//256)*256 + (addr + sz)%256]
     printable = ["{:02x}".format(ord(x)) for x in data]
     print(":".join(printable))
 
