@@ -1,0 +1,175 @@
+\hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h}{}\subsection{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.h File Reference}
+\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h}\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}}
+{\ttfamily \#include \char`\"{}A\+E\+S\+\_\+lib/aes.\+h\char`\"{}}\newline
+Include dependency graph for A\+E\+S\+\_\+lib.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a1293746a164a1cd5c51456d51d8b98e2}{enc\+C\+FB} (uint8\+\_\+t $\ast$key, uint8\+\_\+t $\ast$data, uint8\+\_\+t $\ast$IV, uint16\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em Encrypts data in-\/place using A\+E\+S-\/256 in C\+FB Mode. \end{DoxyCompactList}\item 
+void \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a18b65ad7379cf801828c018e11fdf60c}{strt\+Enc\+C\+FB} (uint8\+\_\+t $\ast$key, uint8\+\_\+t $\ast$first\+Block\+Plaintext, uint8\+\_\+t $\ast$IV, \hyperlink{structaes256__ctx__t}{aes256\+\_\+ctx\+\_\+t} $\ast$ctx, uint8\+\_\+t $\ast$first\+Block\+Ciphertext)
+\begin{DoxyCompactList}\small\item\em Begins encryption using A\+E\+S-\/256 in C\+FB Mode on a single block. \end{DoxyCompactList}\item 
+void \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a4663284fc59deb3bb5352fc2830802e3}{cont\+Enc\+C\+FB} (\hyperlink{structaes256__ctx__t}{aes256\+\_\+ctx\+\_\+t} $\ast$ctx, uint8\+\_\+t $\ast$next\+Block\+Plaintext, uint8\+\_\+t $\ast$prev\+Block\+Ciphertext, uint8\+\_\+t $\ast$next\+Block\+Ciphertext)
+\begin{DoxyCompactList}\small\item\em Continues encryption using A\+E\+S-\/256 in C\+FB Mode on a single block. \end{DoxyCompactList}\item 
+void \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a7292bfcb36cd7de9609e60877fe6547f}{dec\+C\+FB} (uint8\+\_\+t $\ast$key, uint8\+\_\+t $\ast$data, uint8\+\_\+t $\ast$IV, uint16\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em Decrypts data in-\/place using A\+E\+S-\/256 in C\+FB Mode. \end{DoxyCompactList}\item 
+void \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a70658f2663a0816e85202cd00c3e22be}{strt\+Dec\+C\+FB} (uint8\+\_\+t $\ast$key, uint8\+\_\+t $\ast$first\+Block\+Ciphertext, uint8\+\_\+t $\ast$IV, \hyperlink{structaes256__ctx__t}{aes256\+\_\+ctx\+\_\+t} $\ast$ctx, uint8\+\_\+t $\ast$first\+Block\+Plaintext)
+\begin{DoxyCompactList}\small\item\em Begins decryption using A\+E\+S-\/256 in C\+FB Mode on a single block. \end{DoxyCompactList}\item 
+void \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a72d64b249eb58f9c0a913d29a8eb75c5}{cont\+Dec\+C\+FB} (\hyperlink{structaes256__ctx__t}{aes256\+\_\+ctx\+\_\+t} $\ast$ctx, uint8\+\_\+t $\ast$next\+Block\+Ciphertext, uint8\+\_\+t $\ast$prev\+Block\+Ciphertext, uint8\+\_\+t $\ast$next\+Block\+Plaintext)
+\begin{DoxyCompactList}\small\item\em Continues decryption using A\+E\+S-\/256 in C\+FB Mode on a single block. \end{DoxyCompactList}\item 
+void \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a6dbe9aee6a14de58b9629f7412334aaf}{hash\+C\+BC} (uint8\+\_\+t $\ast$key, uint8\+\_\+t $\ast$data, uint8\+\_\+t $\ast$hash, uint16\+\_\+t size)
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a72d64b249eb58f9c0a913d29a8eb75c5}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a72d64b249eb58f9c0a913d29a8eb75c5}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}!cont\+Dec\+C\+FB@{cont\+Dec\+C\+FB}}
+\index{cont\+Dec\+C\+FB@{cont\+Dec\+C\+FB}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}}
+\paragraph{\texorpdfstring{cont\+Dec\+C\+F\+B()}{contDecCFB()}}
+{\footnotesize\ttfamily void cont\+Dec\+C\+FB (\begin{DoxyParamCaption}\item[{\hyperlink{structaes256__ctx__t}{aes256\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{uint8\+\_\+t $\ast$}]{next\+Block\+Ciphertext,  }\item[{uint8\+\_\+t $\ast$}]{prev\+Block\+Ciphertext,  }\item[{uint8\+\_\+t $\ast$}]{next\+Block\+Plaintext }\end{DoxyParamCaption})}
+
+
+
+Continues decryption using A\+E\+S-\/256 in C\+FB Mode on a single block. 
+
+This method uses a standard A\+E\+S-\/256 encryption kernel to decrypt data in C\+FB Mode. This essentially turns the block cipher into a self-\/correcting stream cipher. Unlike other block cipher modes, the decryption method can also use the A\+E\+S-\/256 encryption kernel, saving code space. The data array byte count M\+U\+ST be divisible by 16. This should have been accounted for in the encryption function.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Pointer to A\+E\+S-\/256 Keyschedule. \\
+\hline
+{\em next\+Block\+Ciphertext} & Pointer to data holding ciphertext block to be decrypted. \\
+\hline
+{\em prev\+Block\+Ciphertext} & Pointer to data holding previous block of ciphertext \\
+\hline
+{\em next\+Block\+Plaintext} & Pointer to memory that will hold next block of plaintext \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a4663284fc59deb3bb5352fc2830802e3}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a4663284fc59deb3bb5352fc2830802e3}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}!cont\+Enc\+C\+FB@{cont\+Enc\+C\+FB}}
+\index{cont\+Enc\+C\+FB@{cont\+Enc\+C\+FB}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}}
+\paragraph{\texorpdfstring{cont\+Enc\+C\+F\+B()}{contEncCFB()}}
+{\footnotesize\ttfamily void cont\+Enc\+C\+FB (\begin{DoxyParamCaption}\item[{\hyperlink{structaes256__ctx__t}{aes256\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{uint8\+\_\+t $\ast$}]{next\+Block\+Plaintext,  }\item[{uint8\+\_\+t $\ast$}]{prev\+Block\+Ciphertext,  }\item[{uint8\+\_\+t $\ast$}]{next\+Block\+Ciphertext }\end{DoxyParamCaption})}
+
+
+
+Continues encryption using A\+E\+S-\/256 in C\+FB Mode on a single block. 
+
+This method uses a standard A\+E\+S-\/256 encryption kernel to encrypt data in C\+FB Mode. This essentially turns the block cipher into a self-\/correcting stream cipher. In addition, the corresponding decryption method can also use the A\+E\+S-\/256 encryption kernel, saving code space. The data array byte count M\+U\+ST be divisible by 16. This can be achieved through padding.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ctx} & Pointer to A\+E\+S-\/256 Keyschedule. \\
+\hline
+{\em next\+Block\+Plaintext} & Pointer to data holding plaintext block to be encrypted. \\
+\hline
+{\em prev\+Block\+Ciphertext} & Pointer to data holding previous block of ciphertext \\
+\hline
+{\em next\+Block\+Ciphertext} & Pointer to memory that will hold next block of ciphertext \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a7292bfcb36cd7de9609e60877fe6547f}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a7292bfcb36cd7de9609e60877fe6547f}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}!dec\+C\+FB@{dec\+C\+FB}}
+\index{dec\+C\+FB@{dec\+C\+FB}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}}
+\paragraph{\texorpdfstring{dec\+C\+F\+B()}{decCFB()}}
+{\footnotesize\ttfamily void dec\+C\+FB (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{key,  }\item[{uint8\+\_\+t $\ast$}]{data,  }\item[{uint8\+\_\+t $\ast$}]{IV,  }\item[{uint16\+\_\+t}]{size }\end{DoxyParamCaption})}
+
+
+
+Decrypts data in-\/place using A\+E\+S-\/256 in C\+FB Mode. 
+
+This method uses a standard A\+E\+S-\/256 encryption kernel to decrypt data in C\+FB Mode. This essentially turns the block cipher into a self-\/correcting stream cipher. Unlike other block cipher modes, the decryption method can also use the A\+E\+S-\/256 encryption kernel, saving code space. The code will be decrypted block by block and stored in the same memory space used for the ciphertext. This results in drastic memory savings. The data array byte count M\+U\+ST be divisible by 16. This should have been accounted for in the encryption function.
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & Pointer to 32-\/byte array containing the A\+E\+S-\/256 key. \\
+\hline
+{\em data} & Pointer to data array. Begins as ciphertext, ends as plaintext. \\
+\hline
+{\em IV} & Pointer to a 16-\/byte random Initialization Vector \\
+\hline
+{\em size} & Size in bytes of data array. Must be divisible by 16. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a1293746a164a1cd5c51456d51d8b98e2}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a1293746a164a1cd5c51456d51d8b98e2}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}!enc\+C\+FB@{enc\+C\+FB}}
+\index{enc\+C\+FB@{enc\+C\+FB}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}}
+\paragraph{\texorpdfstring{enc\+C\+F\+B()}{encCFB()}}
+{\footnotesize\ttfamily void enc\+C\+FB (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{key,  }\item[{uint8\+\_\+t $\ast$}]{data,  }\item[{uint8\+\_\+t $\ast$}]{IV,  }\item[{uint16\+\_\+t}]{size }\end{DoxyParamCaption})}
+
+
+
+Encrypts data in-\/place using A\+E\+S-\/256 in C\+FB Mode. 
+
+This method uses a standard A\+E\+S-\/256 encryption kernel to encrypt data in C\+FB Mode. This essentially turns the block cipher into a self-\/correcting stream cipher. In addition, the corresponding decryption method can also use the A\+E\+S-\/256 encryption kernel, saving code space. The code will be encrypted block by block and stored in the same memory space used for the plaintext. This results in drastic memory savings. The data array byte count M\+U\+ST be divisible by 16. This can be achieved through padding.
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & Pointer to 32-\/byte array containing the A\+E\+S-\/256 key. \\
+\hline
+{\em data} & Pointer to data array. Begins as plaintext, ends as ciphertext. \\
+\hline
+{\em IV} & Pointer to a 16-\/byte random Initialization Vector \\
+\hline
+{\em size} & Size in bytes of data array. Must be divisible by 16. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a6dbe9aee6a14de58b9629f7412334aaf}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a6dbe9aee6a14de58b9629f7412334aaf}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}!hash\+C\+BC@{hash\+C\+BC}}
+\index{hash\+C\+BC@{hash\+C\+BC}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}}
+\paragraph{\texorpdfstring{hash\+C\+B\+C()}{hashCBC()}}
+{\footnotesize\ttfamily void hash\+C\+BC (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{key,  }\item[{uint8\+\_\+t $\ast$}]{data,  }\item[{uint8\+\_\+t $\ast$}]{hash,  }\item[{uint16\+\_\+t}]{size }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a70658f2663a0816e85202cd00c3e22be}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a70658f2663a0816e85202cd00c3e22be}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}!strt\+Dec\+C\+FB@{strt\+Dec\+C\+FB}}
+\index{strt\+Dec\+C\+FB@{strt\+Dec\+C\+FB}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}}
+\paragraph{\texorpdfstring{strt\+Dec\+C\+F\+B()}{strtDecCFB()}}
+{\footnotesize\ttfamily void strt\+Dec\+C\+FB (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{key,  }\item[{uint8\+\_\+t $\ast$}]{first\+Block\+Ciphertext,  }\item[{uint8\+\_\+t $\ast$}]{IV,  }\item[{\hyperlink{structaes256__ctx__t}{aes256\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{uint8\+\_\+t $\ast$}]{first\+Block\+Plaintext }\end{DoxyParamCaption})}
+
+
+
+Begins decryption using A\+E\+S-\/256 in C\+FB Mode on a single block. 
+
+This method uses a standard A\+E\+S-\/256 encryption kernel to decrypt data in C\+FB Mode. This essentially turns the block cipher into a self-\/correcting stream cipher. Unlike other block cipher modes, the decryption method can also use the A\+E\+S-\/256 encryption kernel, saving code space. The data array byte count M\+U\+ST be divisible by 16. This should have been accounted for in the encryption function.
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & Pointer to 32-\/byte A\+E\+S-\/256 key. \\
+\hline
+{\em first\+Block\+Ciphertext} & Pointer to data holding ciphertext block to be decrypted. \\
+\hline
+{\em IV} & Pointer to 16-\/byte Initialization Vector \\
+\hline
+{\em ctx} & Pointer to A\+E\+S-\/256 Keyschedule. \\
+\hline
+{\em first\+Block\+Plaintext} & Pointer to memory that will hold block of plaintext \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a18b65ad7379cf801828c018e11fdf60c}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_8h_a18b65ad7379cf801828c018e11fdf60c}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}!strt\+Enc\+C\+FB@{strt\+Enc\+C\+FB}}
+\index{strt\+Enc\+C\+FB@{strt\+Enc\+C\+FB}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib.\+h}}
+\paragraph{\texorpdfstring{strt\+Enc\+C\+F\+B()}{strtEncCFB()}}
+{\footnotesize\ttfamily void strt\+Enc\+C\+FB (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{key,  }\item[{uint8\+\_\+t $\ast$}]{first\+Block\+Plaintext,  }\item[{uint8\+\_\+t $\ast$}]{IV,  }\item[{\hyperlink{structaes256__ctx__t}{aes256\+\_\+ctx\+\_\+t} $\ast$}]{ctx,  }\item[{uint8\+\_\+t $\ast$}]{first\+Block\+Ciphertext }\end{DoxyParamCaption})}
+
+
+
+Begins encryption using A\+E\+S-\/256 in C\+FB Mode on a single block. 
+
+This method uses a standard A\+E\+S-\/256 encryption kernel to encrypt data in C\+FB Mode. This essentially turns the block cipher into a self-\/correcting stream cipher. In addition, the corresponding decryption method can also use the A\+E\+S-\/256 encryption kernel, saving code space. The data array byte count M\+U\+ST be divisible by 16. This can be achieved through padding.
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & Pointer to 32-\/byte A\+E\+S-\/256 key. \\
+\hline
+{\em first\+Block\+Plaintext} & Pointer to data holding plaintext block to be encrypted. \\
+\hline
+{\em IV} & Pointer to 16-\/byte Initialization Vector \\
+\hline
+{\em ctx} & Pointer to A\+E\+S-\/256 Keyschedule. \\
+\hline
+{\em first\+Block\+Ciphertext} & Pointer to memory that will hold block of ciphertext \\
+\hline
+\end{DoxyParams}

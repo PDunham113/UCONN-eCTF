@@ -63,7 +63,7 @@ void UART1_putchar(unsigned char data)
  * \brief Checks if there is a character available on UART1
  *
  * This function checks UCSR1A to see if any data has arrived over UART1. While
- * \code UART1_getchar() also checks to see if any data has arrived before returning,
+ * UART1_getchar() also checks to see if any data has arrived before returning,
  * it is better practice to use this function first. This way, the processor minimizes
  * time in an idle state.
  *
@@ -80,7 +80,7 @@ bool UART1_data_available(void)
  * \brief Retrieves a character on UART1
  *
  * This function waits for data to arrive on UART1, and then returns the ASCII character
- * present. It is best practice to check for data using \code UART1_data_available() before
+ * present. It is best practice to check for data using UART1_data_available() before
  * calling this function to prevent wasted processor time.
  *
  * \return Character received over UART1
@@ -117,7 +117,7 @@ void UART1_flush(void)
  * \brief Prints a string to UART1
  *
  * This function provides a simple way to print null-terminated strings to UART1, eliminating unneeded
- * for() and while() loops for things such as debug statements. It will call \code UART1_putchar() until
+ * for() and while() loops for things such as debug statements. It will call UART1_putchar() until
  * it finds a null character (\0 or 0x00). This is interpreted as the end of the string.
  *
  */
@@ -184,7 +184,7 @@ void UART0_putchar(unsigned char data)
  * \brief Checks if there is a character available on UART0
  *
  * This function checks UCSR0A to see if any data has arrived over UART0. While
- * \code UART1_getchar() also checks to see if any data has arrived before returning,
+ * UART1_getchar() also checks to see if any data has arrived before returning,
  * it is better practice to use this function first. This way, the processor minimizes
  * time in an idle state.
  *
@@ -201,7 +201,7 @@ bool UART0_data_available(void)
  * \brief Retrieves a character on UART1
  *
  * This function waits for data to arrive on UART1, and then returns the ASCII character
- * present. It is best practice to check for data using \code UART1_data_available() before
+ * present. It is best practice to check for data using UART1_data_available() before
  * calling this function to prevent wasted processor time.
  *
  * \return Character received over UART1
@@ -241,7 +241,7 @@ void UART0_flush(void)
  * \brief Prints a string to UART0
  *
  * This function provides a simple way to print null-terminated strings to UART0, eliminating unneeded
- * for() and while() loops for things such as debug statements. It will call \code UART0_putchar() until
+ * for() and while() loops for things such as debug statements. It will call UART0_putchar() until
  * it finds a null character (\0 or 0x00). This is interpreted as the end of the string.
  *
  */

@@ -1,5 +1,5 @@
 /*
- ATMega1284P_Boot.c
+ * bootloader.c
  *
  * Created: 2/21/2017 12:01:23 PM
  * Author : Patrick Dunham, Brian Marquis, Cameron Morris, James Steel, Luke Malinowski, Chenglu Jin

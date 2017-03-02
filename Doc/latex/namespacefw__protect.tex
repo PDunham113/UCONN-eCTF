@@ -1,0 +1,159 @@
+\hypertarget{namespacefw__protect}{}\subsection{fw\+\_\+protect Namespace Reference}
+\label{namespacefw__protect}\index{fw\+\_\+protect@{fw\+\_\+protect}}
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacefw__protect_aa68fe4d7a127575d7e2402bbdb718a29}{grab\+Keys} ()
+\item 
+def \hyperlink{namespacefw__protect_a3bce2fdee1937d3e624afc2055db2dbf}{strip\+Line} (intel\+Line)
+\item 
+def \hyperlink{namespacefw__protect_a54f5aa6464f7083b24fed44f31279165}{C\+M\+A\+C\+Hash} (key, in\+Bytes)
+\item 
+def \hyperlink{namespacefw__protect_a9930b517bb3d82347a839b7bacac3316}{encrypt\+C\+BC} (key, iv, in\+Bytes, outfile)
+\item 
+def \hyperlink{namespacefw__protect_a4f6e6aec497cff38b557c332381cbabd}{encrypt\+A\+ES} (key, iv, in\+Bytes)
+\end{DoxyCompactItemize}
+\subsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{namespacefw__protect_a90eee7a4677ca8b1ed116364a24367f9}{parser} = argparse.\+Argument\+Parser(description=\textquotesingle{}Firmware Update Tool\textquotesingle{})
+\item 
+\hyperlink{namespacefw__protect_a81ae9faedaa69e3e28e2960a0548df8d}{help}
+\item 
+\hyperlink{namespacefw__protect_ae81948490ddf54e80a22593640178350}{required}
+\item 
+\hyperlink{namespacefw__protect_a8187411843a6284ffb964ef3fb9fcab3}{args} = parser.\+parse\+\_\+args()
+\item 
+def \hyperlink{namespacefw__protect_a2b7d0c72182cc690371be6f920f0eba2}{key\+Map} = \hyperlink{namespacefw__protect_aa68fe4d7a127575d7e2402bbdb718a29}{grab\+Keys}()
+\item 
+list \hyperlink{namespacefw__protect_a27b60b34da7ce48640b2398f069b82d2}{final\+List} = \mbox{[}$\,$\mbox{]}
+\item 
+list \hyperlink{namespacefw__protect_a0a006b001f7ddd61e42904f9cb414647}{firmware\+Sections} = \mbox{[}$\,$\mbox{]}
+\item 
+\hyperlink{namespacefw__protect_a4c7a521b8f1a0769c09bfa4a1fca7dab}{version} = struct.\+pack(\char`\"{}$>$h\char`\"{},int(args.\+version))
+\item 
+tuple \hyperlink{namespacefw__protect_acc1e38a0dc7a0eb4f24d49e689e7b6cb}{temp\+M\+SG} = (args.\+message)\mbox{[}\+:1023\mbox{]}
+\item 
+string \hyperlink{namespacefw__protect_ab9b7930b3f30906e28d6e0294d700e07}{final\+Bytes} = b\textquotesingle{}\textquotesingle{}.join(\hyperlink{namespacefw__protect_a27b60b34da7ce48640b2398f069b82d2}{final\+List})
+\item 
+int \hyperlink{namespacefw__protect_a95940b25e7e22f9568e0596788510905}{pad\+Size} = 125$\ast$256-\/len(\hyperlink{namespacefw__protect_ab9b7930b3f30906e28d6e0294d700e07}{final\+Bytes})
+\item 
+def \hyperlink{namespacefw__protect_a4cbff5b07c2bcf804fb1261c803951a4}{C\+B\+C\+Hash} = \hyperlink{namespacefw__protect_a54f5aa6464f7083b24fed44f31279165}{C\+M\+A\+C\+Hash}(\hyperlink{namespacefw__protect_a2b7d0c72182cc690371be6f920f0eba2}{key\+Map}\mbox{[}\char`\"{}H\+\_\+\+K\+EY\char`\"{}\mbox{]},final\+Bytes)
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Detailed Description}
+\begin{DoxyVerb}Firmware Bundle-and-Protect Tool\end{DoxyVerb}
+ 
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{namespacefw__protect_a54f5aa6464f7083b24fed44f31279165}\label{namespacefw__protect_a54f5aa6464f7083b24fed44f31279165}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!C\+M\+A\+C\+Hash@{C\+M\+A\+C\+Hash}}
+\index{C\+M\+A\+C\+Hash@{C\+M\+A\+C\+Hash}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{C\+M\+A\+C\+Hash()}{CMACHash()}}
+{\footnotesize\ttfamily def fw\+\_\+protect.\+C\+M\+A\+C\+Hash (\begin{DoxyParamCaption}\item[{}]{key,  }\item[{}]{in\+Bytes }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacefw__protect_a4f6e6aec497cff38b557c332381cbabd}\label{namespacefw__protect_a4f6e6aec497cff38b557c332381cbabd}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!encrypt\+A\+ES@{encrypt\+A\+ES}}
+\index{encrypt\+A\+ES@{encrypt\+A\+ES}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{encrypt\+A\+E\+S()}{encryptAES()}}
+{\footnotesize\ttfamily def fw\+\_\+protect.\+encrypt\+A\+ES (\begin{DoxyParamCaption}\item[{}]{key,  }\item[{}]{iv,  }\item[{}]{in\+Bytes }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Takes in a key, initialization vector, and a file location of the     input, and location of the output\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacefw__protect_a9930b517bb3d82347a839b7bacac3316}\label{namespacefw__protect_a9930b517bb3d82347a839b7bacac3316}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!encrypt\+C\+BC@{encrypt\+C\+BC}}
+\index{encrypt\+C\+BC@{encrypt\+C\+BC}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{encrypt\+C\+B\+C()}{encryptCBC()}}
+{\footnotesize\ttfamily def fw\+\_\+protect.\+encrypt\+C\+BC (\begin{DoxyParamCaption}\item[{}]{key,  }\item[{}]{iv,  }\item[{}]{in\+Bytes,  }\item[{}]{outfile }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Takes in a key, initialization vector, and a file location of the     input, and location of the output\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacefw__protect_aa68fe4d7a127575d7e2402bbdb718a29}\label{namespacefw__protect_aa68fe4d7a127575d7e2402bbdb718a29}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!grab\+Keys@{grab\+Keys}}
+\index{grab\+Keys@{grab\+Keys}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{grab\+Keys()}{grabKeys()}}
+{\footnotesize\ttfamily def fw\+\_\+protect.\+grab\+Keys (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Parses secret_build_output.txt to read in all secret names and values.
+These are stored in a dictionary. 
+\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacefw__protect_a3bce2fdee1937d3e624afc2055db2dbf}\label{namespacefw__protect_a3bce2fdee1937d3e624afc2055db2dbf}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!strip\+Line@{strip\+Line}}
+\index{strip\+Line@{strip\+Line}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{strip\+Line()}{stripLine()}}
+{\footnotesize\ttfamily def fw\+\_\+protect.\+strip\+Line (\begin{DoxyParamCaption}\item[{}]{intel\+Line }\end{DoxyParamCaption})}
+
+
+
+\subsubsection{Variable Documentation}
+\mbox{\Hypertarget{namespacefw__protect_a8187411843a6284ffb964ef3fb9fcab3}\label{namespacefw__protect_a8187411843a6284ffb964ef3fb9fcab3}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!args@{args}}
+\index{args@{args}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{args}{args}}
+{\footnotesize\ttfamily args = parser.\+parse\+\_\+args()}
+
+\mbox{\Hypertarget{namespacefw__protect_a4cbff5b07c2bcf804fb1261c803951a4}\label{namespacefw__protect_a4cbff5b07c2bcf804fb1261c803951a4}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!C\+B\+C\+Hash@{C\+B\+C\+Hash}}
+\index{C\+B\+C\+Hash@{C\+B\+C\+Hash}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{C\+B\+C\+Hash}{CBCHash}}
+{\footnotesize\ttfamily def C\+B\+C\+Hash = \hyperlink{namespacefw__protect_a54f5aa6464f7083b24fed44f31279165}{C\+M\+A\+C\+Hash}(\hyperlink{namespacefw__protect_a2b7d0c72182cc690371be6f920f0eba2}{key\+Map}\mbox{[}\char`\"{}H\+\_\+\+K\+EY\char`\"{}\mbox{]},final\+Bytes)}
+
+\mbox{\Hypertarget{namespacefw__protect_ab9b7930b3f30906e28d6e0294d700e07}\label{namespacefw__protect_ab9b7930b3f30906e28d6e0294d700e07}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!final\+Bytes@{final\+Bytes}}
+\index{final\+Bytes@{final\+Bytes}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{final\+Bytes}{finalBytes}}
+{\footnotesize\ttfamily def final\+Bytes = b\textquotesingle{}\textquotesingle{}.join(\hyperlink{namespacefw__protect_a27b60b34da7ce48640b2398f069b82d2}{final\+List})}
+
+\mbox{\Hypertarget{namespacefw__protect_a27b60b34da7ce48640b2398f069b82d2}\label{namespacefw__protect_a27b60b34da7ce48640b2398f069b82d2}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!final\+List@{final\+List}}
+\index{final\+List@{final\+List}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{final\+List}{finalList}}
+{\footnotesize\ttfamily list final\+List = \mbox{[}$\,$\mbox{]}}
+
+\mbox{\Hypertarget{namespacefw__protect_a0a006b001f7ddd61e42904f9cb414647}\label{namespacefw__protect_a0a006b001f7ddd61e42904f9cb414647}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!firmware\+Sections@{firmware\+Sections}}
+\index{firmware\+Sections@{firmware\+Sections}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{firmware\+Sections}{firmwareSections}}
+{\footnotesize\ttfamily list firmware\+Sections = \mbox{[}$\,$\mbox{]}}
+
+\mbox{\Hypertarget{namespacefw__protect_a81ae9faedaa69e3e28e2960a0548df8d}\label{namespacefw__protect_a81ae9faedaa69e3e28e2960a0548df8d}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!help@{help}}
+\index{help@{help}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{help}{help}}
+{\footnotesize\ttfamily help}
+
+\mbox{\Hypertarget{namespacefw__protect_a2b7d0c72182cc690371be6f920f0eba2}\label{namespacefw__protect_a2b7d0c72182cc690371be6f920f0eba2}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!key\+Map@{key\+Map}}
+\index{key\+Map@{key\+Map}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{key\+Map}{keyMap}}
+{\footnotesize\ttfamily def key\+Map = \hyperlink{namespacefw__protect_aa68fe4d7a127575d7e2402bbdb718a29}{grab\+Keys}()}
+
+\mbox{\Hypertarget{namespacefw__protect_a95940b25e7e22f9568e0596788510905}\label{namespacefw__protect_a95940b25e7e22f9568e0596788510905}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!pad\+Size@{pad\+Size}}
+\index{pad\+Size@{pad\+Size}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{pad\+Size}{padSize}}
+{\footnotesize\ttfamily int pad\+Size = 125$\ast$256-\/len(\hyperlink{namespacefw__protect_ab9b7930b3f30906e28d6e0294d700e07}{final\+Bytes})}
+
+\mbox{\Hypertarget{namespacefw__protect_a90eee7a4677ca8b1ed116364a24367f9}\label{namespacefw__protect_a90eee7a4677ca8b1ed116364a24367f9}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!parser@{parser}}
+\index{parser@{parser}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{parser}{parser}}
+{\footnotesize\ttfamily parser = argparse.\+Argument\+Parser(description=\textquotesingle{}Firmware Update Tool\textquotesingle{})}
+
+\mbox{\Hypertarget{namespacefw__protect_ae81948490ddf54e80a22593640178350}\label{namespacefw__protect_ae81948490ddf54e80a22593640178350}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!required@{required}}
+\index{required@{required}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{required}{required}}
+{\footnotesize\ttfamily required}
+
+\mbox{\Hypertarget{namespacefw__protect_acc1e38a0dc7a0eb4f24d49e689e7b6cb}\label{namespacefw__protect_acc1e38a0dc7a0eb4f24d49e689e7b6cb}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!temp\+M\+SG@{temp\+M\+SG}}
+\index{temp\+M\+SG@{temp\+M\+SG}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{temp\+M\+SG}{tempMSG}}
+{\footnotesize\ttfamily tuple temp\+M\+SG = (args.\+message)\mbox{[}\+:1023\mbox{]}}
+
+\mbox{\Hypertarget{namespacefw__protect_a4c7a521b8f1a0769c09bfa4a1fca7dab}\label{namespacefw__protect_a4c7a521b8f1a0769c09bfa4a1fca7dab}} 
+\index{fw\+\_\+protect@{fw\+\_\+protect}!version@{version}}
+\index{version@{version}!fw\+\_\+protect@{fw\+\_\+protect}}
+\paragraph{\texorpdfstring{version}{version}}
+{\footnotesize\ttfamily version = struct.\+pack(\char`\"{}$>$h\char`\"{},int(args.\+version))}
+

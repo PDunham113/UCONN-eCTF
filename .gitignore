@@ -1,4 +1,17 @@
 #################
+## Vagrant
+#################
+
+# Vagrant's working directory
+.vagrant
+
+# Machine-specific user settings
+Vagrantfile.local
+
+# Logfile created by Vagrant
+ubuntu-xenial-16.04-cloudimg-console.log
+
+#################
 ## Eclipse
 #################
 

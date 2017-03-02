@@ -1,0 +1,93 @@
+\hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h}{}\subsection{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.h File Reference}
+\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h}\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}}
+{\ttfamily \#include $<$stdint.\+h$>$}\newline
+{\ttfamily \#include $<$avr/pgmspace.\+h$>$}\newline
+Include dependency graph for keysize\+\_\+descriptor.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structkeysize__desc__list__t}{keysize\+\_\+desc\+\_\+list\+\_\+t}
+\item 
+struct \hyperlink{structkeysize__desc__range__t}{keysize\+\_\+desc\+\_\+range\+\_\+t}
+\item 
+struct \hyperlink{structkeysize__desc__arg__range__t}{keysize\+\_\+desc\+\_\+arg\+\_\+range\+\_\+t}
+\end{DoxyCompactItemize}
+\subsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ae54eda9c9f430abbea524938c90e45b6}{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+T\+E\+R\+M\+I\+N\+A\+T\+OR}~0x00
+\item 
+\#define \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ae7e23a500f647f1d60bcfbdad2d1e082}{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+L\+I\+ST}~0x01
+\item 
+\#define \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a293ee697bba271a1c891a7f7368ef445}{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+R\+A\+N\+GE}~0x02
+\item 
+\#define \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a119cab05c8cb354e7cfc9eddb152b84a}{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+R\+G\+\_\+\+R\+A\+N\+GE}~0x03
+\item 
+\#define \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ad1de7d9ec904ea9b07ffa7c310a2d014}{K\+S\+\_\+\+I\+NT}(a)~((a)\&0x\+F\+F), ((a)$>$$>$8)
+\end{DoxyCompactItemize}
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a3346bdb7a8d8c26db064ff6dde9e1fa8}{is\+\_\+valid\+\_\+keysize\+\_\+P} (P\+G\+M\+\_\+\+V\+O\+I\+D\+\_\+P ks\+\_\+desc, uint16\+\_\+t keysize)
+\item 
+uint16\+\_\+t \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ac5110a9bcc3143d8535a4d89b6f141df}{get\+\_\+keysize} (P\+G\+M\+\_\+\+V\+O\+I\+D\+\_\+P ks\+\_\+desc)
+\item 
+uint16\+\_\+t \hyperlink{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a905307669ae0034bf5171704a39a114f}{get\+\_\+keysizes} (P\+G\+M\+\_\+\+V\+O\+I\+D\+\_\+P ks\+\_\+desc, uint16\+\_\+t $\ast$$\ast$list)
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ad1de7d9ec904ea9b07ffa7c310a2d014}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ad1de7d9ec904ea9b07ffa7c310a2d014}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}!K\+S\+\_\+\+I\+NT@{K\+S\+\_\+\+I\+NT}}
+\index{K\+S\+\_\+\+I\+NT@{K\+S\+\_\+\+I\+NT}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}}
+\paragraph{\texorpdfstring{K\+S\+\_\+\+I\+NT}{KS\_INT}}
+{\footnotesize\ttfamily \#define K\+S\+\_\+\+I\+NT(\begin{DoxyParamCaption}\item[{}]{a }\end{DoxyParamCaption})~((a)\&0x\+F\+F), ((a)$>$$>$8)}
+
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a119cab05c8cb354e7cfc9eddb152b84a}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a119cab05c8cb354e7cfc9eddb152b84a}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}!K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+R\+G\+\_\+\+R\+A\+N\+GE@{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+R\+G\+\_\+\+R\+A\+N\+GE}}
+\index{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+R\+G\+\_\+\+R\+A\+N\+GE@{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+R\+G\+\_\+\+R\+A\+N\+GE}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}}
+\paragraph{\texorpdfstring{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+R\+G\+\_\+\+R\+A\+N\+GE}{KS\_TYPE\_ARG\_RANGE}}
+{\footnotesize\ttfamily \#define K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+A\+R\+G\+\_\+\+R\+A\+N\+GE~0x03}
+
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ae7e23a500f647f1d60bcfbdad2d1e082}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ae7e23a500f647f1d60bcfbdad2d1e082}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}!K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+L\+I\+ST@{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+L\+I\+ST}}
+\index{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+L\+I\+ST@{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+L\+I\+ST}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}}
+\paragraph{\texorpdfstring{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+L\+I\+ST}{KS\_TYPE\_LIST}}
+{\footnotesize\ttfamily \#define K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+L\+I\+ST~0x01}
+
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a293ee697bba271a1c891a7f7368ef445}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a293ee697bba271a1c891a7f7368ef445}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}!K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+R\+A\+N\+GE@{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+R\+A\+N\+GE}}
+\index{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+R\+A\+N\+GE@{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+R\+A\+N\+GE}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}}
+\paragraph{\texorpdfstring{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+R\+A\+N\+GE}{KS\_TYPE\_RANGE}}
+{\footnotesize\ttfamily \#define K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+R\+A\+N\+GE~0x02}
+
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ae54eda9c9f430abbea524938c90e45b6}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ae54eda9c9f430abbea524938c90e45b6}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}!K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+T\+E\+R\+M\+I\+N\+A\+T\+OR@{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+T\+E\+R\+M\+I\+N\+A\+T\+OR}}
+\index{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+T\+E\+R\+M\+I\+N\+A\+T\+OR@{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+T\+E\+R\+M\+I\+N\+A\+T\+OR}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}}
+\paragraph{\texorpdfstring{K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+T\+E\+R\+M\+I\+N\+A\+T\+OR}{KS\_TYPE\_TERMINATOR}}
+{\footnotesize\ttfamily \#define K\+S\+\_\+\+T\+Y\+P\+E\+\_\+\+T\+E\+R\+M\+I\+N\+A\+T\+OR~0x00}
+
+
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ac5110a9bcc3143d8535a4d89b6f141df}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_ac5110a9bcc3143d8535a4d89b6f141df}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}!get\+\_\+keysize@{get\+\_\+keysize}}
+\index{get\+\_\+keysize@{get\+\_\+keysize}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}}
+\paragraph{\texorpdfstring{get\+\_\+keysize()}{get\_keysize()}}
+{\footnotesize\ttfamily uint16\+\_\+t get\+\_\+keysize (\begin{DoxyParamCaption}\item[{P\+G\+M\+\_\+\+V\+O\+I\+D\+\_\+P}]{ks\+\_\+desc }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a905307669ae0034bf5171704a39a114f}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a905307669ae0034bf5171704a39a114f}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}!get\+\_\+keysizes@{get\+\_\+keysizes}}
+\index{get\+\_\+keysizes@{get\+\_\+keysizes}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}}
+\paragraph{\texorpdfstring{get\+\_\+keysizes()}{get\_keysizes()}}
+{\footnotesize\ttfamily uint16\+\_\+t get\+\_\+keysizes (\begin{DoxyParamCaption}\item[{P\+G\+M\+\_\+\+V\+O\+I\+D\+\_\+P}]{ks\+\_\+desc,  }\item[{uint16\+\_\+t $\ast$$\ast$}]{list }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a3346bdb7a8d8c26db064ff6dde9e1fa8}\label{_a_t_mega1284_p___boot_2_a_t_mega1284___boot_2_a_e_s__lib_2keysize__descriptor_8h_a3346bdb7a8d8c26db064ff6dde9e1fa8}} 
+\index{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}!is\+\_\+valid\+\_\+keysize\+\_\+P@{is\+\_\+valid\+\_\+keysize\+\_\+P}}
+\index{is\+\_\+valid\+\_\+keysize\+\_\+P@{is\+\_\+valid\+\_\+keysize\+\_\+P}!A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h@{A\+T\+Mega1284\+P\+\_\+\+Boot/\+A\+T\+Mega1284\+\_\+\+Boot/\+A\+E\+S\+\_\+lib/keysize\+\_\+descriptor.\+h}}
+\paragraph{\texorpdfstring{is\+\_\+valid\+\_\+keysize\+\_\+\+P()}{is\_valid\_keysize\_P()}}
+{\footnotesize\ttfamily uint8\+\_\+t is\+\_\+valid\+\_\+keysize\+\_\+P (\begin{DoxyParamCaption}\item[{P\+G\+M\+\_\+\+V\+O\+I\+D\+\_\+P}]{ks\+\_\+desc,  }\item[{uint16\+\_\+t}]{keysize }\end{DoxyParamCaption})}
+

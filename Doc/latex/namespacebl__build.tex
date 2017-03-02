@@ -1,0 +1,183 @@
+\hypertarget{namespacebl__build}{}\subsection{bl\+\_\+build Namespace Reference}
+\label{namespacebl__build}\index{bl\+\_\+build@{bl\+\_\+build}}
+\subsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespacebl__build_a8580a45f9e0e7d6f46bb0bf7cca40ce4}{grab\+Keys} ()
+\item 
+def \hyperlink{namespacebl__build_a097a5019a83d65ad61254db9a76624eb}{C\+M\+A\+C\+Hash} (key, in\+Bytes)
+\item 
+def \hyperlink{namespacebl__build_ae3dfab9be466704491cdc270ac523004}{bytes\+To\+Hex\+List} (data)
+\item 
+def \hyperlink{namespacebl__build_a18e5476f014231406705f66d9aac77c2}{bytes\+To\+C\+String} (data)
+\item 
+def \hyperlink{namespacebl__build_a8672b3c1dd7811f44d8ca6472ef674c2}{generate128\+Entropy} ()
+\item 
+def \hyperlink{namespacebl__build_aa34856c463a31f6a99675774f4d6e861}{generate256\+Entropy} ()
+\item 
+def \hyperlink{namespacebl__build_a2a9c9e378b6b3a07e151534a9cad784d}{make\+\_\+bootloader} (password=None)
+\item 
+def \hyperlink{namespacebl__build_acf40ffadbc5a33f27984829b1089e12a}{copy\+\_\+artifacts} ()
+\item 
+def \hyperlink{namespacebl__build_a437292e7f5118fd4cf6fd3f4fd30ede2}{write\+\_\+fuse\+\_\+file} (fuse\+\_\+name, fuse\+\_\+value)
+\item 
+def \hyperlink{namespacebl__build_a3311e245be558d39e0edf14ed88da1df}{generate\+\_\+secrets} ()
+\item 
+def \hyperlink{namespacebl__build_a5f60fa45fee5cfdc7a4e9d1e19150055}{make\+\_\+secrets\+\_\+file} (\hyperlink{namespacebl__build_a7ef58b6350bb8f1ea4b81d24cac72a55}{secrets})
+\item 
+def \hyperlink{namespacebl__build_a4154658d421cdf9e8f1352f8347f3df8}{strip\+Line} (intel\+Line)
+\item 
+def \hyperlink{namespacebl__build_ad77bcbb2ba1cd1338b437a74bf2e995c}{addr\+Of} (int\+Hex\+Line)
+\item 
+def \hyperlink{namespacebl__build_ab5b71cee689998b4be0b67b767416016}{data\+Len} (int\+Hex\+Line)
+\item 
+def \hyperlink{namespacebl__build_a8dc8ae3d67a3c82b7c54bc26252467bd}{gen\+Mem} (int\+Hex)
+\end{DoxyCompactItemize}
+\subsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{namespacebl__build_a089c1667c30c72cb05807dd8157b9ff9}{F\+I\+L\+E\+\_\+\+D\+IR} = os.\+path.\+abspath(os.\+path.\+dirname(\+\_\+\+\_\+file\+\_\+\+\_\+))
+\item 
+def \hyperlink{namespacebl__build_a7ef58b6350bb8f1ea4b81d24cac72a55}{secrets} = \hyperlink{namespacebl__build_a3311e245be558d39e0edf14ed88da1df}{generate\+\_\+secrets}()
+\item 
+def \hyperlink{namespacebl__build_a25673c001dbceb6755931c1b27cb1bb2}{boot\+Flash} = \hyperlink{namespacebl__build_a8dc8ae3d67a3c82b7c54bc26252467bd}{gen\+Mem}(\char`\"{}flash.\+hex\char`\"{})
+\item 
+def \hyperlink{namespacebl__build_ab62730e5e3b453486f9cbb5630497604}{flash\+Hash} = \hyperlink{namespacebl__build_a097a5019a83d65ad61254db9a76624eb}{C\+M\+A\+C\+Hash}(\hyperlink{namespacebl__build_a7ef58b6350bb8f1ea4b81d24cac72a55}{secrets}\mbox{[}2\mbox{]}\mbox{[}1\mbox{]},\hyperlink{namespacebl__build_a25673c001dbceb6755931c1b27cb1bb2}{boot\+Flash})
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Function Documentation}
+\mbox{\Hypertarget{namespacebl__build_ad77bcbb2ba1cd1338b437a74bf2e995c}\label{namespacebl__build_ad77bcbb2ba1cd1338b437a74bf2e995c}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!addr\+Of@{addr\+Of}}
+\index{addr\+Of@{addr\+Of}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{addr\+Of()}{addrOf()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+addr\+Of (\begin{DoxyParamCaption}\item[{}]{int\+Hex\+Line }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Extract the address bytes from an intel hex line.
+\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacebl__build_a18e5476f014231406705f66d9aac77c2}\label{namespacebl__build_a18e5476f014231406705f66d9aac77c2}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!bytes\+To\+C\+String@{bytes\+To\+C\+String}}
+\index{bytes\+To\+C\+String@{bytes\+To\+C\+String}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{bytes\+To\+C\+String()}{bytesToCString()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+bytes\+To\+C\+String (\begin{DoxyParamCaption}\item[{}]{data }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacebl__build_ae3dfab9be466704491cdc270ac523004}\label{namespacebl__build_ae3dfab9be466704491cdc270ac523004}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!bytes\+To\+Hex\+List@{bytes\+To\+Hex\+List}}
+\index{bytes\+To\+Hex\+List@{bytes\+To\+Hex\+List}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{bytes\+To\+Hex\+List()}{bytesToHexList()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+bytes\+To\+Hex\+List (\begin{DoxyParamCaption}\item[{}]{data }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacebl__build_a097a5019a83d65ad61254db9a76624eb}\label{namespacebl__build_a097a5019a83d65ad61254db9a76624eb}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!C\+M\+A\+C\+Hash@{C\+M\+A\+C\+Hash}}
+\index{C\+M\+A\+C\+Hash@{C\+M\+A\+C\+Hash}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{C\+M\+A\+C\+Hash()}{CMACHash()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+C\+M\+A\+C\+Hash (\begin{DoxyParamCaption}\item[{}]{key,  }\item[{}]{in\+Bytes }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacebl__build_acf40ffadbc5a33f27984829b1089e12a}\label{namespacebl__build_acf40ffadbc5a33f27984829b1089e12a}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!copy\+\_\+artifacts@{copy\+\_\+artifacts}}
+\index{copy\+\_\+artifacts@{copy\+\_\+artifacts}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{copy\+\_\+artifacts()}{copy\_artifacts()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+copy\+\_\+artifacts (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Copy bootloader build artifacts into the host tools directory.
+\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacebl__build_ab5b71cee689998b4be0b67b767416016}\label{namespacebl__build_ab5b71cee689998b4be0b67b767416016}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!data\+Len@{data\+Len}}
+\index{data\+Len@{data\+Len}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{data\+Len()}{dataLen()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+data\+Len (\begin{DoxyParamCaption}\item[{}]{int\+Hex\+Line }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Extract the length of the true data section to be safe.
+\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacebl__build_a8672b3c1dd7811f44d8ca6472ef674c2}\label{namespacebl__build_a8672b3c1dd7811f44d8ca6472ef674c2}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!generate128\+Entropy@{generate128\+Entropy}}
+\index{generate128\+Entropy@{generate128\+Entropy}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{generate128\+Entropy()}{generate128Entropy()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+generate128\+Entropy (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacebl__build_aa34856c463a31f6a99675774f4d6e861}\label{namespacebl__build_aa34856c463a31f6a99675774f4d6e861}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!generate256\+Entropy@{generate256\+Entropy}}
+\index{generate256\+Entropy@{generate256\+Entropy}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{generate256\+Entropy()}{generate256Entropy()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+generate256\+Entropy (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacebl__build_a3311e245be558d39e0edf14ed88da1df}\label{namespacebl__build_a3311e245be558d39e0edf14ed88da1df}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!generate\+\_\+secrets@{generate\+\_\+secrets}}
+\index{generate\+\_\+secrets@{generate\+\_\+secrets}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{generate\+\_\+secrets()}{generate\_secrets()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+generate\+\_\+secrets (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Generate the keys and Password.
+\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacebl__build_a8dc8ae3d67a3c82b7c54bc26252467bd}\label{namespacebl__build_a8dc8ae3d67a3c82b7c54bc26252467bd}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!gen\+Mem@{gen\+Mem}}
+\index{gen\+Mem@{gen\+Mem}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{gen\+Mem()}{genMem()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+gen\+Mem (\begin{DoxyParamCaption}\item[{}]{int\+Hex }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacebl__build_a8580a45f9e0e7d6f46bb0bf7cca40ce4}\label{namespacebl__build_a8580a45f9e0e7d6f46bb0bf7cca40ce4}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!grab\+Keys@{grab\+Keys}}
+\index{grab\+Keys@{grab\+Keys}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{grab\+Keys()}{grabKeys()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+grab\+Keys (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacebl__build_a2a9c9e378b6b3a07e151534a9cad784d}\label{namespacebl__build_a2a9c9e378b6b3a07e151534a9cad784d}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!make\+\_\+bootloader@{make\+\_\+bootloader}}
+\index{make\+\_\+bootloader@{make\+\_\+bootloader}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{make\+\_\+bootloader()}{make\_bootloader()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+make\+\_\+bootloader (\begin{DoxyParamCaption}\item[{}]{password = {\ttfamily None} }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Build the bootloader from source.
+Return:
+    True if successful, False otherwise.
+\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacebl__build_a5f60fa45fee5cfdc7a4e9d1e19150055}\label{namespacebl__build_a5f60fa45fee5cfdc7a4e9d1e19150055}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!make\+\_\+secrets\+\_\+file@{make\+\_\+secrets\+\_\+file}}
+\index{make\+\_\+secrets\+\_\+file@{make\+\_\+secrets\+\_\+file}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{make\+\_\+secrets\+\_\+file()}{make\_secrets\_file()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+make\+\_\+secrets\+\_\+file (\begin{DoxyParamCaption}\item[{}]{secrets }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Construct secret_build_output.txt with all of the necessary keys and
+passwords.
+\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacebl__build_a4154658d421cdf9e8f1352f8347f3df8}\label{namespacebl__build_a4154658d421cdf9e8f1352f8347f3df8}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!strip\+Line@{strip\+Line}}
+\index{strip\+Line@{strip\+Line}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{strip\+Line()}{stripLine()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+strip\+Line (\begin{DoxyParamCaption}\item[{}]{intel\+Line }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Pulls the data out of a line of Intel hex and packs it as bytes.
+\end{DoxyVerb}
+ \mbox{\Hypertarget{namespacebl__build_a437292e7f5118fd4cf6fd3f4fd30ede2}\label{namespacebl__build_a437292e7f5118fd4cf6fd3f4fd30ede2}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!write\+\_\+fuse\+\_\+file@{write\+\_\+fuse\+\_\+file}}
+\index{write\+\_\+fuse\+\_\+file@{write\+\_\+fuse\+\_\+file}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{write\+\_\+fuse\+\_\+file()}{write\_fuse\_file()}}
+{\footnotesize\ttfamily def bl\+\_\+build.\+write\+\_\+fuse\+\_\+file (\begin{DoxyParamCaption}\item[{}]{fuse\+\_\+name,  }\item[{}]{fuse\+\_\+value }\end{DoxyParamCaption})}
+
+
+
+\subsubsection{Variable Documentation}
+\mbox{\Hypertarget{namespacebl__build_a25673c001dbceb6755931c1b27cb1bb2}\label{namespacebl__build_a25673c001dbceb6755931c1b27cb1bb2}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!boot\+Flash@{boot\+Flash}}
+\index{boot\+Flash@{boot\+Flash}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{boot\+Flash}{bootFlash}}
+{\footnotesize\ttfamily def boot\+Flash = \hyperlink{namespacebl__build_a8dc8ae3d67a3c82b7c54bc26252467bd}{gen\+Mem}(\char`\"{}flash.\+hex\char`\"{})}
+
+\mbox{\Hypertarget{namespacebl__build_a089c1667c30c72cb05807dd8157b9ff9}\label{namespacebl__build_a089c1667c30c72cb05807dd8157b9ff9}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!F\+I\+L\+E\+\_\+\+D\+IR@{F\+I\+L\+E\+\_\+\+D\+IR}}
+\index{F\+I\+L\+E\+\_\+\+D\+IR@{F\+I\+L\+E\+\_\+\+D\+IR}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{F\+I\+L\+E\+\_\+\+D\+IR}{FILE\_DIR}}
+{\footnotesize\ttfamily F\+I\+L\+E\+\_\+\+D\+IR = os.\+path.\+abspath(os.\+path.\+dirname(\+\_\+\+\_\+file\+\_\+\+\_\+))}
+
+\mbox{\Hypertarget{namespacebl__build_ab62730e5e3b453486f9cbb5630497604}\label{namespacebl__build_ab62730e5e3b453486f9cbb5630497604}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!flash\+Hash@{flash\+Hash}}
+\index{flash\+Hash@{flash\+Hash}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{flash\+Hash}{flashHash}}
+{\footnotesize\ttfamily def flash\+Hash = \hyperlink{namespacebl__build_a097a5019a83d65ad61254db9a76624eb}{C\+M\+A\+C\+Hash}(\hyperlink{namespacebl__build_a7ef58b6350bb8f1ea4b81d24cac72a55}{secrets}\mbox{[}2\mbox{]}\mbox{[}1\mbox{]},\hyperlink{namespacebl__build_a25673c001dbceb6755931c1b27cb1bb2}{boot\+Flash})}
+
+\mbox{\Hypertarget{namespacebl__build_a7ef58b6350bb8f1ea4b81d24cac72a55}\label{namespacebl__build_a7ef58b6350bb8f1ea4b81d24cac72a55}} 
+\index{bl\+\_\+build@{bl\+\_\+build}!secrets@{secrets}}
+\index{secrets@{secrets}!bl\+\_\+build@{bl\+\_\+build}}
+\paragraph{\texorpdfstring{secrets}{secrets}}
+{\footnotesize\ttfamily def secrets = \hyperlink{namespacebl__build_a3311e245be558d39e0edf14ed88da1df}{generate\+\_\+secrets}()}
+

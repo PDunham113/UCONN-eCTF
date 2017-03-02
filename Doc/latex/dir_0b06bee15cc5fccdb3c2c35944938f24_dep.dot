@@ -1,0 +1,10 @@
+digraph "ATMega1284P_Boot" {
+  compound=true
+  node [ fontsize="10", fontname="Helvetica"];
+  edge [ labelfontsize="10", labelfontname="Helvetica"];
+  subgraph clusterdir_0b06bee15cc5fccdb3c2c35944938f24 {
+    graph [ bgcolor="#eeeeff", pencolor="black", label="" URL="dir_0b06bee15cc5fccdb3c2c35944938f24.html"];
+    dir_0b06bee15cc5fccdb3c2c35944938f24 [shape=plaintext label="ATMega1284P_Boot"];
+    dir_935e96d6e2feabcb9e0ceea016a3be1d [shape=box label="ATMega1284_Boot" color="red" fillcolor="white" style="filled" URL="dir_935e96d6e2feabcb9e0ceea016a3be1d.html"];
+  }
+}

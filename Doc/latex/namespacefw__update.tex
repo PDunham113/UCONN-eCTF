@@ -1,0 +1,88 @@
+\hypertarget{namespacefw__update}{}\subsection{fw\+\_\+update Namespace Reference}
+\label{namespacefw__update}\index{fw\+\_\+update@{fw\+\_\+update}}
+\subsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+string \hyperlink{namespacefw__update_af4ca9d8fccedc8558fd80352ca87756d}{R\+E\+S\+P\+\_\+\+OK} = b\textquotesingle{}\textbackslash{}x06\textquotesingle{}
+\item 
+\hyperlink{namespacefw__update_a90eee7a4677ca8b1ed116364a24367f9}{parser} = argparse.\+Argument\+Parser(description=\textquotesingle{}Firmware Update Tool\textquotesingle{})
+\item 
+\hyperlink{namespacefw__update_a81ae9faedaa69e3e28e2960a0548df8d}{help}
+\item 
+\hyperlink{namespacefw__update_ae81948490ddf54e80a22593640178350}{required}
+\item 
+\hyperlink{namespacefw__update_a2f4ab7bf743142dae2e459aa18f9f1d4}{action}
+\item 
+\hyperlink{namespacefw__update_a8187411843a6284ffb964ef3fb9fcab3}{args} = parser.\+parse\+\_\+args()
+\item 
+\hyperlink{namespacefw__update_a5b7028344d79661ed4abe535b0e7e307}{ser} = serial.\+Serial(args.\+port, baudrate=115200, timeout=2)
+\item 
+\hyperlink{namespacefw__update_a4180e227b48ebb1901dbb822f1fc95f6}{chunk} = firmware.\+read(256)
+\item 
+int \hyperlink{namespacefw__update_acb559820d9ca11295b4500f179ef6392}{i} = 0
+\item 
+\hyperlink{namespacefw__update_a4a2eceb977b50eb0028c419047e56e1d}{resp} = ser.\+read()
+\end{DoxyCompactItemize}
+
+
+\subsubsection{Variable Documentation}
+\mbox{\Hypertarget{namespacefw__update_a2f4ab7bf743142dae2e459aa18f9f1d4}\label{namespacefw__update_a2f4ab7bf743142dae2e459aa18f9f1d4}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!action@{action}}
+\index{action@{action}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{action}{action}}
+{\footnotesize\ttfamily action}
+
+\mbox{\Hypertarget{namespacefw__update_a8187411843a6284ffb964ef3fb9fcab3}\label{namespacefw__update_a8187411843a6284ffb964ef3fb9fcab3}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!args@{args}}
+\index{args@{args}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{args}{args}}
+{\footnotesize\ttfamily args = parser.\+parse\+\_\+args()}
+
+\mbox{\Hypertarget{namespacefw__update_a4180e227b48ebb1901dbb822f1fc95f6}\label{namespacefw__update_a4180e227b48ebb1901dbb822f1fc95f6}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!chunk@{chunk}}
+\index{chunk@{chunk}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{chunk}{chunk}}
+{\footnotesize\ttfamily chunk = firmware.\+read(256)}
+
+\mbox{\Hypertarget{namespacefw__update_a81ae9faedaa69e3e28e2960a0548df8d}\label{namespacefw__update_a81ae9faedaa69e3e28e2960a0548df8d}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!help@{help}}
+\index{help@{help}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{help}{help}}
+{\footnotesize\ttfamily help}
+
+\mbox{\Hypertarget{namespacefw__update_acb559820d9ca11295b4500f179ef6392}\label{namespacefw__update_acb559820d9ca11295b4500f179ef6392}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!i@{i}}
+\index{i@{i}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{i}{i}}
+{\footnotesize\ttfamily int i = 0}
+
+\mbox{\Hypertarget{namespacefw__update_a90eee7a4677ca8b1ed116364a24367f9}\label{namespacefw__update_a90eee7a4677ca8b1ed116364a24367f9}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!parser@{parser}}
+\index{parser@{parser}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{parser}{parser}}
+{\footnotesize\ttfamily parser = argparse.\+Argument\+Parser(description=\textquotesingle{}Firmware Update Tool\textquotesingle{})}
+
+\mbox{\Hypertarget{namespacefw__update_ae81948490ddf54e80a22593640178350}\label{namespacefw__update_ae81948490ddf54e80a22593640178350}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!required@{required}}
+\index{required@{required}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{required}{required}}
+{\footnotesize\ttfamily required}
+
+\mbox{\Hypertarget{namespacefw__update_a4a2eceb977b50eb0028c419047e56e1d}\label{namespacefw__update_a4a2eceb977b50eb0028c419047e56e1d}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!resp@{resp}}
+\index{resp@{resp}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{resp}{resp}}
+{\footnotesize\ttfamily resp = ser.\+read()}
+
+\mbox{\Hypertarget{namespacefw__update_af4ca9d8fccedc8558fd80352ca87756d}\label{namespacefw__update_af4ca9d8fccedc8558fd80352ca87756d}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!R\+E\+S\+P\+\_\+\+OK@{R\+E\+S\+P\+\_\+\+OK}}
+\index{R\+E\+S\+P\+\_\+\+OK@{R\+E\+S\+P\+\_\+\+OK}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{R\+E\+S\+P\+\_\+\+OK}{RESP\_OK}}
+{\footnotesize\ttfamily string R\+E\+S\+P\+\_\+\+OK = b\textquotesingle{}\textbackslash{}x06\textquotesingle{}}
+
+\mbox{\Hypertarget{namespacefw__update_a5b7028344d79661ed4abe535b0e7e307}\label{namespacefw__update_a5b7028344d79661ed4abe535b0e7e307}} 
+\index{fw\+\_\+update@{fw\+\_\+update}!ser@{ser}}
+\index{ser@{ser}!fw\+\_\+update@{fw\+\_\+update}}
+\paragraph{\texorpdfstring{ser}{ser}}
+{\footnotesize\ttfamily ser = serial.\+Serial(args.\+port, baudrate=115200, timeout=2)}
+
