@@ -16,7 +16,7 @@ end
 ################################################################################
 
 # Custom Ubuntu packages installed with apt-get.
-$team_apt_packages = "gcc-avr avr-libc make avrdude python-serial"
+$team_apt_packages = "gcc-avr avr-libc make avrdude"
 
 # Custom Python packages installed iwth pip.
 $team_pip_packages = "pyserial pycrypto intelhex"
