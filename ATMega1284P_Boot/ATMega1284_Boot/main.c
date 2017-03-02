@@ -437,11 +437,16 @@ void readback(void)
 	
 	// Convert to start page and end page
 	startPage = (startAddress / SPM_PAGESIZE);
-	endPage   = (startAddress + size) / SPM_PAGESIZE;
+	endPage   = (startAddress + size - 1) / SPM_PAGESIZE;
+	
+	// If start page is outside application section, truncate
+	if(startPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
+		startPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
+	}
 	
 	// If end page is outside application section, truncate
-	if(endPage > (MESSAGE_SECTION - 1)) {
-		endPage = MESSAGE_SECTION - 1;
+	if(endPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
+		endPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
 	}
 	
 	wdt_reset();
@@ -473,9 +478,14 @@ void readback(void)
 			}
 		}
 		
+		// DEBUG - Print page
+		for(int i = 0; i < SPM_PAGESIZE; i++) {
+			UART0_putchar(pageBuffer[i]);
+		}
+		
 		// Save data for next page
 		for(int i = 0; i < BLOCK_SIZE; i++) {
-			blockBuffer[i] = pageBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
+			blockBuffer[i] = encryptedBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}
 		
 		// Print data
@@ -594,12 +604,6 @@ void load_firmware(void) {
 	
 		// Write data to Encrypted Section
 		program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
-		
-//  		if(j != (LOAD_FIRMWARE_PAGE_NUMBER - 1)) {
-//  			
-//  			// Add to the hash
-//  			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
-//  		}
  		
 		// Get ready for next page
 		UART1_putchar(ACK);
@@ -610,15 +614,9 @@ void load_firmware(void) {
 	
 	calcHash(hashKey, ENCRYPTED_SECTION / SPM_PAGESIZE, ENCRYPTED_SECTION / SPM_PAGESIZE + LOAD_FIRMWARE_PAGE_NUMBER - 1, hash);
 	
-	// DEBUG - print hash
-	for(int i = 0; i < BLOCK_SIZE; i++) {
-		UART0_putchar(hash[i]);
-	}
-	
-	// DEBUG - print hash
-	for(int i = 0; i < BLOCK_SIZE; i++) {
-		UART0_putchar(pageBuffer[i]);
-	}
+	wdt_reset();
+
+
 	
 	/* CHECK HASH */
 	
