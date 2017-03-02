@@ -58,7 +58,7 @@ def decryptAES(key, iv, inBytes):
 
 
 def readSecrets():
-    with open("secret_build_output.txt",'r') as keyFile:
+    with open("secret_configure_output.txt",'r') as keyFile:
         y = keyFile.readline()
         keyValues = {}
         while len(y) > 5:

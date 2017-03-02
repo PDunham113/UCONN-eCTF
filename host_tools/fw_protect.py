@@ -24,7 +24,7 @@ def grabKeys():
     """Parses secret_build_output.txt to read in all secret names and values.
     These are stored in a dictionary. 
     """
-    with open("secret_build_output.txt",'r') as keyFile:
+    with open("../bootloader/secret_build_output.txt",'r') as keyFile:
         keyDefinition = keyFile.readline()
         keyValues = {}
         while len(keyDefinition) > 0:

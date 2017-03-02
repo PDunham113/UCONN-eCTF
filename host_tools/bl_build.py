@@ -119,6 +119,7 @@ def make_secrets_file(secrets):
         for data in secrets:
             secret_file.write("#define " + data[0] + " \"" + bytesToCString(data[1])+'\"')
             secret_file.write("\n")
+	secret_file.close()
 
 def stripLine(intelLine):
     """Pulls the data out of a line of Intel hex and packs it as bytes.
@@ -170,7 +171,6 @@ def genMem(intHex):
 
 if __name__ == '__main__':
     secrets = generate_secrets()
-    make_secrets_file(secrets)
     if not make_bootloader():
         print "ERROR: Failed to compile bootloader."
         sys.exit(1)
@@ -181,11 +181,8 @@ if __name__ == '__main__':
     # flashHash = CMACHash(secrets["H_KEY"],bootFlash)
     flashHash = CMACHash(secrets[2][1],bootFlash)
     print(bytesToCString(flashHash))
-    secFile = open("sec","a")
-    secFile.write(bytesToCString(flashHash))
-    secFile.close()
-    with open("secret_build_output.txt","a") as secFile:
-        secFile.write("#define flashHash " + "\"" + bytesToCString(flashHash) + "\"")
+    secrets.append(("flashHash",bytesToCString(flashHash)))
+    make_secrets_file(secrets)
     copy_artifacts()
     write_fuse_file('lfuse', 0xE2)
     write_fuse_file('hfuse', 0xD8)

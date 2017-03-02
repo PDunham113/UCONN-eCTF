@@ -18,7 +18,7 @@ def generate_secret_file():
     directory = os.path.dirname(FILE_PATH)
 
     # Copy secret build output to secret configure output.
-    shutil.copyfile(os.path.join(directory, 'secret_build_output.txt'),
+    shutil.copyfile(os.path.join(directory, '../bootloader/secret_build_output.txt'),
                     os.path.join(directory, 'secret_configure_output.txt'))
 
     # If there were additional secret parameters to output, the file could be
@@ -53,7 +53,7 @@ def configure_bootloader(serial_port):
     else:
         serial_port.write('\x15')
 def grabKeys():
-    with open("secret_build_output.txt",'r') as keyFile:
+    with open("../bootloader/secret_build_output.txt",'r') as keyFile:
         keyDefinition = keyFile.readline()
         keyValues = {}
         while len(keyDefinition) > 0:
@@ -72,6 +72,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Bootloader Config Tool')
     parser.add_argument('--port', help='Serial port to use for configuration.',
                         required=True)
+    generate_secret_file()
     args = parser.parse_args()
     # Create serial connection using specified port.
     serial_port = serial.Serial(args.port, baudrate=115200)
