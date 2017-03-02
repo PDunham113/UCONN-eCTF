@@ -1,6 +1,6 @@
 # Hardware configuration settings.
 MCU = atmega1284p
-F_CPU = 20000000
+F_CPU =7300000
 BAUD = 115200
 
 # Tool aliases.
@@ -10,17 +10,17 @@ OBJCOPY = avr-objcopy
 PROGRAMMER = dragon_isp
 
 # Compiler configurations.
-CDEFS = -mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD}
-CLINKER = -nostartfiles -Wl,-Map,map.map,--defsym=__heap_end=0x800220
-#-Wl,--section-start=.text=0x1F000
+CDEFS = -mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD} -mrelax -funsigned-char -funsigned-bitfields -g2
+CLINKER = -nostartfiles -Wl,-Map,map.map,--section-start=.text=0x1E000,--defsym=__heap_end=0x800220 -Wl,--start-group -Wl,-lm -Wl,--end-group -Wl,--gc-sections -Wl,--relax -Wl,--print-gc-sections
+#-Wl,--section-start=.text=0x1E000
 CWARN =  -Wall
 COPT = -std=gnu99 -Os -fno-tree-scev-cprop -mcall-prologues \
-       -fno-inline-small-functions -fsigned-char
+       -fno-inline-small-functions -fsigned-char -fdata-sections -fpack-struct -fshort-enums -ffunction-sections
 
 CFLAGS  = $(CDEFS) $(CLINKER) $(CWARN) $(COPT)
 
 # Include file paths.
-INCLUDES = -I . -I ./AES_lib
+INCLUDES = -I./AES_lib
 
 # Run clean even when all files have been removed.
 .PHONY: clean
@@ -32,8 +32,8 @@ all:    flash.hex eeprom.hex
 
 uart.o : uart.c uart.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c uart.c
-
-AES_lib.o : AES_lib.c AES_lib.h 
+	
+AES_lib.o : AES_lib.c AES_lib.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c AES_lib.c
 
 main.o: main.c
@@ -57,7 +57,6 @@ keysize_descriptor.o : AES_lib/keysize_descriptor.c AES_lib/keysize_descriptor.h
 bootloader.elf: uart.o AES_lib.o main.o aes256_enc.o aes_enc.o aes_keyschedule.o aes_sbox.o keysize_descriptor.o
 	$(CC) $(CFLAGS) $(INCLUDES) -o bootloader.elf uart.o AES_lib.o main.o aes256_enc.o aes_enc.o aes_keyschedule.o aes_sbox.o keysize_descriptor.o
 
-
 strip: bootloader.elf
 	$(STRIP) bootloader.elf -o bootloader.elf
 
@@ -72,7 +71,8 @@ flash: flash.hex eeprom.hex
 		-U eeprom:w:eeprom.hex:i \
 		-U lfuse:w:lfuse.hex:i \
 		-U hfuse:w:hfuse.hex:i \
-		-U efuse:w:efuse.hex:i
+		-U efuse:w:efuse.hex:i \
+		-U lock:w:lock.hex:i 
 
 debug: flash.hex eeprom.hex
 	# Launch avarice: a tool that creates a debug server for the AVR and Dragon
