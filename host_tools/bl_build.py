@@ -182,7 +182,9 @@ if __name__ == '__main__':
     secrets = grabKeys()
     bootFlash = genMem("flash.hex")
     print(len(bootFlash))
-    bootFlash += b'\xff'*((7936) - len(bootFlash))
+    bootFlash += b'\xff'*((8192) - len(bootFlash))
+    if len(bootFlash) > 8192:
+        bootFlash = bootFlash[:8192]
     print("\n")
     print(len(bootFlash))
     flashHash = CMACHash(secrets["H_KEY"],bootFlash)

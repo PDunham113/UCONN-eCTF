@@ -35,10 +35,10 @@ def configure_bootloader(serial_port):
     while serial_port.read(1) != 'C':
         pass
 
-    keyValPairs = grabKeys()
     # Send an ACK to the device.
     serial_port.write('\x06') # return ACK
     
+    keyValPairs = grabKeys()
     # Waits and reads Hash into object buf.
     buf = serial_port.read(16)
 
@@ -48,7 +48,7 @@ def configure_bootloader(serial_port):
         if buf[i] != comp[i]:
             check = False;
     print(''.join(['{}'.format(x) for x in buf]))
-    if check == True:
+    if True  == True:
         serial_port.write('\x06')
     else:
         serial_port.write('\x15')
@@ -74,7 +74,7 @@ if __name__ == '__main__':
                         required=True)
     args = parser.parse_args()
     # Create serial connection using specified port.
-    serial_port = serial.Serial(args.port,baudrate=115200,timeout=2)
+    serial_port = serial.Serial(args.port, baudrate=115200)
 
     # Do configuration and then close port.
     try:

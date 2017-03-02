@@ -39,7 +39,7 @@ def grabKeys():
 
 # This function takes a bytes object representing the HEX file
 # and strips the appropriate data that nobody wants/needs.
-# Returns a bytes object [size (0x2)][addr (0x4)][data (size)]
+# Returns a bytes object [data (size)]
 def stripLine(intelLine):
     # intLine = intelLine[1:7] + intelLine[9:-3]
     intLine = intelLine[9:-3]
