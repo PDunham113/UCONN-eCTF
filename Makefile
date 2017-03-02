@@ -1,6 +1,6 @@
 # Hardware configuration settings.
 MCU = atmega1284p
-F_CPU = 20000000
+F_CPU = 7300000
 BAUD = 115200
 
 # Tool aliases.
@@ -10,7 +10,7 @@ OBJCOPY = avr-objcopy
 
 # Compiler configurations.
 CDEFS = -mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD}
-CLINKER = -nostartfiles -Wl,--section-start=.text=0x1F000
+CLINKER = -nostartfiles -Wl,--section-start=.text=0x1E000
 CWARN =  -Wall
 COPT = -std=gnu99 -Os -fno-tree-scev-cprop -mcall-prologues \
        -fno-inline-small-functions -fsigned-char

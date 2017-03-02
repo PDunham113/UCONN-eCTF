@@ -108,12 +108,12 @@ void configure(void);
 
 #define FIRM_HASH_SECTION   479UL * SPM_PAGESIZE
 #define BOOT_HASH_SECTION	511UL * SPM_PAGESIZE
-#define EPRM_HASH_SECTION	
+//#define EPRM_HASH_SECTION	
 
 uint16_t fw_version EEMEM = 1;
-uint8_t  fastClock        = 0;
+//uint8_t  fastClock        = 0;
 
-unsigned char CONFIG_ERROR_FLAG = OK;
+//unsigned char CONFIG_ERROR_FLAG = OK;
 
 uint8_t hashKey[KEY_SIZE]			  = H_KEY;
 uint8_t readbackHashKey[KEY_SIZE]     = RBH_KEY;
@@ -141,7 +141,7 @@ int main(void) {
 	UART0_init();
 	
 	// Enable Timer0 for clock switching
-	initTimer0();
+	//initTimer0();
 	
 	wdt_reset();
 	MCUSR &= ~(1<<WDRF);
@@ -189,6 +189,7 @@ int main(void) {
 
 
 /*** Interrupt Service Routines ***/
+/*
 ISR(TIMER0_COMPA_vect) {
 	if(fastClock) {
 		// Sets /8 clock divisor
@@ -213,6 +214,7 @@ ISR(TIMER0_COMPA_vect) {
 	
 	OCR0A = rand() % RAND_CLOCK_SWITCH;
 }
+*/
 
 
 /*** FUNCTION BODIES ***/
@@ -250,7 +252,7 @@ void configure(void) {
 	if(UART1_getchar()==ACK) {
 		wdt_reset();
 	
-		UART0_putstring("Calculating Hash");
+		//UART0_putstring("Calculating Hash");
 		/* CALCULATE HASH */
 		calcHash(hashKey, BOOTLDR_SECTION/SPM_PAGESIZE, BOOTLDR_SECTION/SPM_PAGESIZE + 32, hash, 0);
 	
@@ -344,8 +346,6 @@ void readback(void)
 		__asm__ __volatile__("");
 	}
 	
-	
-	
 	/* GET READBACK REQUEST */
 	
 	for(int i = 0; i < READBACK_REQUEST_SIZE; i++) {
@@ -354,36 +354,22 @@ void readback(void)
 	
 	wdt_reset();
 
-	
-	
-
 	/* COMPUTE HASH */
 	
 	hashCBC(readbackHashKey, readbackRequest, hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
 
     wdt_reset();
-	
-	
-	
+		
 	/* CHECK HASH */
 	
 	for(int i = 0; i < BLOCK_SIZE; i++) {
 		if(hash[i] != readbackRequest[READBACK_REQUEST_SIZE - BLOCK_SIZE + i]) {
-			hashFlag = 1;
+			UART1_putchar(NACK);
+			// Reset
+			while(1) {__asm__ __volatile__("");}
 		}
 	}
-	
-	// If hash is wrong, reset
-	if(hashFlag) {
-		UART1_putchar(NACK);
-		UART0_putstring("Wrong RBH");
 		
-		// Reset
-		while(1) {
-			__asm__ __volatile__("");
-		}
-	}
-	
 	wdt_reset();
 	
 	
@@ -400,26 +386,15 @@ void readback(void)
 	}	
 	
 	wdt_reset();
-	
-	
-	
+		
 	/* CHECK PASSWORD */
 	
 	for(int i = 0; i < READBACK_PASSWORD_SIZE; i++) {
 		if(readbackPassword[i] != decryptdRequest[i]) {
-			hashFlag = 1;
-		} 
-	}
-	
-	// If password is wrong, reset
-	if(hashFlag) {
-			UART1_putchar(NACK);
-			UART0_putstring("Wrong RBPW");
-			
+			UART1_putchar(NACK);						
 			// Reset
-			while(1) {
-				__asm__ __volatile__("");
-			}
+			while(1) {__asm__ __volatile__("");}
+		} 
 	}
 	
 	wdt_reset();
@@ -610,7 +585,7 @@ void load_firmware(void) {
 		UART1_putchar(NACK);
 		
 		// DEBUG - Tell us hash failed
-		UART0_putstring("Wrong H\n");
+		//UART0_putstring("Wrong H\n");
 		
 		// Fill pageBuffer with 0xFF
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
@@ -635,7 +610,7 @@ void load_firmware(void) {
 	UART1_putchar(ACK);
 	
 	// DEBUG - Tell us hash succeeded
-	UART0_putstring("Good H\n");
+	//UART0_putstring("Good H\n");
 	
 	
 	
@@ -678,7 +653,7 @@ void load_firmware(void) {
 	UART1_putchar(ACK);
 	
 	// DEBUG - Decrypt successful
-	UART0_putstring("Good DCPT\n");
+	//UART0_putstring("Good DCPT\n");
 	
 	
 	/* CHECK VERSION */
@@ -691,7 +666,7 @@ void load_firmware(void) {
 		UART1_putchar(NACK);
 		
 		// DEBUG - Version failed
-		UART0_putstring("Failed\n");
+		//UART0_putstring("Failed\n");
 		
 		// Erase Encrypted Section
 		for(int j = 0; j < MAX_PAGE_NUMBER; j++) {
@@ -730,13 +705,9 @@ void load_firmware(void) {
 	wdt_reset();
 	
 	// DEBUG - Decrypt successful
-	UART0_putstring("Success\n");
+	//UART0_putstring("Success\n");
 	
 	UART1_putchar(ACK);
-	
-	
-	
-	
 	
 	/* STORE MESSAGE */
 	for(int j = 1; j < 5; j++) {
@@ -784,7 +755,7 @@ void load_firmware(void) {
 	wdt_reset();
 	
 	// DEBUG - Firmware loaded
-	UART0_putstring("Loaded\n");
+	//UART0_putstring("Loaded\n");
 	
 	UART1_putchar(ACK);
 	
@@ -831,19 +802,12 @@ void boot_firmware(void)
 	// Check hash
 	for(int i = 0; i < BLOCK_SIZE; i++) {
 		if(realHash[i] != computedHash[i]) {
-			hashFlag = 1;
+			// Reset
+			while(1) {__asm__ __volatile__("");}
 		}
 	}
 	
-	// If wrong, reset
-	if(hashFlag) {
-		UART0_putstring("FW Corrupted");
-		
-		// Reset
-		while(1) {
-			__asm__ __volatile__("");
-		}
-	}
+	
 	
 
     /* RELEASE MESSAGE */
@@ -975,6 +939,7 @@ void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash,
  * \brief Initialize Timer0 for clock switching
  *
  */
+/*
 void initTimer0(void) {
 	// Configure to CTC Mode
 	TCCR0A = (1 << WGM01);
@@ -983,19 +948,24 @@ void initTimer0(void) {
 	// Overflow at a random amount
 	OCR0A = rand() % RAND_CLOCK_SWITCH;
 }
+*/
 
 /**
  * \brief Starts Timer0, enabling Clock Switching
  *
  */
+/*
 void enableClockSwitching(void) {
 	TCCR0B = (1 << CS01)|(1 << CS00); // Enable /64 divider
 }
+*/
 
 /**
  * \brief Stops Timer0, disabling Clock Switching
  *
  */
+/*
 void disableClockSwitching(void) {
 	TCCR0B = 0;
 }
+*/

@@ -48,6 +48,7 @@ void aes_shiftcol(void *data, uint8_t shift)
 }
 
 //#define xtime(x)   ((x<<1) ^ (((x>>7) & 1) * 0x1b))
+
 uint8_t xtime (uint8_t x)
 {
 	uint8_t res = ((x<<1) ^ (((x>>7) & 1) * 0x1b));
