@@ -234,90 +234,46 @@ ISR(TIMER0_COMPA_vect) {
  *		IF INCORRECT - A flag is set and the bootloader terminates.
  *
  */
-void configure(void)
-{
-	uint8_t pageBuffer[SPM_PAGESIZE];
+void configure(void) {
+	//uint8_t pageBuffer[SPM_PAGESIZE];
 	uint8_t hash[BLOCK_SIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		
 	//Start the Watchdog Timer
-	wdt_enable(WDTO_2S);
+	wdt_enable(WDTO_4S);
 	
 	/*WAIT FOR ACK*/
-	while(UART1_getchar()!=ACK);
-	
-	wdt_reset();
-		
-	/* CALCULATE HASH */
-	calcHash(hashKey, BOOTLDR_SECTION /SPM_PAGESIZE, (BOOTLDR_SECTION / SPM_PAGESIZE) + 33, hash, 0);
-	
-	wdt_reset();
-		
-	/* SEND HASH */
-	for(int i = 0; i < BLOCK_SIZE; i++)
-	{
-		UART1_putchar(hash[i]);
-	}
-	
-	wdt_reset();
-		
-	/*WAIT FOR ACK*/
-	while(!UART1_data_available())
-	{
+	//while(UART1_getchar()!=ACK);
+	while(!UART1_data_available()) {
 		__asm__ __volatile__("");
 	}
 	
-	//reset Watchdog Timer
-	wdt_reset();
-	
-	/*PC WILL ACK IF HASH IS CORRECT*/
-	if(UART1_getchar() == ACK)
-	{	
-		/*CALCULATE EEPROM HASH*/
-		for(int i = 0; i < EEPROM_SIZE; i++)
-		{
-			// Get a page of data
-			for(uint8_t i = 0; i < SPM_PAGESIZE; i++) {
-				pageBuffer[i] = eeprom_read_byte(&i);
-			}
-					
-			// Add to the hash
-			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
-		}
-		
-		//reset Watchdog Timer
+	if(UART1_getchar()==ACK) {
 		wdt_reset();
-			
-		/*SEND EEPROM HASH OVER UART1*/
-		for(int i = 0; i < BLOCK_SIZE; i++)
-		{
+	
+		UART0_putstring("Calculating Hash");
+		/* CALCULATE HASH */
+		calcHash(hashKey, BOOTLDR_SECTION/SPM_PAGESIZE, BOOTLDR_SECTION/SPM_PAGESIZE + 32, hash, 0);
+	
+		wdt_reset();
+		
+		/* SEND HASH */
+		for(int i = 0; i < BLOCK_SIZE; i++)	{
 			UART1_putchar(hash[i]);
 		}
-		
-		//reset Watchdog Timer
+	
 		wdt_reset();
 		
 		/*WAIT FOR ACK*/
-		while(!UART1_data_available())
-		{
+		while(!UART1_data_available()) {
 			__asm__ __volatile__("");
 		}
-		
+	
 		//reset Watchdog Timer
 		wdt_reset();
-		
+	
 		/*PC WILL ACK IF CORRECT*/
-		if(UART1_getchar() == ACK)
-		{
-			while(1){__asm__ __volatile__("");}		//wait for reset
-			
-		}
-		
-		else
-		{
-			CONFIG_ERROR_FLAG = ERROR;
-			while(1){__asm__ __volatile__("");}		//wait for reset
-		}
-	}	
+		while(1){__asm__ __volatile__("");}		//wait for reset
+	}
 
 }
 
@@ -381,7 +337,7 @@ void readback(void)
 	aes256_ctx_t ctx;
 	
     // Start the Watchdog Timer
-    wdt_enable(WDTO_2S);
+    wdt_enable(WDTO_4S);
 	
 	// Wait for data
 	while(!UART1_data_available()) {
@@ -605,7 +561,7 @@ void load_firmware(void) {
 	aes256_ctx_t ctx;
 	
 	// Start Watchdog Timer
-	wdt_enable(WDTO_2S);
+	wdt_enable(WDTO_4S);
 	
 	
 	
@@ -859,11 +815,8 @@ void boot_firmware(void)
 	uint8_t realHash[BLOCK_SIZE];
 	uint8_t hashFlag = 0;
 		
-	
     // Start the Watchdog Timer.
-    wdt_enable(WDTO_2S);
-
-
+    wdt_enable(WDTO_4S);
 
 	/* CHECK HASH */
 	
@@ -891,8 +844,6 @@ void boot_firmware(void)
 			__asm__ __volatile__("");
 		}
 	}
-	
-	
 	
 
     /* RELEASE MESSAGE */
@@ -1009,6 +960,8 @@ void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash,
 				pageBuffer[i] = pgm_read_byte_far((uint32_t)j * SPM_PAGESIZE + i);
 			}
 		}
+		
+		wdt_reset();
 		
 		// Add to hash
 		hashCBC(key, pageBuffer, hash, SPM_PAGESIZE);
