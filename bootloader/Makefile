@@ -1,86 +1,175 @@
-# Hardware configuration settings.
-MCU = atmega1284p
-F_CPU =7300000
-BAUD = 115200
+################################################################################
+# Automatically-generated file. Do not edit!
+################################################################################
 
-# Tool aliases.
-CC = avr-gcc
-STRIP  = avr-strip
-OBJCOPY = avr-objcopy
-PROGRAMMER = dragon_isp
+RM := rm -rf
 
-# Compiler configurations.
-CDEFS = -mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD} -mrelax -funsigned-char -funsigned-bitfields -g2
-CLINKER = -nostartfiles -Wl,-Map,map.map,--section-start=.text=0x1E000,--defsym=__heap_end=0x800220 -Wl,--start-group -Wl,-lm -Wl,--end-group -Wl,--gc-sections -Wl,--relax -Wl,--print-gc-sections
-#-Wl,--section-start=.text=0x1E000
-CWARN =  -Wall
-COPT = -std=gnu99 -Os -fno-tree-scev-cprop -mcall-prologues \
-       -fno-inline-small-functions -fsigned-char -fdata-sections -fpack-struct -fshort-enums -ffunction-sections
+USER_OBJS :=
 
-CFLAGS  = $(CDEFS) $(CLINKER) $(CWARN) $(COPT)
+LIBS := 
+PROJ := 
 
-# Include file paths.
-INCLUDES = -I./AES_lib
+O_SRCS := 
+C_SRCS := 
+S_SRCS := 
+S_UPPER_SRCS := 
+OBJ_SRCS := 
+ASM_SRCS := 
+PREPROCESSING_SRCS := 
+OBJS := 
+OBJS_AS_ARGS := 
+C_DEPS := 
+C_DEPS_AS_ARGS := 
+EXECUTABLES := 
+OUTPUT_FILE_PATH :=
+OUTPUT_FILE_PATH_AS_ARGS :=
+AVR_APP_PATH :=$$$AVR_APP_PATH$$$
+QUOTE := "
+ADDITIONAL_DEPENDENCIES:=
+OUTPUT_FILE_DEP:=
+LIB_DEP:=
+LINKER_SCRIPT_DEP:=
 
-# Run clean even when all files have been removed.
-.PHONY: clean
+# Every subdirectory with source files must be described here
+SUBDIRS :=  \
+AES_lib
 
-OFILES = nope.c
 
-all:    flash.hex eeprom.hex
-	@echo  Simple bootloader has been compiled and packaged as intel hex.
+# Add inputs and outputs from these tool invocations to the build variables 
+C_SRCS +=  \
+AES_lib.c \
+AES_lib/aes256_enc.c \
+AES_lib/aes_enc.c \
+AES_lib/aes_keyschedule.c \
+AES_lib/aes_sbox.c \
+AES_lib/keysize_descriptor.c \
+main.c \
+uart.c
 
-uart.o : uart.c uart.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c uart.c
+
+PREPROCESSING_SRCS += 
+
+
+ASM_SRCS += 
+
+
+OBJS +=  \
+AES_lib.o \
+AES_lib/aes256_enc.o \
+AES_lib/aes_enc.o \
+AES_lib/aes_keyschedule.o \
+AES_lib/aes_sbox.o \
+AES_lib/keysize_descriptor.o \
+main.o \
+uart.o
+
+OBJS_AS_ARGS +=  \
+AES_lib.o \
+AES_lib/aes256_enc.o \
+AES_lib/aes_enc.o \
+AES_lib/aes_keyschedule.o \
+AES_lib/aes_sbox.o \
+AES_lib/keysize_descriptor.o \
+main.o \
+uart.o
+
+C_DEPS +=  \
+AES_lib.d \
+AES_lib/aes256_enc.d \
+AES_lib/aes_enc.d \
+AES_lib/aes_keyschedule.d \
+AES_lib/aes_sbox.d \
+AES_lib/keysize_descriptor.d \
+main.d \
+uart.d
+
+C_DEPS_AS_ARGS +=  \
+AES_lib.d \
+AES_lib/aes256_enc.d \
+AES_lib/aes_enc.d \
+AES_lib/aes_keyschedule.d \
+AES_lib/aes_sbox.d \
+AES_lib/keysize_descriptor.d \
+main.d \
+uart.d
+
+OUTPUT_FILE_PATH +=ATMega1284P_Boot.elf
+
+OUTPUT_FILE_PATH_AS_ARGS +=ATMega1284P_Boot.elf
+
+ADDITIONAL_DEPENDENCIES:=
+
+#OUTPUT_FILE_DEP:= ./makedep.mk
+
+LIB_DEP+= 
+
+LINKER_SCRIPT_DEP+= 
+
+INCLUDES:= -I/usr/lib/avr/include/
+
+# AVR32/GNU C Compiler
+
+
+./%.o: ./%.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 4.9.2
+	avr-gcc -MD $(INCLUDES) -x c -ffunction-sections -funsigned-char -funsigned-bitfields -Os -fno-inline-small-functions -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega1284p -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
 	
-AES_lib.o : AES_lib.c AES_lib.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c AES_lib.c
 
-main.o: main.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c main.c
+AES_lib/%.o: AES_lib/%.c
+	@echo Buildimang file: $<
+	@echo Invoking: AVR/GNU C Compiler : 4.9.2
+	avr-gcc -MD $(INCLUDES) -x c -ffunction-sections -funsigned-char -funsigned-bitfields -Os -fno-inline-small-functions -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega1284p -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
 
-aes256_enc.o : AES_lib/aes256_enc.c AES_lib/aes256_enc.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c AES_lib/aes256_enc.c
 
-aes_enc.o : AES_lib/aes_enc.c AES_lib/aes_enc.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c AES_lib/aes_enc.c
 
-aes_keyschedule.o : AES_lib/aes_keyschedule.c AES_lib/aes_keyschedule.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c AES_lib/aes_keyschedule.c
+# AVR32/GNU Preprocessing Assembler
 
-aes_sbox.o : AES_lib/aes_sbox.c AES_lib/aes_sbox.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c AES_lib/aes_sbox.c
 
-keysize_descriptor.o : AES_lib/keysize_descriptor.c AES_lib/keysize_descriptor.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c AES_lib/keysize_descriptor.c
 
-bootloader.elf: uart.o AES_lib.o main.o aes256_enc.o aes_enc.o aes_keyschedule.o aes_sbox.o keysize_descriptor.o
-	$(CC) $(CFLAGS) $(INCLUDES) -o bootloader.elf uart.o AES_lib.o main.o aes256_enc.o aes_enc.o aes_keyschedule.o aes_sbox.o keysize_descriptor.o
+# AVR32/GNU Assembler
 
-strip: bootloader.elf
-	$(STRIP) bootloader.elf -o bootloader.elf
 
-flash.hex: strip
-	$(OBJCOPY) -R .eeprom -O ihex bootloader.elf flash.hex
 
-eeprom.hex: strip
-	$(OBJCOPY) -j .eeprom --set-section-flags=.eeprom="alloc,load" --change-section-lma .eeprom=0 -O ihex bootloader.elf eeprom.hex
+
+ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(strip $(C_DEPS)),)
+-include $(C_DEPS)
+endif
+endif
+
+# Add inputs and outputs from these tool invocations to the build variables 
+
+# All Target
+all: $(OUTPUT_FILE_PATH) $(ADDITIONAL_DEPENDENCIES)
+
+$(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP) $(LIB_DEP) $(LINKER_SCRIPT_DEP)
+	@echo Building target: $@
+	@echo Invoking: AVR/GNU Linker : 4.9.2
+	avr-gcc $(INCLUDES) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -Wl,-Map="ATMega1284P_Boot.map" -Wl,--start-group -Wl,-lm  -Wl,--end-group -Wl,--gc-sections -mrelax -Wl,-section-start=.text=0x1e000  -mmcu=atmega1284p  
+	@echo Finished building target: $@
+	avr-objcopy -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures  "ATMega1284P_Boot.elf" "flash.hex"
+	avr-objcopy -j .eeprom  --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0  --no-change-warnings -O ihex "ATMega1284P_Boot.elf" "eeprom.hex" || exit 0
+	avr-objdump -h -S "ATMega1284P_Boot.elf" > "ATMega1284P_Boot.lss"
+	avr-objcopy -O srec -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures "ATMega1284P_Boot.elf" "ATMega1284P_Boot.srec"
+	avr-size "ATMega1284P_Boot.elf"
+	
 
 flash: flash.hex eeprom.hex
-	avrdude -P usb -p m1284p -c $(PROGRAMMER)  -u -U flash:w:flash.hex:i \
+	avrdude -P usb -p m1284p -c dragon_isp  -u -U flash:w:flash.hex:i \
 		-U eeprom:w:eeprom.hex:i \
 		-U lfuse:w:lfuse.hex:i \
 		-U hfuse:w:hfuse.hex:i \
 		-U efuse:w:efuse.hex:i \
 		-U lock:w:lock.hex:i 
 
-debug: flash.hex eeprom.hex
-	# Launch avarice: a tool that creates a debug server for the AVR and Dragon
-	avarice -R -g :4242 &
-	# Launch the avr debugger avr-gdb. The configuation for this tool is included 
-	# in .gdbinit
-	avr-gdb
 
+# Other Targets
 clean:
-	$(RM) -v *.hex *.o *.elf $(MAIN)
-
+	-$(RM) $(OBJS_AS_ARGS) $(EXECUTABLES)  
+	-$(RM) $(C_DEPS_AS_ARGS)   
+	rm -rf "ATMega1284P_Boot.elf" "ATMega1284P_Boot.a" "ATMega1284P_Boot.hex" "ATMega1284P_Boot.lss" "ATMega1284P_Boot.eep" "ATMega1284P_Boot.map" "ATMega1284P_Boot.srec" "ATMega1284P_Boot.usersignatures"
+	
