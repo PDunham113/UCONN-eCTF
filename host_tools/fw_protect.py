@@ -21,6 +21,9 @@ from intelhex import IntelHex
 # to acquire all secret names and secret values. The names and 
 # values are stored as a hash map
 def grabKeys():
+    """Parses secret_build_output.txt to read in all secret names and values.
+    These are stored in a dictionary. 
+    """
     with open("secret_build_output.txt",'r') as keyFile:
         keyDefinition = keyFile.readline()
         keyValues = {}
