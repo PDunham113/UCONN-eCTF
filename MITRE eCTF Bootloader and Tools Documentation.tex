@@ -1,0 +1,102 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage[section]{placeins}
+\usepackage{indentfirst}
+\begin{document}
+\begin{titlepage}
+	\centering
+	\vspace{1cm}
+	{\scshape\Large University of Connecticut\par}
+	\vspace{1.5cm}
+	{\huge\bfseries MITRE eCTF\par}
+	\vspace{2cm}
+	{\Large\itshape Brian Marquis, Patrick Dunham, Luke Malinowski, James Steel, Cameron Morris, Chenglu Jin, Waldemar Cruz, Paul Wortman\par}
+	{\Large\itshape Dr. John Chandy\par}
+    {\Large\itshape 3/1/17\par}
+\tableofcontents
+\vfill
+\end{titlepage}
+\section{Memory Mapping}
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[scale = 0.9]{MITRE_eCTF_Flash_Allocation.png}
+\caption{Flash Memory Mapping}
+\end{center}
+\end{figure}
+\section{Fuse Settings}
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[scale = 0.6]{Fuse_Settings.png}
+\caption{ATMega1284P Fuse Settings}
+\end{center}
+\end{figure}
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[scale = 0.6]{Lock_Settings.png}
+\caption{ATMega1284P Lock Bit Settings}
+\end{center}
+\end{figure}
+\section{Encryption}
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[scale = 0.6]{Cipher_Block_Feedback.png}
+\caption{Cipher Feedback Diagram}
+\end{center}
+\end{figure}
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[scale = 0.6]{Cipher_Block_Chaining.png}
+\caption{Cipher Block Chaining Diagram}
+\end{center}
+\end{figure}
+\section{Bootloader}
+\subsection{Configure Bootloader}
+On reset, if PB4 is grounded, the bootloader will enter configure mode and will put a 'C' on UART1.  The bootloader will then wait for an ACK char (0x06) from the configure tool before proceeding.  Once an ACK is received, the bootloader will read each page of flash memory dedicated to the bootloader.  Each page of bootloader flash will also be iterated through a hash function.  Once each page is read and the final hash is generated, this value will be sent over UART1.  The tool will then check to see if the received value matches the hash calculated by the computer.  If it matches, the tool will send an ACK over UART1.  Otherwise, it will send a NACK (0x15).  If a NACK is received, the bootloader will set a flag indicating that either the bootloader or EEPROM has been installed incorrectly.  Then, it will wait for the Watchdog timer to reset the system.  If ACK is received, on the other hand, the bootloader will proceed to read the EEPROM section one page at a time.  Like before, the bootloader will generate a hash on this data and will send it to the configure tool over UART1.  As before, if the hash is correct, the tools will send an ACK; otherwise, it will send a NACK.  If an ACK is received by the bootloader, the system will wait for a Watchdog reset.  Otherwise, it will set the configuration error flag and then wait for the reset.
+\subsection{Readback Flash}
+When a jumper to PB3 is connected, the bootloader will send an R and enter the readback function.  The function will wait for the tools to send the starting flash address, the readback size, the password, and a hash of the starting address and the readback size.  The bootloader will then compute the hash of the encrypted starting address and size and compare that against the hash sent by the tools.  If incorrect, the bootloader will not send any flash data over UART1 and will reset with the Watchdog timer. Otherwise, the bootloader will proceed to decrypt the encrypted received data.  Once decryption is complete, the decrypted password will be checked against the password stored in EEPROM.  If valid, the bootloader will use the decrypted size and starting address to send each page (256 bytes) of encrypted flash memory over UART1.  The bootloader will send as many pages as needed to transmit the requested amount of data.  Then, the Watchdog timer will reset the bootloader. 
+\subsection{Load Firmware}
+\begin{verbatim}
+ * \brief Loads a new firmware image and release message
+ * 
+ * This function securely loads a new firmware image onto flash, following the
+ * procedure outlined below.
+ * 
+ * 1 - The encrypted firmware image is loaded into the ENCRYPTED_SECTION of flash.
+ * 2 - The CBC-MAC of the encrypted firmware image is computed, and compared to the
+ *	   CBC-MAC sent.
+ *		IF   CORRECT - The bootloader proceeds with the firmware upload.
+ *		IF INCORRECT - The bootloader erases ENCRYPTED_SECTION and terminates.
+ * 3 - The firmware image is decrypted and stored in the DECRYPTED_SECTION of flash.
+ * 4 - The version number is checked versus the current version,
+	   and updated in EEPROM
+ *		IF   CORRECT - The bootloader proceeds with the firmware upload.
+ *		IF INCORRECT - The bootloader erases ENCRYPTED_SECTION and DECRYPTED_SECTION and
+ *					   terminate.
+ * 5 - The release message is written to the MESSAGE_SECTION
+ * 6 - The firmware is written to the APPLICATION_SECTION
+ * 7 - The bootloader erases ENCRYPTED_SECTION and DECRYPTED_SECTION and terminates
+\end{verbatim}
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[scale = 0.4]{MITRE_eCTF_Load_Firmware_Packet.png}
+\caption{Load Firmware Packet Orientation}
+\end{center}
+\end{figure}
+\subsection{Boot Flash}
+If the firmware verification flag is not set when the boot function is called, then the bootloader will attempt to jump to address zero and begin executing the first instruction in the application flash.
+\section{Host Tools}
+The host tools consist of bl\textunderscore build, bl\textunderscore config, fw\textunderscore update, fw\textunderscore protect, and readback.
+\subsection{Build Tool}
+The bootloader is built and written to an intel hex file. Secrets (keys, initialization vectors, readback password) are generated using /dev/urandom. Those are then output to secret\textunderscore build\textunderscore output.txt.
+\subsection{Configure Tool}
+The configure tool verifies that the bootloader and EEPROM was written correctly by asking the AVR to compute a hash of each and comparing them to the hashes generated using bl \textunderscore config. If the hashes do not match, then the bootloader was not written correctly.
+\subsection{Readback Tool}
+The readback tool communicates with the AVR over an encrypted UART channel in order to read back a section of flash memory. It reads secrets from the secret\textunderscore configure \textunderscore output.txt generated by bl\textunderscore build.py and constructs a request to read $n$ bytes of memory starting at address $a$ to send to the AVR. It then expects an encrypted response containing those requested bytes. After receiving all of the expected bytes, the readback tool will decrypt them and write them to stdout as hex. 
+\subsection{Bundle and Protect Tool}
+Firmware is protected by encrypting and signing it. AES-128 is used and signed using CBC.
+\subsection{Firmware Update Tool}
+The firmware update tool uploads the firmware to the AVR, one encrypted chunk at a time. It periodically checks to ensure that the AVR is responding with ACK (0x06) on the same UART interface that the firmware is being uploaded through. If ACK is not received, then an error occurs.
+
+
+
+\end{document}
