@@ -110,7 +110,7 @@ void program_flash(uint32_t page_address, unsigned char *data);
 #define BOOT_HASH_SECTION	511UL * SPM_PAGESIZE
 
 // Bootloader Control Flags
-uint16_t fw_version EEMEM = 1;
+ uint16_t fw_version EEMEM   = 1;
 //uint8_t  fastClock        = 0;
 
 // AES-256 Keys
@@ -595,12 +595,12 @@ void load_firmware(void) {
 		// Write data to Encrypted Section
 		program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
 		
-		if(j != (LOAD_FIRMWARE_PAGE_NUMBER - 1)) {
-			
-			// Add to the hash
-			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
-		}
-		
+//  		if(j != (LOAD_FIRMWARE_PAGE_NUMBER - 1)) {
+//  			
+//  			// Add to the hash
+//  			hashCBC(hashKey, pageBuffer, hash, SPM_PAGESIZE);
+//  		}
+ 		
 		// Get ready for next page
 		UART1_putchar(ACK);
 		
@@ -608,7 +608,17 @@ void load_firmware(void) {
 		wdt_reset();
 	}
 	
+	calcHash(hashKey, ENCRYPTED_SECTION / SPM_PAGESIZE, ENCRYPTED_SECTION / SPM_PAGESIZE + LOAD_FIRMWARE_PAGE_NUMBER - 1, hash);
 	
+	// DEBUG - print hash
+	for(int i = 0; i < BLOCK_SIZE; i++) {
+		UART0_putchar(hash[i]);
+	}
+	
+	// DEBUG - print hash
+	for(int i = 0; i < BLOCK_SIZE; i++) {
+		UART0_putchar(pageBuffer[i]);
+	}
 	
 	/* CHECK HASH */
 	
@@ -691,9 +701,6 @@ void load_firmware(void) {
 	
 	wdt_reset();
 	UART1_putchar(ACK);
-	
-	// DEBUG - Decrypt successful
-	UART0_putstring("Good DCPT\n");
 	
 	
 	
