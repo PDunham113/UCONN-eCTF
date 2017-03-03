@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import os
 import struct
@@ -9,23 +9,6 @@ import sys
 from intelhex import IntelHex
 from Crypto.Cipher import AES
 from Crypto.Random.random import StrongRandom
-
-def grabKeys():
-    with open("secret_build_output.txt",'r') as keyFile:
-        keyDefinition = keyFile.readline()
-        keyValues = {}
-        while len(keyDefinition) > 0:
-            # Split each line into its [define][name][value]
-            keyDefinition = keyDefinition.split(" ")
-            z = keyDefinition[2]
-            z=z[1:-2]
-            key = []
-            for i in range(len(z)//4):
-                    key.append(struct.pack(">B",int(z[4*i+2:4*i+4],16)))
-            key = b''.join(key)
-            keyValues[keyDefinition[1]] = key 
-            keyDefinition = keyFile.readline()
-        return keyValues
 
 def CMACHash(key,inBytes):
     encryptor = AES.new(key,AES.MODE_CBC,b'\x00'*16,segment_size=128)
@@ -82,10 +65,10 @@ def copy_artifacts():
     # Copy build artifacts from bootloader directory.
     shutil.copy(os.path.join(src_dir, 'flash.hex'), dst_dir)
     shutil.copy(os.path.join(src_dir, 'eeprom.hex'), dst_dir)
-    shutil.copy(os.path.join(src_dir, 'lfuse.hex'), dst_dir)
-    shutil.copy(os.path.join(src_dir, 'hfuse.hex'), dst_dir)
-    shutil.copy(os.path.join(src_dir, 'efuse.hex'), dst_dir) 
-    shutil.copy(os.path.join(src_dir, 'lock.hex'), dst_dir)
+    shutil.copy(os.path.join(dst_dir, 'hfuse.hex'), src_dir)
+    shutil.copy(os.path.join(dst_dir, 'lfuse.hex'), src_dir)
+    shutil.copy(os.path.join(dst_dir, 'efuse.hex'), src_dir)
+    shutil.copy(os.path.join(dst_dir, 'lock.hex'), src_dir)
 
 def write_fuse_file(fuse_name, fuse_value):
     hex_file = IntelHex()
@@ -154,22 +137,12 @@ def dataLen(intHexLine):
 def genMem(intHex):
     with open(intHex,'r') as hexFile:
         dump = []
-        prevAddr = -16
-        prevLen = 16
-        bytesADDED = 0
         for currentLine in hexFile:
             recordType = currentLine[7:9]
-            if recordType != '00':
-                pass
-            else:
-                prevLen = addrOf(currentLine)-prevAddr
-            
-                if prevAddr + prevLen == addrOf(currentLine):
-                    # If the last line is now continuos append it's data as is
-                    dump.append(stripLine(currentLine))
-                    # Initialize values for previous line as current line
-                    prevAddr = addrOf(currentLine)
-                    prevLen = dataLen(currentLine)
+            if recordType == '00':
+                # If the last line is now continuos append it's data as is
+                dump.append(stripLine(currentLine))
+                # Initialize values for previous line as current line
             prevLine = currentLine
         return b''.join(dump)
 
@@ -184,11 +157,10 @@ if __name__ == '__main__':
         bootFlash = bootFlash[:8192]
     # flashHash = CMACHash(secrets["H_KEY"],bootFlash)
     flashHash = CMACHash(secrets[2][1],bootFlash)
-    print(bytesToCString(flashHash))
-    secrets.append(("flashHash",bytesToCString(flashHash)))
+    secrets.append(("flashHash",flashHash))
     make_secrets_file(secrets)
-    copy_artifacts()
     write_fuse_file('lfuse', 0xE2)
     write_fuse_file('hfuse', 0xD8)
     write_fuse_file('efuse', 0xFC)
-    write_fuse_file('lock', 0xCC)
+    write_fuse_file('lock', 0xFF)
+    copy_artifacts()

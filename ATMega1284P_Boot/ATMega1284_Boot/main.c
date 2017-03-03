@@ -851,7 +851,7 @@ void boot_firmware(void)
 		// Write out release message to UART0.
 		int addr = MESSAGE_SECTION;
 	
-		while ((cur_byte != 0x00)) {
+		while ((cur_byte != 0x00) && (addr < (MESSAGE_SECTION + 4 * SPM_PAGESIZE))) {
 			cur_byte = pgm_read_byte_far(addr);
 			UART0_putchar(cur_byte);
 			++addr;
