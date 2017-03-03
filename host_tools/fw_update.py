@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     # Open serial port. Set baudrate to 115200. Set timeout to 2 seconds.
     print('Opening serial port...')
-    ser = serial.Serial(args.port, baudrate=115200, timeout=2)
+    ser = serial.Serial(args.port, baudrate=115200, timeout=8)
 
     print('Waiting for bootloader to enter update mode...')
     while ser.read(1) != 'U':
@@ -56,12 +56,10 @@ if __name__ == '__main__':
         while (len(chunk)!=0):
             if args.debug:
                 print("Writing frame {} ({} bytes)...".format(i, len(chunk)))
-            # ser.write(b''.join([chr(x) for x in range(256)]))
             ser.write(chunk)  # Write the frame...
 
             resp = ser.read()  # Wait for an OK from the bootloader
-            # while ser.read() != RESP_OK:
-            #    pass
+            
             time.sleep(0.1)
             print(ord(resp))
             if resp != RESP_OK:
@@ -70,8 +68,4 @@ if __name__ == '__main__':
             i+=1
             chunk = firmware.read(256)
     print("Done writing firmware.")
-
-    # Send a zero length payload to tell the bootlader to finish writing
-    # it's page.
-    ser.write(struct.pack('>H', 0x0000))
 

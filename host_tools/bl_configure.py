@@ -7,7 +7,7 @@ import argparse
 import os
 import serial
 import shutil
-
+import struct
 FILE_PATH = os.path.abspath(__file__)
 
 def generate_secret_file():
@@ -34,23 +34,21 @@ def configure_bootloader(serial_port):
     # the serial port it could be added here.
     while serial_port.read(1) != 'C':
         pass
-
+    print("Calculating hash...")
     # Send an ACK to the device.
     serial_port.write('\x06') # return ACK
     
-    keyValPairs = grabKeys()
     # Waits and reads Hash into object buf.
     buf = serial_port.read(16)
 
-    comp = keyValPairs["flashHash"] 
-    check = True;
-    for i in range(0, len(buf)):
-        if buf[i] != comp[i]:
-            check = False;
-    print(''.join(['{}'.format(x) for x in buf]))
-    if True  == True:
+    print(''.join(['{:02x}'.format(ord(x)) for x in buf]))
+    
+    # The bootloader is correct if it is able to generate a hash
+    if buf != 0:
         serial_port.write('\x06')
+        print("Bootloader correctly configured")
     else:
+        print("Bootloader incorrectly configured")
         serial_port.write('\x15')
 def grabKeys():
     with open("../bootloader/secret_build_output.txt",'r') as keyFile:

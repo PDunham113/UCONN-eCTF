@@ -118,7 +118,6 @@ if __name__ == '__main__':
     # Pad to page end
     # finalList.append(b'\x00'*254)
     finalList.append(os.urandom(254))
-    print(len(b''.join(finalList)))
     
     # Pack firmware message into finalList message
     if len(args.message) < 1024:
@@ -134,14 +133,12 @@ if __name__ == '__main__':
     
     # Enforce CSTRING encoding
     finalList.append(b'\x00')
-    print("length after msg appended")
 
     # Pack firmware into finalList
     for line in firmwareSections:
         finalList.append(line)
     # finalList is [version (0x2)][message (1KB)][firmware (30KB)]
     finalBytes = b''.join(finalList)
-    print("finalBytes size:",len(finalBytes))
     padSize = 125*256-len(finalBytes)
     if padSize < 0:
         print("firmware size error")
@@ -149,16 +146,10 @@ if __name__ == '__main__':
     # finalBytes += (os.urandom(padSize))
     
     # Encrypt bytes
-    # finalBytes = encryptAES(b'\x00'*32,b'\x00'*16,finalBytes)
     finalBytes = encryptAES(keyMap["FW_KEY"],keyMap["FW_IV"],finalBytes)
 
-    print(len(finalBytes))
-    with open("CBC.hash","wb+") as CBCCypherText:
-        encryptCBC(keyMap["H_KEY"],b'\x00'*16,finalBytes,CBCCypherText)
-        # encryptCBC(b'\x00'*32,b'\x00'*16,finalBytes,CBCCypherText)
 
     CBCHash = CMACHash(keyMap["H_KEY"],finalBytes)
-    # CBCHash = CMACHash(b'\x00'*32,finalBytes)
     finalBytes += CBCHash
     padSize = 126*256 - len(finalBytes)
     with open(args.outfile,'wb+') as outfile:
