@@ -114,7 +114,7 @@ void program_flash(uint32_t page_address, unsigned char *data);
 
 // Bootloader Control Flags
 uint16_t fw_version EEMEM   = 1;
-uint8_t  fastClock          = 1;
+volatile uint8_t  fastClock = 1;
 
 // Random Number Generation
 #define RAND_CLOCK_SWITCH 10
@@ -206,7 +206,7 @@ ISR(TIMER0_COMPA_vect) {
 		setFastMode();
 	}
 	
-	OCR0A = quickRand(&randSeed) % RAND_CLOCK_SWITCH;
+	OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
 }
 
 
@@ -995,7 +995,7 @@ void initTimer0(void) {
 	TIMSK0 = (1 << OCIE0A);
 	
 	// Overflow at a random amount
-	OCR0A = quickRand(&randSeed) % RAND_CLOCK_SWITCH;
+	OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
 }
 
 
@@ -1005,7 +1005,7 @@ void initTimer0(void) {
  *
  */
 void enableClockSwitching(void) {
-	TCCR0B = (1 << CS01)|(1 << CS00); // Enable /64 divider
+	TCCR0B = (1 << CS02)|(1 << CS00); // Enable /1024 divider
 }
 
 
