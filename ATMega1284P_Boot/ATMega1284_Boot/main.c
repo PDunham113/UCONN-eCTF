@@ -638,6 +638,7 @@ void load_firmware(void) {
 			// Send NACK
 			UART1_putchar(NACK);
 			
+                        // wwwwwwwww remove this debug statement
 			// DEBUG - Tell us hash failed
 			UART0_putstring("Wrong H\n");
 			
@@ -734,6 +735,7 @@ void load_firmware(void) {
 			// Firmware Too Old
 			UART1_putchar(NACK);
 		
+                        // wwwwwwwww remove this debug statement
 			// DEBUG - Version failed
 			UART0_putstring("VN Fail\n");
 		
@@ -838,6 +840,7 @@ void load_firmware(void) {
 	
 	wdt_reset();
 	
+        // wwwwwwwww remove this debug statement
 	// DEBUG - Firmware loaded
 	UART0_putstring("FW Up\n");
 	
