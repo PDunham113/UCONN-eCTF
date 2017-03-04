@@ -56,6 +56,7 @@
 #include "uart.h"
 #include "AES_lib.h"
 #include "secret_build_output.txt"
+#include "eeprom_safe.h"
 
 
 
@@ -76,6 +77,7 @@ void readback(void);
 void configure(void);
 
 // Generic
+void loadSecrets(void);
 void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash);
 void program_flash(uint32_t page_address, unsigned char *data);
 
@@ -117,20 +119,27 @@ uint8_t  fastClock = 1;
 // Random Number Generation
 uint16_t randSeed = 6969;
 
-// AES-256 Keys
-uint8_t hashKey[KEY_SIZE]			  = H_KEY;
-uint8_t readbackHashKey[KEY_SIZE]     = RBH_KEY;
-uint8_t firmwareKey[KEY_SIZE]	      = FW_KEY;
-uint8_t readbackKey[KEY_SIZE]		  = RB_KEY;
+// AES-256 Keys (Used by Code)
+uint8_t hashKey[KEY_SIZE]         = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t readbackHashKey[KEY_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t firmwareKey[KEY_SIZE]     = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t readbackKey[KEY_SIZE]     = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // Initialization Vectors
 uint8_t firmwareIV[BLOCK_SIZE] = FW_IV;
 uint8_t readbackIV[BLOCK_SIZE] = RB_IV;
 
-// Passwords
-uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PW;
+// Passwords (Used by Code)
+uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+// AES-256 Keys (In EEPROM)
+uint8_t hashKeyEE[KEY_SIZE] EEMEM	      = H_KEY;
+uint8_t readbackHashKeyEE[KEY_SIZE] EEMEM = RBH_KEY;
+uint8_t firmwareKeyEE[KEY_SIZE] EEMEM	  = FW_KEY;
+uint8_t readbackKeyEE[KEY_SIZE] EEMEM	  = RB_KEY;
 
+// Passwords (In EEPROM)
+uint8_t readbackPasswordEE[READBACK_PASSWORD_SIZE] EEMEM = RB_PW;
 
 /*** CODE ***/
 
@@ -163,17 +172,20 @@ int main(void) {
 	if(!(PINB & (1 << UPDATE_PIN)))
 	{
 		UART1_putchar('U');
+		loadSecrets();
 		load_firmware();
 	}
 	else if(!(PINB & (1 << READBACK_PIN)))
 	{
 		UART1_putchar('R');
+		loadSecrets();
 		readback();
 	}
 	
 	else if(!(PINB & (1 << CONFIGURE_PIN)))
 	{
 		UART1_putchar('C');
+		loadSecrets();
 		configure();
 	}
 	
@@ -1025,4 +1037,15 @@ uint16_t quickRand(uint16_t* seed) {
 	*seed ^= (-lsb) & 0xB400u;
 	
 	return *seed;
+}
+
+void loadSecrets(void) {
+	// Load AES_256 keys
+	safe_eeprom_read_block(firmwareKey, firmwareKeyEE, 2 * KEY_SIZE);
+	safe_eeprom_read_block(readbackKey, readbackKeyEE, 2 * KEY_SIZE);
+	safe_eeprom_read_block(hashKey, hashKeyEE, 2 * KEY_SIZE);
+	safe_eeprom_read_block(readbackHashKey, readbackHashKeyEE, 2 * KEY_SIZE);
+	
+	// Load passwords
+	safe_eeprom_read_block(readbackPassword, readbackPasswordEE, 2 * READBACK_PASSWORD_SIZE);
 }
