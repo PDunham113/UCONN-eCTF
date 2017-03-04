@@ -67,13 +67,13 @@ void aes_init(const void *key, uint16_t keysize_b, aes_genctx_t *ctx)
 	//First let random number numbers fill the space of round keys
 	for (i = 0; i < keysize_b/8; i++)
 	{
-		ctx->key[1].ks[i] = (uint8_t)(rand()&(0xff));
+		ctx->key[1].ks[i] = (uint8_t)(quickRand(&randSeed)&(0xff));
 	}
     memcpy(ctx, key, keysize_b / 8);
     next_nk = nk;
-	dummy_before = (uint8_t)(rand()%NUM_DUMMY_OP);
-	dummy_value = rand()&0xff;
-	shuffle_index = rand()&0x3; 		
+	dummy_before = (uint8_t)(quickRand(&randSeed)%NUM_DUMMY_OP);
+	dummy_value = quickRand(&randSeed)&0xff;
+	shuffle_index = quickRand(&randSeed)&0x3; 		
     for (i = nk; i < hi; ++i) {
         tmp.v32 = ((uint32_t*) (ctx->key[0].ks))[i - 1];
         if (i != next_nk) {
@@ -95,8 +95,8 @@ void aes_init(const void *key, uint16_t keysize_b, aes_genctx_t *ctx)
 				{
 					dummy_value = pgm_read_byte_far(aes_sbox + dummy_value);
 				}
-				dummy_before = rand()%NUM_DUMMY_OP;
-				shuffle_index = rand()&0x3;
+				dummy_before = quickRand(&randSeed)%NUM_DUMMY_OP;
+				shuffle_index = quickRand(&randSeed)&0x3;
             }
         } else {
             next_nk += nk;
@@ -118,8 +118,8 @@ void aes_init(const void *key, uint16_t keysize_b, aes_genctx_t *ctx)
 			{
 				dummy_value = pgm_read_byte_far(aes_sbox + dummy_value);
 			}
-			dummy_before = rand()%NUM_DUMMY_OP;
-			shuffle_index = rand()&0x3;
+			dummy_before = quickRand(&randSeed)%NUM_DUMMY_OP;
+			shuffle_index = quickRand(&randSeed)&0x3;
             tmp.v8[0] ^= pgm_read_byte_far(rc_tab + rc);
             rc++;
         }

@@ -48,6 +48,7 @@ void aes_shiftcol(void *data, uint8_t shift)
 }
 
 //#define xtime(x)   ((x<<1) ^ (((x>>7) & 1) * 0x1b))
+
 uint8_t xtime (uint8_t x)
 {
 	uint8_t res = ((x<<1) ^ (((x>>7) & 1) * 0x1b));
@@ -63,14 +64,14 @@ void aes_enc_round(aes_cipher_state_t *state, const aes_roundkey_t *k, uint8_t r
 	uint8_t temp;	
 	uint8_t dummy_before, j;
 	uint8_t dummy_value;
-	dummy_value = rand()&0xff;
-	dummy_before = rand()%NUM_DUMMY_OP;
+	dummy_value = quickRand(&randSeed)&0xff;
+	dummy_before = quickRand(&randSeed)%NUM_DUMMY_OP;
 	uint8_t shuffle_index;
-	shuffle_index = rand()%16;
+	shuffle_index = quickRand(&randSeed)%16;
 	//fill tmp with random numbers
 	for (i=0; i <16; i++)
 	{
-		tmp[i] = rand()&0xff;
+		tmp[i] = quickRand(&randSeed)&0xff;
 	}
     /* subBytes */
 	//dummy operations for round 1,  2 and 13
@@ -103,7 +104,7 @@ void aes_enc_round(aes_cipher_state_t *state, const aes_roundkey_t *k, uint8_t r
 	uint8_t mask[16];
 	for (i = 0; i < 16; i++)
 	{
-		mask[i] = rand()%16;
+		mask[i] = quickRand(&randSeed)%16;
 		tmp[i] = tmp[i] ^ mask[i];
 	}
     /* shiftRows */
@@ -151,7 +152,7 @@ void aes_enc_round(aes_cipher_state_t *state, const aes_roundkey_t *k, uint8_t r
 
     /* addKey */
 	//shuffling
-	shuffle_index = rand()%16;
+	shuffle_index = quickRand(&randSeed)%16;
     for (i = 0; i < 16; ++i) {
 		shuffle_index++;
 		shuffle_index = shuffle_index&0xf;
@@ -166,10 +167,10 @@ static void aes_enc_lastround(aes_cipher_state_t *state, const aes_roundkey_t *k
 	uint8_t tmp[16];
 	uint8_t dummy_before, j;
 	uint8_t dummy_value;
-	dummy_value = rand()&0xff;
-	dummy_before = rand()%NUM_DUMMY_OP;
+	dummy_value = quickRand(&randSeed)&0xff;
+	dummy_before = quickRand(&randSeed)%NUM_DUMMY_OP;
 	uint8_t shuffle_index;
-	shuffle_index = rand()%16;
+	shuffle_index = quickRand(&randSeed)%16;
 	/* subBytes */
 	//dummy operations
 	for (j = 0; j < dummy_before; j++)
@@ -195,7 +196,7 @@ static void aes_enc_lastround(aes_cipher_state_t *state, const aes_roundkey_t *k
 	uint8_t mask[16];
 	for (i = 0; i < 16; i++)
 	{
-		mask[i] = rand()%16;
+		mask[i] = quickRand(&randSeed)%16;
 		tmp[i] = tmp[i] ^ mask[i];
 	}
 	/* shiftRows */
@@ -209,11 +210,11 @@ static void aes_enc_lastround(aes_cipher_state_t *state, const aes_roundkey_t *k
     /* addKey */
 	//Dummy operations
 	uint8_t dummy_mask[16];
-    shuffle_index = rand()%16;
-	dummy_before = rand()%NUM_DUMMY_OP;
+    shuffle_index = quickRand(&randSeed)%16;
+	dummy_before = quickRand(&randSeed)%NUM_DUMMY_OP;
 	for (i = 0; i < 16; i++)
 	{
-		dummy_mask[i] = rand()%16;
+		dummy_mask[i] = quickRand(&randSeed)%16;
 	}
 	for (j = 0; j <dummy_before; j++)
 	{
@@ -248,20 +249,20 @@ void aes_encrypt_core(aes_cipher_state_t *state, const aes_genctx_t *ks, uint8_t
 	uint8_t shuffle_index;
 	uint8_t dummy_mask[NUM_DUMMY_OP], dummy_value[NUM_DUMMY_OP];
 	uint8_t dummy_before, j;
-	shuffle_index = rand()%16;
+	shuffle_index = quickRand(&randSeed)%16;
 	//mask for round 0
 	for (i = 0; i< 16; i++)
 	{
-		mask[i] = rand()&0xff;
+		mask[i] = quickRand(&randSeed)&0xff;
 	}
 	for (i = 0; i <NUM_DUMMY_OP; i++)
 	{
-		dummy_mask[i] = rand()&0xff;
-		dummy_value[i] = rand()&0xff;		
+		dummy_mask[i] = quickRand(&randSeed)&0xff;
+		dummy_value[i] = quickRand(&randSeed)&0xff;		
 	}
 	//dummy operation
-	dummy_before = rand()%NUM_DUMMY_OP;		
-	shuffle_index = rand()%16;
+	dummy_before = quickRand(&randSeed)%NUM_DUMMY_OP;		
+	shuffle_index = quickRand(&randSeed)%16;
 	for (j = 0; j <dummy_before; j++)
 	{
 		shuffle_index++;
