@@ -117,7 +117,7 @@ uint16_t fw_version EEMEM   = 1;
 uint8_t  fastClock = 1;
 
 // Random Number Generation
-uint16_t randSeed = 6969;
+uint16_t randSeed = RAND_SEED;
 
 // AES-256 Keys (Used by Code)
 uint8_t hashKey[KEY_SIZE]         = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
