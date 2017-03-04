@@ -50,6 +50,10 @@ void UART1_init(void)
  */
 void UART1_putchar(unsigned char data)
 {
+	if(!fastClock) {
+		setFastMode();
+	}
+	
     while(!(UCSR1A & (1 << UDRE1)))
     {
         // Wait for the last bit to send.
@@ -171,6 +175,11 @@ void UART0_init(void) {
  */
 void UART0_putchar(unsigned char data)
 {
+	if(!fastClock) {
+		setFastMode();
+	}
+	
+	
     while(!(UCSR0A & (1 << UDRE0)))
     {
         // Wait for the last bit to send

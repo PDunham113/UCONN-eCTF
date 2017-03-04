@@ -291,6 +291,7 @@ void aes_encrypt_core(aes_cipher_state_t *state, const aes_genctx_t *ks, uint8_t
     i = 1;
     for (; rounds > 1; --rounds) {
         aes_enc_round(state, &(ks->key[i]), i);
+		switchClock();
         ++i;
     }
     aes_enc_lastround(state, &(ks->key[i]));

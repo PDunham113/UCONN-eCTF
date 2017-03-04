@@ -8,6 +8,9 @@
 
 #include <stdbool.h>
 
+extern uint8_t fastClock;
+extern void switchClock(void);
+
 /* UART1 FUNCTIONS */
 
 void UART1_init(void);

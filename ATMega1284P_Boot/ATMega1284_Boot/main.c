@@ -65,9 +65,6 @@
 uint16_t quickRand(uint16_t* seed);
 
 // Clock Switching
-void initTimer0(void);
-void enableClockSwitching(void);
-void disableClockSwitching(void);
 void setFastMode(void);
 void setSlowMode(void);
 void switchClock(void);
@@ -115,15 +112,10 @@ void program_flash(uint32_t page_address, unsigned char *data);
 
 // Bootloader Control Flags
 uint16_t fw_version EEMEM   = 1;
-volatile uint8_t  fastClock = 1;
+uint8_t  fastClock = 1;
 
 // Random Number Generation
-#define RAND_CLOCK_SWITCH 10
 uint16_t randSeed = 6969;
-
-// Watchdog Reset Counter
-#define MAX_WDT_CALLS 250
-uint8_t WDTCnt = 0;
 
 // AES-256 Keys
 uint8_t hashKey[KEY_SIZE]			  = H_KEY;
@@ -161,22 +153,11 @@ int main(void) {
 
 	UART0_init();
 	
-	// Enable Timer0 for clock switching
-	//initTimer0();
-		
 	// Configure Port B Pins 2 and 3 as inputs.
 	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
 
 	// Enable pullups - give port time to settle.
 	PORTB |= (1 << UPDATE_PIN) | (1 << READBACK_PIN) | (1 << CONFIGURE_PIN);
-	
-	// Enable interrupts for clock switching
-	//MCUCR |= (1<<IVCE);
-	//MCUCR |= (1<<IVSEL);
-	
-	//sei();
-	
-	
 
 	// If jumper is present on pin 2, load new firmware.
 	if(!(PINB & (1 << UPDATE_PIN)))
@@ -205,19 +186,6 @@ int main(void) {
 	
 } // main
 
-
-
-/*** INTERRUPT SERVICE ROUTINES ***/
-ISR(TIMER0_COMPA_vect) {
-	if(fastClock) {
-		setSlowMode();
-	}
-	else {
-		setFastMode();
-	}
-	
-	OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
-}
 
 
 /*** FUNCTION BODIES ***/
@@ -269,14 +237,11 @@ void configure(void) {
 	
 		/* CALCULATE HASH */
 		
-		//enableClockSwitching();
-		
 		calcHash(hashKey, BOOTLDR_SECTION/SPM_PAGESIZE, BOOTLDR_SECTION/SPM_PAGESIZE + 32, hash);
-		
-		//disableClockSwitching();
-		setFastMode();
 	
 		wdt_reset();
+		
+		
 		
 		/* SEND HASH */
 		for(int i = 0; i < BLOCK_SIZE; i++)	{
@@ -285,6 +250,8 @@ void configure(void) {
 	
 		wdt_reset();
 		
+		
+		
 		/*WAIT FOR ACK*/
 		while(!UART1_data_available()) {
 			__asm__ __volatile__("");
@@ -292,6 +259,8 @@ void configure(void) {
 	
 		//reset Watchdog Timer
 		wdt_reset();
+	
+	
 	
 		/*PC WILL ACK IF CORRECT*/
 		while(1){__asm__ __volatile__("");}		//wait for reset
@@ -386,11 +355,9 @@ void readback(void)
 
 	/* COMPUTE HASH */
 	
-	enableClockSwitching();
-		
 	hashCBC(readbackHashKey, readbackRequest, hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
-	
-	disableClockSwitching();
+
+
 
     wdt_reset();
 		
@@ -410,8 +377,6 @@ void readback(void)
 	
 	/* DECRYPT MESSAGE */
 	
-	enableClockSwitching();
-	
 	for(int i = 0; i < (READBACK_REQUEST_SIZE - BLOCK_SIZE); i += BLOCK_SIZE) {
 		if(i == 0) {
 			strtDecCFB(readbackKey, &readbackRequest[i], readbackIV, &ctx, &decryptdRequest[i]);
@@ -419,11 +384,13 @@ void readback(void)
 		else {
 			contDecCFB(&ctx, &readbackRequest[i], &readbackRequest[i - BLOCK_SIZE], &decryptdRequest[i]);
 		}
+		
+		switchClock();
 	}	
 	
 	wdt_reset();
 	
-	disableClockSwitching();
+	setFastMode();
 		
 	/* CHECK PASSWORD */
 	
@@ -441,12 +408,13 @@ void readback(void)
 	
 	/* GATHER PARAMETERS */
 	
-	enableClockSwitching();
 	
 	// Gather start address
 	for(int i = 0; i < 4; i++) {
 		startAddress |= (decryptdRequest[READBACK_PASSWORD_SIZE + i] << (8 * (3-i)));
 	}
+	
+	switchClock();
 	
 	// Gather size
 	for(int i = 0; i < 4; i++) {
@@ -461,6 +429,8 @@ void readback(void)
 	if(startPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
 		startPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
 	}
+	
+	switchClock();
 	
 	// If end page is outside application section, truncate
 	if(endPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
@@ -484,8 +454,6 @@ void readback(void)
 		
 		wdt_reset();
 		
-		enableClockSwitching();
-		
 		// Encrypts page
 		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
 			if((j == startPage) && (i == 0)) {
@@ -497,14 +465,14 @@ void readback(void)
 			else {
 				contEncCFB(&ctx, &pageBuffer[i], &encryptedBuffer[i - BLOCK_SIZE], &encryptedBuffer[i]);
 			}
+			
+			switchClock();
 		}
 			
 		// Save data for next page
 		for(int i = 0; i < BLOCK_SIZE; i++) {
 			blockBuffer[i] = encryptedBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}
-		
-		disableClockSwitching();
 		
 		// Print data
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
@@ -629,13 +597,9 @@ void load_firmware(void) {
 		wdt_reset();
 	}
 	
-	enableClockSwitching();
-	
 	calcHash(hashKey, ENCRYPTED_SECTION / SPM_PAGESIZE, ENCRYPTED_SECTION / SPM_PAGESIZE + LOAD_FIRMWARE_PAGE_NUMBER - 1, hash);
 	
 	wdt_reset();
-	
-	disableClockSwitching();
 
 
 	
@@ -649,7 +613,6 @@ void load_firmware(void) {
 			// Send NACK
 			UART1_putchar(NACK);
 			
-                        // wwwwwwwww remove this debug statement
 			// DEBUG - Tell us hash failed
 			UART0_putstring("Wrong H\n");
 			
@@ -675,13 +638,7 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
-	
-	// IS THIS NEEDED?
-	//UART1_putchar(ACK);
-	
-	// DEBUG - Tell us hash succeeded
-	//UART0_putstring("Good H\n");
-	
+		
 	
 	
 	/* DECRYPT */
@@ -695,7 +652,7 @@ void load_firmware(void) {
 		
 		wdt_reset();
 		
-		enableClockSwitching();
+
 		
 		// Decrypts page
 		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
@@ -708,6 +665,8 @@ void load_firmware(void) {
 			else {
 				contDecCFB(&ctx, &pageBuffer[i], &pageBuffer[i - BLOCK_SIZE], &decryptedBuffer[i]);
 			}
+			
+			switchClock();
 		}
 		
 		wdt_reset();
@@ -717,7 +676,6 @@ void load_firmware(void) {
 			blockBuffer[i] = pageBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}
 		
-		disableClockSwitching();
 		
 		// Writes data to Decrypted Section
 		program_flash(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, decryptedBuffer);
@@ -726,10 +684,6 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
-	
-	// IS THIS NEEDED?
-	// UART1_putchar(ACK);
-	
 	
 	
 	/* CHECK VERSION */
@@ -746,7 +700,6 @@ void load_firmware(void) {
 			// Firmware Too Old
 			UART1_putchar(NACK);
 		
-                        // wwwwwwwww remove this debug statement
 			// DEBUG - Version failed
 			UART0_putstring("VN Fail\n");
 		
@@ -994,55 +947,25 @@ void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash)
 		// Add to hash
 		hashCBC(key, pageBuffer, hash, SPM_PAGESIZE);
 		
-		if(quickRand(&randSeed) % 2) {
-			switchClock();
-		}
+		switchClock();
 		
 	}
 }
 
 
 
-/**
- * \brief Initialize Timer0 for clock switching
+/** 
+ * \brief Switches clock based on whether a random number is even or odd
  *
  */
-void initTimer0(void) {
-	// Configure to CTC Mode
-	//TCCR0A = (1 << WGM01);
-	//TIMSK0 = (1 << OCIE0A);
-	
-	// Overflow at a random amount
-	//OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
-}
-
-
-
-/**
- * \brief Starts Timer0, enabling Clock Switching
- *
- */
-void enableClockSwitching(void) {
-	TCCR0B = (1 << CS02)|(1 << CS00); // Enable /1024 divider
-}
-
-
-/**
- * \brief Stops Timer0, disabling Clock Switching
- *
- */
-void disableClockSwitching(void) {
-	TCCR0B = 0;
-	setFastMode();
-}
-
-
 void switchClock(void) {
-	if(fastClock) {
-		setSlowMode();
-	}
-	else {
-		setFastMode();
+	if(quickRand(&randSeed) % 2) {
+		if(fastClock) {
+			setSlowMode();
+		}
+		else {
+			setFastMode();
+		}
 	}
 }
 
