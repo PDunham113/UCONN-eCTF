@@ -70,6 +70,7 @@ void enableClockSwitching(void);
 void disableClockSwitching(void);
 void setFastMode(void);
 void setSlowMode(void);
+void switchClock(void);
 
 // Bootloader Functionality
 void load_firmware(void);
@@ -161,7 +162,7 @@ int main(void) {
 	UART0_init();
 	
 	// Enable Timer0 for clock switching
-	initTimer0();
+	//initTimer0();
 		
 	// Configure Port B Pins 2 and 3 as inputs.
 	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
@@ -170,10 +171,10 @@ int main(void) {
 	PORTB |= (1 << UPDATE_PIN) | (1 << READBACK_PIN) | (1 << CONFIGURE_PIN);
 	
 	// Enable interrupts for clock switching
-	MCUCR |= (1<<IVCE);
-	MCUCR |= (1<<IVSEL);
+	//MCUCR |= (1<<IVCE);
+	//MCUCR |= (1<<IVSEL);
 	
-	sei();
+	//sei();
 	
 	
 
@@ -268,11 +269,12 @@ void configure(void) {
 	
 		/* CALCULATE HASH */
 		
-		enableClockSwitching();
+		//enableClockSwitching();
 		
 		calcHash(hashKey, BOOTLDR_SECTION/SPM_PAGESIZE, BOOTLDR_SECTION/SPM_PAGESIZE + 32, hash);
 		
-		disableClockSwitching();
+		//disableClockSwitching();
+		setFastMode();
 	
 		wdt_reset();
 		
@@ -992,6 +994,10 @@ void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash)
 		// Add to hash
 		hashCBC(key, pageBuffer, hash, SPM_PAGESIZE);
 		
+		if(quickRand(&randSeed) % 2) {
+			switchClock();
+		}
+		
 	}
 }
 
@@ -1003,11 +1009,11 @@ void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash)
  */
 void initTimer0(void) {
 	// Configure to CTC Mode
-	TCCR0A = (1 << WGM01);
-	TIMSK0 = (1 << OCIE0A);
+	//TCCR0A = (1 << WGM01);
+	//TIMSK0 = (1 << OCIE0A);
 	
 	// Overflow at a random amount
-	OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
+	//OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
 }
 
 
@@ -1030,6 +1036,15 @@ void disableClockSwitching(void) {
 	setFastMode();
 }
 
+
+void switchClock(void) {
+	if(fastClock) {
+		setSlowMode();
+	}
+	else {
+		setFastMode();
+	}
+}
 
 
 /** 
