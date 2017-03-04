@@ -114,7 +114,7 @@ void program_flash(uint32_t page_address, unsigned char *data);
 
 // Bootloader Control Flags
 uint16_t fw_version EEMEM   = 1;
-uint8_t  fastClock          = 1;
+volatile uint8_t  fastClock = 1;
 
 // Random Number Generation
 #define RAND_CLOCK_SWITCH 10
