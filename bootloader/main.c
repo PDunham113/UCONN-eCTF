@@ -206,7 +206,7 @@ ISR(TIMER0_COMPA_vect) {
 		setFastMode();
 	}
 	
-	OCR0A = quickRand(&randSeed) % RAND_CLOCK_SWITCH;
+	OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
 }
 
 
@@ -995,7 +995,7 @@ void initTimer0(void) {
 	TIMSK0 = (1 << OCIE0A);
 	
 	// Overflow at a random amount
-	OCR0A = quickRand(&randSeed) % RAND_CLOCK_SWITCH;
+	OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
 }
 
 
@@ -1005,7 +1005,7 @@ void initTimer0(void) {
  *
  */
 void enableClockSwitching(void) {
-	TCCR0B = (1 << CS01)|(1 << CS00); // Enable /64 divider
+	TCCR0B = (1 << CS02)|(1 << CS00); // Enable /1024 divider
 }
 
 
