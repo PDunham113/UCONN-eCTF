@@ -52,6 +52,7 @@
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+#include <stdlib.h>
 
 #include "uart.h"
 #include "AES_lib.h"
@@ -61,10 +62,15 @@
 
 /*** FUNCTION DECLARATIONS ***/
 
+// Random Number Generation
+uint16_t quickRand(uint16_t* seed);
+
 // Clock Switching
 void initTimer0(void);
 void enableClockSwitching(void);
 void disableClockSwitching(void);
+void setFastMode(void);
+void setSlowMode(void);
 
 // Bootloader Functionality
 void load_firmware(void);
@@ -108,8 +114,8 @@ void program_flash(uint32_t page_address, unsigned char *data);
 #define BOOTLDR_SECTION		480UL * SPM_PAGESIZE
 
 // Bootloader Control Flags
- uint16_t fw_version EEMEM   = 1;
-//uint8_t  fastClock        = 0;
+uint16_t fw_version EEMEM   = 1;
+uint8_t  fastClock          = 1;
 
 // AES-256 Keys
 uint8_t hashKey[KEY_SIZE]			  = H_KEY;
@@ -140,7 +146,7 @@ int main(void) {
 	UART0_init();
 	
 	// Enable Timer0 for clock switching
-	//initTimer0();
+	initTimer0();
 	
 	wdt_reset();
 	MCUSR &= ~(1<<WDRF);
@@ -154,7 +160,7 @@ int main(void) {
 	PORTB |= (1 << UPDATE_PIN) | (1 << READBACK_PIN) | (1 << CONFIGURE_PIN);
 	
 	// Enable interrupts for clock switching
-	// sei();
+	sei();
 	
 	
 
@@ -188,32 +194,16 @@ int main(void) {
 
 
 /*** INTERRUPT SERVICE ROUTINES ***/
-/*
 ISR(TIMER0_COMPA_vect) {
 	if(fastClock) {
-		// Sets /8 clock divisor
-		CLKPR = (1<<CLKPCE);
-		CLKPR = (1<<CLKPS1)|(1<<CLKPS0);
-		
-		// Updates Timer 0
-		TCCR0B &= ~(1<<CS00);
-		
-		fastClock = 0;
+		setSlowMode();
 	}
 	else {
-		// Removes clock divisor
-		CLKPR = (1<<CLKPCE);
-		CLKPR = 0;
-		
-		// Updates Timer 0
-		TCCR0B |= (1<<CS00);
-		
-		fastClock = 1;
+		setFastMode();
 	}
 	
 	OCR0A = rand() % RAND_CLOCK_SWITCH;
 }
-*/
 
 
 /*** FUNCTION BODIES ***/
@@ -264,7 +254,12 @@ void configure(void) {
 	
 	
 		/* CALCULATE HASH */
+		
+		enableClockSwitching();
+		
 		calcHash(hashKey, BOOTLDR_SECTION/SPM_PAGESIZE, BOOTLDR_SECTION/SPM_PAGESIZE + 32, hash);
+		
+		disableClockSwitching();
 	
 		wdt_reset();
 		
@@ -376,7 +371,11 @@ void readback(void)
 
 	/* COMPUTE HASH */
 	
+	enableClockSwitching();
+		
 	hashCBC(readbackHashKey, readbackRequest, hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
+	
+	disableClockSwitching();
 
     wdt_reset();
 		
@@ -396,6 +395,8 @@ void readback(void)
 	
 	/* DECRYPT MESSAGE */
 	
+	enableClockSwitching();
+	
 	for(int i = 0; i < (READBACK_REQUEST_SIZE - BLOCK_SIZE); i += BLOCK_SIZE) {
 		if(i == 0) {
 			strtDecCFB(readbackKey, &readbackRequest[i], readbackIV, &ctx, &decryptdRequest[i]);
@@ -406,6 +407,8 @@ void readback(void)
 	}	
 	
 	wdt_reset();
+	
+	disableClockSwitching();
 		
 	/* CHECK PASSWORD */
 	
@@ -422,6 +425,8 @@ void readback(void)
 	
 	
 	/* GATHER PARAMETERS */
+	
+	enableClockSwitching();
 	
 	// Gather start address
 	for(int i = 0; i < 4; i++) {
@@ -456,12 +461,15 @@ void readback(void)
 	// Unlike the other for loops in this format, this one terminates if j > endPage, not if j >= endPage.
 	// Pay attention to this.
 	for(int j = startPage; j <= endPage; j++) {
+		
 		// Reads page
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = pgm_read_byte_far((uint32_t)j * SPM_PAGESIZE + i);
 		}
 		
 		wdt_reset();
+		
+		enableClockSwitching();
 		
 		// Encrypts page
 		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
@@ -475,16 +483,13 @@ void readback(void)
 				contEncCFB(&ctx, &pageBuffer[i], &encryptedBuffer[i - BLOCK_SIZE], &encryptedBuffer[i]);
 			}
 		}
-		
-		// DEBUG - Print page
-		for(int i = 0; i < SPM_PAGESIZE; i++) {
-			UART0_putchar(pageBuffer[i]);
-		}
-		
+			
 		// Save data for next page
 		for(int i = 0; i < BLOCK_SIZE; i++) {
 			blockBuffer[i] = encryptedBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}
+		
+		disableClockSwitching();
 		
 		// Print data
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
@@ -610,9 +615,13 @@ void load_firmware(void) {
 		wdt_reset();
 	}
 	
+	enableClockSwitching();
+	
 	calcHash(hashKey, ENCRYPTED_SECTION / SPM_PAGESIZE, ENCRYPTED_SECTION / SPM_PAGESIZE + LOAD_FIRMWARE_PAGE_NUMBER - 1, hash);
 	
 	wdt_reset();
+	
+	disableClockSwitching();
 
 
 	
@@ -651,10 +660,12 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
-	UART1_putchar(ACK);
+	
+	// IS THIS NEEDED?
+	//UART1_putchar(ACK);
 	
 	// DEBUG - Tell us hash succeeded
-	UART0_putstring("Good H\n");
+	//UART0_putstring("Good H\n");
 	
 	
 	
@@ -668,6 +679,8 @@ void load_firmware(void) {
 		}
 		
 		wdt_reset();
+		
+		enableClockSwitching();
 		
 		// Decrypts page
 		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
@@ -689,6 +702,8 @@ void load_firmware(void) {
 			blockBuffer[i] = pageBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}
 		
+		disableClockSwitching();
+		
 		// Writes data to Decrypted Section
 		program_flash(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, decryptedBuffer);
 		
@@ -696,67 +711,74 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
-	UART1_putchar(ACK);
+	
+	// IS THIS NEEDED?
+	// UART1_putchar(ACK);
 	
 	
 	
 	/* CHECK VERSION */
 	
-	// Read version number from Decrypted Section
-	newVersion = pgm_read_word_far(DECRYPTED_SECTION);
+	for(int j = 0; j < 16; j++) {
 	
-	// Compare versions
-	if((newVersion != 0) && (newVersion < currentVersion)) {
+		// Read version number from Decrypted Section
+		newVersion = pgm_read_word_far(DECRYPTED_SECTION);
+	
+	
+		// Compare versions
+		if((newVersion != 0) && (newVersion < currentVersion)) {
 		
-		// Firmware Too Old
-		UART1_putchar(NACK);
+			// Firmware Too Old
+			UART1_putchar(NACK);
 		
-		// DEBUG - Version failed
-		UART0_putstring("VN Fail\n");
+			// DEBUG - Version failed
+			UART0_putstring("VN Fail\n");
 		
-		// Erase Encrypted Section
-		for(int j = 0; j < LOAD_FIRMWARE_PAGE_NUMBER; j++) {
+			// Erase Encrypted Section
+			for(int j = 0; j < LOAD_FIRMWARE_PAGE_NUMBER; j++) {
 			
-			// Fill page buffer with 0xFF
-			for(int i = 0; i < SPM_PAGESIZE; i++) {
-				pageBuffer[i] = 0xFF;
+				// Fill page buffer with 0xFF
+				for(int i = 0; i < SPM_PAGESIZE; i++) {
+					pageBuffer[i] = 0xFF;
+				}
+			
+				// Write over Encrypted Section
+				program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
 			}
-			
-			// Write over Encrypted Section
-			program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
-		}
 		
-		wdt_reset();
+			wdt_reset();
 		
-		// Erase Decrypted Section
-		for(int j = 0; j < LOAD_FIRMWARE_PAGE_NUMBER; j++) {
+			// Erase Decrypted Section
+			for(int j = 0; j < LOAD_FIRMWARE_PAGE_NUMBER; j++) {
 			
-			// Fill page buffer with 0xFF
-			for(int i = 0; i < SPM_PAGESIZE; i++) {
-				pageBuffer[i] = 0xFF;
+				// Fill page buffer with 0xFF
+				for(int i = 0; i < SPM_PAGESIZE; i++) {
+					pageBuffer[i] = 0xFF;
+				}
+			
+				// Write over Encrypted Section
+				program_flash(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
 			}
-			
-			// Write over Encrypted Section
-			program_flash(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
-		}
 		
-		// Reset
-		while(1) {
-			__asm__ __volatile__("");
+			// Reset
+			while(1) {
+				__asm__ __volatile__("");
+			}
 		}
-	}
-	else if(newVersion != 0) {
+		else if(newVersion != 0) {
 		
-		// Not DEBUG firmware, update version
-		eeprom_update_word(&fw_version, newVersion);
+			// Not DEBUG firmware, update version
+			eeprom_update_word(&fw_version, newVersion);
+		}
 	}
 	
 	wdt_reset();
 	
 	// DEBUG - Decrypt successful
-	UART0_putstring("Good DCPT\n");
+	//UART0_putstring("Good DCPT\n");
 	
-	UART1_putchar(ACK);
+	// IS THIS NEEDED?
+	//UART1_putchar(ACK);
 	
 	
 	
@@ -964,7 +986,6 @@ void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash)
  * \brief Initialize Timer0 for clock switching
  *
  */
-/*
 void initTimer0(void) {
 	// Configure to CTC Mode
 	TCCR0A = (1 << WGM01);
@@ -973,24 +994,80 @@ void initTimer0(void) {
 	// Overflow at a random amount
 	OCR0A = rand() % RAND_CLOCK_SWITCH;
 }
-*/
+
+
 
 /**
  * \brief Starts Timer0, enabling Clock Switching
  *
  */
-/*
 void enableClockSwitching(void) {
 	TCCR0B = (1 << CS01)|(1 << CS00); // Enable /64 divider
 }
-*/
+
 
 /**
  * \brief Stops Timer0, disabling Clock Switching
  *
  */
-/*
 void disableClockSwitching(void) {
 	TCCR0B = 0;
+	setFastMode();
 }
-*/
+
+
+
+/** 
+ * \brief Sets clock to fast mode (/1 Prescaler)
+ *
+ */
+void setFastMode(void) {
+	// Removes clock divisor
+	CLKPR = (1<<CLKPCE);
+	CLKPR = 0;
+	
+	// Updates Timer 0 speed
+	TCCR0B |= (1<<CS00);
+	
+	fastClock = 1;
+}
+
+
+
+/** 
+ * \brief Sets clock to slow mode (/8 Prescaler)
+ *
+ */
+void setSlowMode(void) {
+	// Sets /8 clock divisor
+	CLKPR = (1<<CLKPCE);
+	CLKPR = (1<<CLKPS1)|(1<<CLKPS0);
+	
+	// Updates Timer 0
+	TCCR0B &= ~(1<<CS00);
+	
+	fastClock = 0;
+}
+
+/** 
+ * \brief Generates a pseudo random number
+ * 
+ * Uses a 16-bit maximal state Galois Linear Feedback Shift Register (LFSR) to create
+ * pseudo random numbers. These will NOT pass any sort of random number test, but should
+ * be relatively unpredictable. This also uses EXACTLY 37 instructions each iteration,
+ * unlike the C rand() implementation, which uses a varying number of instructions (on the 
+ * order of 800) each iteration. This makes this random number generator more difficult to
+ * notice via side channel analysis, and drastically speeds up runtime.
+ *
+ * \param 
+ *
+ */
+uint16_t quickRand(uint16_t* seed) {
+	*seed >>= 1;
+	
+	uint8_t lsb = *seed & 1;
+	
+	*seed ^= (-lsb) & 0xB400u;
+	
+	return *seed;
+}
