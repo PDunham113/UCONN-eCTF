@@ -118,8 +118,11 @@ volatile uint8_t  fastClock = 1;
 
 // Random Number Generation
 #define RAND_CLOCK_SWITCH 10
-
 uint16_t randSeed = 6969;
+
+// Watchdog Reset Counter
+#define MAX_WDT_CALLS 250
+uint8_t WDTCnt = 0;
 
 // AES-256 Keys
 uint8_t hashKey[KEY_SIZE]			  = H_KEY;
@@ -141,6 +144,14 @@ uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PW;
 int main(void) {
 	/*** SETUP & INITIALIZATION ***/
 	
+	// Configure WDT in Interrupt->Reset Mode
+	wdt_reset();
+	
+	MCUSR &= ~(1<<WDRF);
+	
+	WDTCSR |= (1<<WDCE)|(1<<WDE);
+	WDTCSR = 0;
+	
 	// Calibrate Internal RC Oscillator
 	OSCCAL = (OSCCAL / 3) + 40;
 	
@@ -151,11 +162,6 @@ int main(void) {
 	
 	// Enable Timer0 for clock switching
 	initTimer0();
-	
-	wdt_reset();
-	MCUSR &= ~(1<<WDRF);
-	
-	wdt_disable();
 		
 	// Configure Port B Pins 2 and 3 as inputs.
 	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
@@ -164,6 +170,9 @@ int main(void) {
 	PORTB |= (1 << UPDATE_PIN) | (1 << READBACK_PIN) | (1 << CONFIGURE_PIN);
 	
 	// Enable interrupts for clock switching
+	MCUCR |= (1<<IVCE);
+	MCUCR |= (1<<IVSEL);
+	
 	sei();
 	
 	
