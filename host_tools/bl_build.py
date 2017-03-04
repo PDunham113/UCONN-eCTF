@@ -98,15 +98,14 @@ def generate_secrets():
                     ("RB_PW",RB_PW)]
     return all_keys_and_ivs
 
-def make_secrets_file(secrets):
+def make_secrets_file(secrets,secret_file):
     """Construct secret_build_output.txt with all of the necessary keys and
     passwords.
     """
-    with open('secret_build_output.txt', 'w') as secret_file:
-        for data in secrets:
-            secret_file.write("#define " + data[0] + " \"" + bytesToCString(data[1])+'\"')
-            secret_file.write("\n")
-	secret_file.close()
+    for data in secrets:
+        secret_file.write("#define " + data[0] + " \"" + bytesToCString(data[1])+'\"')
+        secret_file.write("\n")
+	
 
 def stripLine(intelLine):
     """Pulls the data out of a line of Intel hex and packs it as bytes.
@@ -148,6 +147,9 @@ def genMem(intHex):
 
 if __name__ == '__main__':
     secrets = generate_secrets()
+    with open('../bootloader/secret_build_output.txt', 'w') as secret_file:
+        make_secrets_file(secrets,secret_file)
+        secret_file.close()
     if not make_bootloader():
         print "ERROR: Failed to compile bootloader."
         sys.exit(1)
@@ -157,8 +159,9 @@ if __name__ == '__main__':
         bootFlash = bootFlash[:8192]
     # flashHash = CMACHash(secrets["H_KEY"],bootFlash)
     flashHash = CMACHash(secrets[2][1],bootFlash)
-    secrets.append(("flashHash",flashHash))
-    make_secrets_file(secrets)
+    with open('../bootloader/secret_build_output.txt', 'a') as secret_file:
+        secret_file.write("#define flashHash \"" + bytesToCString(flashHash) + "\"\n")
+        secret_file.close()
     write_fuse_file('lfuse', 0xE2)
     write_fuse_file('hfuse', 0xD8)
     write_fuse_file('efuse', 0xFC)

@@ -44,7 +44,7 @@ def configure_bootloader(serial_port):
     print(''.join(['{:02x}'.format(ord(x)) for x in buf]))
     
     # The bootloader is correct if it is able to generate a hash
-    if buf != 0:
+    if buf != '':
         serial_port.write('\x06')
         print("Bootloader correctly configured")
     else:
