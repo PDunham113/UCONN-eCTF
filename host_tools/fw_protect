@@ -143,13 +143,12 @@ if __name__ == '__main__':
     if padSize < 0:
         print("firmware size error")
     finalBytes += (b'\x00'*padSize)
-    # finalBytes += (os.urandom(padSize))
     
     # Encrypt bytes
-    finalBytes = encryptAES(keyMap["FW_KEY"],keyMap["FW_IV"],finalBytes)
+    finalBytes = encryptAES(keyMap["PC_FW_KEY"],keyMap["FW_IV"],finalBytes)
 
 
-    CBCHash = CMACHash(keyMap["H_KEY"],finalBytes)
+    CBCHash = CMACHash(keyMap["PC_H_KEY"],finalBytes)
     finalBytes += CBCHash
     padSize = 126*256 - len(finalBytes)
     with open(args.outfile,'wb+') as outfile:
