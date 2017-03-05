@@ -146,7 +146,7 @@ uint8_t readbackPasswordEE[READBACK_PASSWORD_SIZE] EEMEM = RB_PW;
 int main(void) {
 	/*** SETUP & INITIALIZATION ***/
 	
-	// Configure WDT in Interrupt->Reset Mode
+	// Disable WDT
 	wdt_reset();
 	
 	MCUSR &= ~(1<<WDRF);
@@ -162,7 +162,7 @@ int main(void) {
 
 	UART0_init();
 	
-	// Configure Port B Pins 2 and 3 as inputs.
+	// Configure Port B Pins 2, 3, and 4 as inputs.
 	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
 
 	// Enable pullups - give port time to settle.
@@ -175,20 +175,21 @@ int main(void) {
 		loadSecrets();
 		load_firmware();
 	}
+	// If jumper is present on pin 3, read back firmware.
 	else if(!(PINB & (1 << READBACK_PIN)))
 	{
 		UART1_putchar('R');
 		loadSecrets();
 		readback();
 	}
-	
+	// If jumper is present on pin 4, configure the bootloader.
 	else if(!(PINB & (1 << CONFIGURE_PIN)))
 	{
 		UART1_putchar('C');
 		loadSecrets();
 		configure();
 	}
-	
+	// Otherwise, boot
 	else
 	{
 		UART1_putchar('B');
@@ -247,7 +248,7 @@ void configure(void) {
 	
 	
 	
-		/* CALCULATE HASH */
+	/* CALCULATE HASH */
 		
 		calcHash(hashKey, BOOTLDR_SECTION/SPM_PAGESIZE, BOOTLDR_SECTION/SPM_PAGESIZE + 32, hash);
 	
@@ -437,19 +438,21 @@ void readback(void)
 	startPage = (startAddress / SPM_PAGESIZE);
 	endPage   = (startAddress + size - 1) / SPM_PAGESIZE;
 	
-	// If start page is outside application section, truncate
-	if(startPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
-		startPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
+	for(int i = 0; i < 16; i++) {
+		// If start page is outside application section, truncate
+		if(startPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
+			startPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
+		}
+	
+		switchClock();
+		
+		// If end page is outside application section, truncate
+		if(endPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
+			endPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
+		}
+	
+		wdt_reset();
 	}
-	
-	switchClock();
-	
-	// If end page is outside application section, truncate
-	if(endPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
-		endPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
-	}
-	
-	wdt_reset();
 	
 
 		
@@ -618,6 +621,7 @@ void load_firmware(void) {
 	/* CHECK HASH */
 	
 	for(int i = 0; i < BLOCK_SIZE; i++) {
+		switchClock();
 		
 		// If hash is wrong, erase and reset
 		if(hash[i] != pageBuffer[i]) {
@@ -755,12 +759,6 @@ void load_firmware(void) {
 	
 	wdt_reset();
 	
-	// DEBUG - Decrypt successful
-	//UART0_putstring("Good DCPT\n");
-	
-	// IS THIS NEEDED?
-	//UART1_putchar(ACK);
-	
 	
 	
 	/* STORE MESSAGE */
@@ -784,6 +782,7 @@ void load_firmware(void) {
 	/* STORE PROGRAM */
 	
 	for(int j = 5; j < LOAD_FIRMWARE_PAGE_NUMBER - 1; j++) {
+		switchClock();
 		
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			
@@ -816,7 +815,6 @@ void load_firmware(void) {
 	
 	wdt_reset();
 	
-        // wwwwwwwww remove this debug statement
 	// DEBUG - Firmware loaded
 	UART0_putstring("FW Up\n");
 	
