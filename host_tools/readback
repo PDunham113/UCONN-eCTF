@@ -74,14 +74,12 @@ def readSecrets():
             y = keyFile.readline()
         return keyValues
      
-secrets = readSecrets()
-def construct_request(start_addr, num_bytes):
+def construct_request(start_addr, num_bytes,PASSWORD):
     """Construct a request frame to send the the AVR.
     The frame consists of a 24 byte password followed by the start address (4
     bytes) and then the number of bytes to read (4 bytes).
     """
     # yeah, this function depends on variables defined outside of it. Sorry. 
-    PASSWORD = secrets['PC_RB_PW'] 
     formatstring = '>' + str(len(PASSWORD)) + 'sII'
     return struct.pack(formatstring, PASSWORD, start_addr, num_bytes)
 
@@ -97,7 +95,8 @@ if __name__ == '__main__':
     parser.add_argument("--datafile", help="File to write data to (optional).")
     args = parser.parse_args()
 
-    request = construct_request(int(args.address), int(args.num_bytes))
+    secrets = readSecrets()
+    request = construct_request(int(args.address), int(args.num_bytes),secrets["PC_RB_PW"])
     # Read in secret key from file.
     SECRET_KEY = secrets['PC_RB_KEY']
     IV = secrets['RB_IV']

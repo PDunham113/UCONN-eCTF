@@ -109,7 +109,6 @@ def generate_secrets():
     FW_IV = generate128Entropy()
     RB_IV = generate128Entropy()
     RB_PW = os.urandom(24)
-    RAND_SEED = os.urandom(2)
     all_keys_and_ivs = [("FW_KEY", FW_KEY),
                     ("RB_KEY",RB_KEY),
                     ("H_KEY", H_KEY),
@@ -117,8 +116,7 @@ def generate_secrets():
                     ("RB_IV",RB_IV),
                     ("RBH_KEY",RBH_KEY),
                     ("VERIFY_KEY",VERIFY_KEY),
-                    ("RB_PW",RB_PW),
-                    ("RAND_SEED",RAND_SEED)]
+                    ("RB_PW",RB_PW)]
     return all_keys_and_ivs
 
 def make_secrets_file(secrets,secret_file):
@@ -178,6 +176,9 @@ if __name__ == '__main__':
     secrets = generate_secrets()
     with open('../bootloader/secret_build_output.txt', 'w') as secret_file:
         make_secrets_file(secrets,secret_file)
+        RAND_SEED = os.urandom(2)
+        secret_file.write("#define RAND_SEED 0x" 
+            + ''.join(["{:02x}".format(ord(x)) for x in RAND_SEED]) + "\n")
         secret_file.close()
     if not make_bootloader():
         print "ERROR: Failed to compile bootloader."
