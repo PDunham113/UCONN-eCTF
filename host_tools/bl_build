@@ -77,6 +77,27 @@ def write_fuse_file(fuse_name, fuse_value):
     with open(os.path.join(FILE_DIR, fuse_name + '.hex'), 'wb+') as outfile:
         hex_file.tofile(outfile, format='hex')
 
+def expandNibble(nibble):
+    expandedNibble = 0
+    for i in range(4):
+        iBit = nibble & (1 << i)
+        if iBit != 0:
+            expandedNibble += 2**(2*i+1)
+        else:
+            expandedNibble += 2**(2*i)
+    return struct.pack(">B",expandedNibble)
+
+def generateMaskedMirror(binaryString):
+    resultant = b''
+    # Expand each byte to be an equal number of 1s and 0s
+    for char in binaryString:
+        # Convert characters to ints
+        byteVal = ord(char)
+        lower = byteVal & (2**4 - 1)
+        upper = byteVal >> 4
+        resultant += expandNibble(upper) + expandNibble(lower)
+    return resultant
+
 def generate_secrets():
     """Generate the keys and Password.
     """
@@ -88,6 +109,7 @@ def generate_secrets():
     FW_IV = generate128Entropy()
     RB_IV = generate128Entropy()
     RB_PW = os.urandom(24)
+    RAND_SEED = os.urandom(2)
     all_keys_and_ivs = [("FW_KEY", FW_KEY),
                     ("RB_KEY",RB_KEY),
                     ("H_KEY", H_KEY),
@@ -95,7 +117,8 @@ def generate_secrets():
                     ("RB_IV",RB_IV),
                     ("RBH_KEY",RBH_KEY),
                     ("VERIFY_KEY",VERIFY_KEY),
-                    ("RB_PW",RB_PW)]
+                    ("RB_PW",RB_PW),
+                    ("RAND_SEED",RAND_SEED)]
     return all_keys_and_ivs
 
 def make_secrets_file(secrets,secret_file):
@@ -103,8 +126,14 @@ def make_secrets_file(secrets,secret_file):
     passwords.
     """
     for data in secrets:
-        secret_file.write("#define " + data[0] + " \"" + bytesToCString(data[1])+'\"')
-        secret_file.write("\n")
+        if "KEY" in data[0] or "PW" in data[0]:
+            secret_file.write("#define " + data[0] + " \"" + 
+                bytesToCString(generateMaskedMirror(data[1]))+'\"\n' +
+                "#define PC_" + data[0] + " \"" + 
+                bytesToCString(data[1]) + "\"\n")
+        else:
+            secret_file.write("#define " + data[0] + " \"" +
+                bytesToCString(data[1]) + "\"\n")
 	
 
 def stripLine(intelLine):
