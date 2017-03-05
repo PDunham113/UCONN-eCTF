@@ -61,11 +61,17 @@ if __name__ == '__main__':
             resp = ser.read()  # Wait for an OK from the bootloader
             
             time.sleep(0.1)
-            print(ord(resp))
             if resp != RESP_OK:
                 raise RuntimeError("ERROR: Bootloader responded with {}".format(repr(resp)))
 
             i+=1
             chunk = firmware.read(256)
-    print("Done writing firmware.")
+    print("Waiting for response...")
+    response = ser.read(1)
+    while response != RESP_OK and response != '\x15':
+        response = ser.read(1)
+    if(response == RESP_OK):
+        print("Done writing firmware.")
+    else:
+        print("Firmware installation Failure!")
 

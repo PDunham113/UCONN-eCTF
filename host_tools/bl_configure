@@ -30,8 +30,10 @@ def configure_bootloader(serial_port):
     """
     Configure bootloader using serial connection.
     """
-    # If there were online configuration or checking of the bootloader using
-    # the serial port it could be added here.
+    # grab flashHash generated during bl_build
+    flashHash = grabKeys()["flashHash"]
+
+    # Wait for configure mode
     while serial_port.read(1) != 'C':
         pass
     print("Calculating hash...")
@@ -40,11 +42,12 @@ def configure_bootloader(serial_port):
     
     # Waits and reads Hash into object buf.
     buf = serial_port.read(16)
-
+        
     print(''.join(['{:02x}'.format(ord(x)) for x in buf]))
     
+    print(''.join(['{:02x}'.format(ord(x)) for x in flashHash]))
     # The bootloader is correct if it is able to generate a hash
-    if buf != '':
+    if buf == flashHash:
         serial_port.write('\x06')
         print("Bootloader correctly configured")
     else:
