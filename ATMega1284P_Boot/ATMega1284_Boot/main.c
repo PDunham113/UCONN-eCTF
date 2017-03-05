@@ -52,6 +52,7 @@
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+#include <avr/eeprom.h>
 
 #include "uart.h"
 #include "AES_lib.h"
@@ -117,7 +118,8 @@ uint16_t fw_version EEMEM   = 1;
 uint8_t  fastClock = 1;
 
 // Random Number Generation
-uint16_t randSeed = RAND_SEED;
+uint16_t randSeedEE EEMEM = RAND_SEED;
+uint16_t randSeed = 6969;
 
 // AES-256 Keys (Used by Code)
 uint8_t hashKey[KEY_SIZE]         = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -133,13 +135,13 @@ uint8_t readbackIV[BLOCK_SIZE] = RB_IV;
 uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // AES-256 Keys (In EEPROM)
-uint8_t hashKeyEE[KEY_SIZE] EEMEM	      = H_KEY;
-uint8_t readbackHashKeyEE[KEY_SIZE] EEMEM = RBH_KEY;
-uint8_t firmwareKeyEE[KEY_SIZE] EEMEM	  = FW_KEY;
-uint8_t readbackKeyEE[KEY_SIZE] EEMEM	  = RB_KEY;
+uint8_t hashKeyEE[2 * KEY_SIZE] EEMEM	      = H_KEY;
+uint8_t readbackHashKeyEE[2 * KEY_SIZE] EEMEM = RBH_KEY;
+uint8_t firmwareKeyEE[2 * KEY_SIZE] EEMEM	  = FW_KEY;
+uint8_t readbackKeyEE[2 * KEY_SIZE] EEMEM	  = RB_KEY;
 
 // Passwords (In EEPROM)
-uint8_t readbackPasswordEE[READBACK_PASSWORD_SIZE] EEMEM = RB_PW;
+uint8_t readbackPasswordEE[2 * READBACK_PASSWORD_SIZE] EEMEM = RB_PW;
 
 /*** CODE ***/
 
@@ -1034,6 +1036,10 @@ uint16_t quickRand(uint16_t* seed) {
 	
 	*seed ^= (-lsb) & 0xB400u;
 	
+	if(eeprom_is_ready()) {
+		eeprom_write_word(&randSeedEE, *seed);
+	}
+	
 	return *seed;
 }
 
@@ -1046,4 +1052,7 @@ void loadSecrets(void) {
 	
 	// Load passwords
 	safe_eeprom_read_block(readbackPassword, readbackPasswordEE, 2 * READBACK_PASSWORD_SIZE);
+	
+	// Load seed
+	randSeed = eeprom_read_word(&randSeedEE);
 }
