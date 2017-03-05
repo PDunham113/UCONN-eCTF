@@ -101,7 +101,7 @@ if __name__ == '__main__':
     # Read in secret key from file.
     SECRET_KEY = secrets['PC_RB_KEY']
     IV = secrets['RB_IV']
-    HASH_KEY =  secrets['RBH_KEY']
+    HASH_KEY =  secrets['PC_RBH_KEY']
 
     request = encryptAES(SECRET_KEY, IV, request)
     request_hash = CMACHash(HASH_KEY, request)
