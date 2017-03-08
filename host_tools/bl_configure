@@ -8,6 +8,8 @@ import os
 import serial
 import shutil
 import struct
+import time
+
 FILE_PATH = os.path.abspath(__file__)
 
 def generate_secret_file():
@@ -33,9 +35,6 @@ def configure_bootloader(serial_port):
     # grab flashHash generated during bl_build
     flashHash = grabKeys()["flashHash"]
 
-    # Wait for configure mode
-    while serial_port.read(1) != 'C':
-        pass
     print("Calculating hash...")
     # Send an ACK to the device.
     serial_port.write('\x06') # return ACK
@@ -68,6 +67,15 @@ def grabKeys():
             keyValues[keyDefinition[1]] = key 
             keyDefinition = keyFile.readline()
         return keyValues
+
+def calibrate(hora,ser,data)
+    for i in range(5):
+        time.sleep(hora)
+        ser.write(data)
+    # False indicates we should stop attempting to calibrate
+    return ser.read(1) != b'\xaa'
+    
+        
 if __name__ == '__main__':
     # Argument parser setup.
     parser = argparse.ArgumentParser(description='Bootloader Config Tool')
@@ -78,6 +86,17 @@ if __name__ == '__main__':
     # Create serial connection using specified port.
     serial_port = serial.Serial(args.port, baudrate=115200)
 
+    #attempt to calibrate clock, keep trying till bootloader returns correct value
+    retry = True
+    timePassed = time.clock()
+    print("Attempting Calibration...")
+    while reTry: 
+        try:
+            retry = calibrate(.001,serial_port,b'\xfc')
+            time.sleep(4.1)
+        # change frame error to whatever it ends up failing with
+        except FramingError:
+            pass
     # Do configuration and then close port.
     try:
         configure_bootloader(serial_port)
