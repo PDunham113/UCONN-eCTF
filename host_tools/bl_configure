@@ -68,8 +68,8 @@ def grabKeys():
             keyDefinition = keyFile.readline()
         return keyValues
 
-def calibrate(hora,ser,data)
-    for i in range(5):
+def calibrate(hora,ser,data):
+    for i in range(6):
         time.sleep(hora)
         ser.write(data)
     # False indicates we should stop attempting to calibrate
@@ -89,14 +89,14 @@ if __name__ == '__main__':
     #attempt to calibrate clock, keep trying till bootloader returns correct value
     retry = True
     timePassed = time.clock()
-    print("Attempting Calibration...")
-    while reTry: 
+    while retry: 
+        print("Attempting Calibration...")
         try:
-            retry = calibrate(.001,serial_port,b'\xfc')
-            time.sleep(4.1)
+            retry = calibrate(.3,serial_port,b'\xfc')
         # change frame error to whatever it ends up failing with
         except FramingError:
-            pass
+            time.sleep(4.1)
+    serial_port.write(b'\x06')
     # Do configuration and then close port.
     try:
         configure_bootloader(serial_port)
