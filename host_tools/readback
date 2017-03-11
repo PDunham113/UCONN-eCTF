@@ -106,8 +106,8 @@ if __name__ == '__main__':
     request_hash = CMACHash(HASH_KEY, request)
     request = struct.pack('>' + str(len(request)) + 's' +
         str(len(request_hash)) + 's', request, request_hash)
-    # Open serial port. Set baudrate to 115200. Set timeout to 2 seconds.
-    ser = serial.Serial(args.port, baudrate=115200,timeout=4)
+    # Open serial port. Set baudrate to 115200. Set timeout to 3.7 seconds.
+    ser = serial.Serial(args.port, baudrate=115200,timeout=3.7)
 
     # Wait for bootloader to reset/enter readback mode.
     while ser.read(1) != 'R':
@@ -115,18 +115,20 @@ if __name__ == '__main__':
 
     # Send the request.
     ser.write(request)
-    data = ser.read(256)
-    prevLen = 256
-    while True:
-        data += ser.read(256) # read raw data
-        if len(data) == prevLen:
-            break
-        prevLen = len(data)
-    
-    data = decryptAES(SECRET_KEY, IV, data)
+
     addr = int(args.address)
     sz = int(args.num_bytes)
-    data = data[addr-(addr//256)*256:((addr+sz)//256)*256 + (addr + sz)%256]
+    
+    # Read in apropriate amount of data.
+    # Reading is done by the page.
+    # sz - 1 is used because address is 0 indexed
+    # while sz is implicitly 1 indexed 
+    for i in range(addr//256,(addr+sz-1)//256+1):
+        data += ser.read(256)
+    
+    data = decryptAES(SECRET_KEY, IV, data)
+    #Slice off excess data
+    data = data[addr%256:][:sz]
     printable = ["{:02x}".format(ord(x)) for x in data]
     print(":".join(printable))
 
