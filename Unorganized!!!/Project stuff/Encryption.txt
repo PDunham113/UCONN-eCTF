@@ -1,0 +1,32 @@
+The bootloader makes use of AES-256 as the standard method of encryption throughout. It is extremely secure, fast, and relatively lightweight, making it an excellent choice for this application. In addition, its longevity and widespread use means that countermeasures to common attacks are widely available. 
+
+As AES-256 is a block cipher, it requires a mode of operation to properly operate on more than 16 bytes. For encryption and decryption, Cipher Feedback Mode (CFB Mode) is the chosen method of operation. CFB Mode has a significantly smaller code size than other modes of operation, which is of extreme importance. A brief outline of this mode is presented in the diagram below:
+
+<CFB Encryption>
+
+Each round of CFB Encryption encrypts the previous block of ciphertext and XORs it with the next block of plaintext. This produces the next block of ciphertext.
+
+Equation: Ciphertext[i] = AES( Ciphertext[i - 1] ) XOR Plaintext[i]
+
+For the first round, as there is no previous ciphertext, an Initialization Vector (IV) is used. This value is randomly generated and stored on the AVR, and is known to the host tools.
+Decrypting a message encoded with CFB mode operates in much the same way, with a few minor changes. A brief outline of this mode is presented in the diagram below:
+
+<CFB Decryption>
+
+Each round of CFB Decryption encrypts the previous block of ciphertext and XORs it with the next block of ciphertext. This produces the next block of plaintext.
+
+Equation: Plaintext[i] = AES( Ciphertext[i - 1]) XOR Ciphertext[i]
+
+Again, the IV is used during the first round, as there is no previous ciphertext. CFB Decryption is notable as it still uses the AES-256 block encryption method. Therefore, a significant amount of code can be reused, reducing code size.
+
+The AES-256 encryption algorithom is used again for computing of hashes and Message Authentication Codes (MACs). This is accomplished through a slightly different block cipher mode of operation. The CBC-MAC algorithm is chosen, as unlike CMAC, it does not require generation of a second keyschedule, leading to smaller code size. CBC-MAC is as simple as running AES-256 in the Cipher Block Chaining Mode (CBC Mode), and only preserving the last encrypted block. An outline of this process can be viewed in the diagram below:
+
+<CBC-MAC>
+
+Each block of the message is XORed with the previous MAC result, and is then encrypted. 
+
+Equation: MAC[i] = AES( MAC[i - 1] XOR Message[i] )
+
+As with CFB mode, the first run of the MAC algorithm uses an IV. 
+
+Unlike other modes of operation, the IV for CBC-MAC is always 0. A separate key from the encrypted message is always used to generate the MAC, and fixed-length messages are used throughout. This eliminates the commonly known weaknesses of CBC-MAC.
