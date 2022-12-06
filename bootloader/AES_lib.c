@@ -18,6 +18,8 @@
 
 
 
+/* CFB MODE ENCRYPTION */
+
 /** 
  * \brief Begins encryption using AES-256 in CFB Mode on a single block
  * 
@@ -139,6 +141,9 @@ void encCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 	}
 }
 
+
+
+/* CFB MODE DECRYPTION */
 
 /** 
  * \brief Begins decryption using AES-256 in CFB Mode on a single block
@@ -267,6 +272,8 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
 
 
 
+/* CBC-MAC */
+
 /** 
  * \brief Generates a 128-bit hash using AES-256 CBC-MAC
  * 
@@ -274,13 +281,13 @@ void decCFB(uint8_t* key, uint8_t* data, uint8_t* IV, uint16_t size) {
  * Message Authentication Code (MAC) by running the cipher in CBC Mode. Only the
  * last encrypted block is saved. This hash must be used for messages with fixed
  * sizes only, and the encryption key must be different than the one used for the
- * message encryption. The data is left untouched, unlike with @code encCFB() and
- * @code decCFB(). The hash parameter must be initialized to zero before calling
+ * message encryption. The data is left untouched, unlike with \code encCFB() and
+ * \code decCFB(). The hash parameter must be initialized to zero before calling
  * this function.
  * 
  * \param key Pointer to 32-byte array containing the AES-256 key.
  * \param data Pointer to data array. Begins as ciphertext, ends as plaintext.
- * \param hash Pointer to a 16-byte hash array. Must be initialized to all zeros.
+ * \param hash Pointer to a 16-byte hash array. Must be initialized to all zeros when first called.
  * \param size Size in bytes of data array. Must be divisible by 16.
  */
 void hashCBC(uint8_t *key, uint8_t *data, uint8_t *hash, uint16_t size) {

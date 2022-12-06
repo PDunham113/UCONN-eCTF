@@ -44,7 +44,8 @@ AES_lib/aes_keyschedule.c \
 AES_lib/aes_sbox.c \
 AES_lib/keysize_descriptor.c \
 main.c \
-uart.c
+uart.c \
+eeprom_safe.c
 
 
 PREPROCESSING_SRCS += 
@@ -61,7 +62,8 @@ AES_lib/aes_keyschedule.o \
 AES_lib/aes_sbox.o \
 AES_lib/keysize_descriptor.o \
 main.o \
-uart.o
+uart.o \
+eeprom_safe.o
 
 OBJS_AS_ARGS +=  \
 AES_lib.o \
@@ -71,7 +73,8 @@ AES_lib/aes_keyschedule.o \
 AES_lib/aes_sbox.o \
 AES_lib/keysize_descriptor.o \
 main.o \
-uart.o
+uart.o \
+eeprom_safe.o
 
 C_DEPS +=  \
 AES_lib.d \
@@ -81,7 +84,8 @@ AES_lib/aes_keyschedule.d \
 AES_lib/aes_sbox.d \
 AES_lib/keysize_descriptor.d \
 main.d \
-uart.d
+uart.d \
+eeprom_safe.d
 
 C_DEPS_AS_ARGS +=  \
 AES_lib.d \
@@ -91,7 +95,8 @@ AES_lib/aes_keyschedule.d \
 AES_lib/aes_sbox.d \
 AES_lib/keysize_descriptor.d \
 main.d \
-uart.d
+uart.d \
+eeprom_safe.d
 
 OUTPUT_FILE_PATH +=ATMega1284P_Boot.elf
 
@@ -159,7 +164,7 @@ $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP) $(LIB_DEP) $(LINKER
 	
 
 flash: flash.hex eeprom.hex
-	avrdude -P usb -p m1284p -c dragon_isp  -u -U flash:w:flash.hex:i \
+	avrdude -P usb -p m1284p -c dragon_jtag  -u -U flash:w:flash.hex:i \
 		-U eeprom:w:eeprom.hex:i \
 		-U lfuse:w:lfuse.hex:i \
 		-U hfuse:w:hfuse.hex:i \

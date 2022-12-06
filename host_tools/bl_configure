@@ -37,7 +37,7 @@ def configure_bootloader(serial_port):
 
     print("Calculating hash...")
     # Send an ACK to the device.
-    serial_port.write('\x06') # return ACK
+    serial_port.write('\xff') # return ACK
     
     # Waits and reads Hash into object buf.
     buf = serial_port.read(16)
@@ -47,11 +47,11 @@ def configure_bootloader(serial_port):
     print(''.join(['{:02x}'.format(ord(x)) for x in flashHash]))
     # The bootloader is correct if it is able to generate a hash
     if buf == flashHash:
-        serial_port.write('\x06')
+        #serial_port.write('\x06')
         print("Bootloader correctly configured")
     else:
         print("Bootloader incorrectly configured")
-        serial_port.write('\x15')
+        #serial_port.write('\x15')
 def grabKeys():
     with open("../bootloader/secret_build_output.txt",'r') as keyFile:
         keyDefinition = keyFile.readline()
@@ -73,7 +73,6 @@ def calibrate(hora,ser,data):
         time.sleep(hora)
         ser.write(data)
     # False indicates we should stop attempting to calibrate
-    return ser.read(1) != b'\xaa'
     
         
 if __name__ == '__main__':
@@ -89,19 +88,16 @@ if __name__ == '__main__':
     #attempt to calibrate clock, keep trying till bootloader returns correct value
     retry = True
     timePassed = time.clock()
-    while retry: 
-        print("Attempting Calibration...")
-        try:
-            retry = calibrate(.3,serial_port,b'\xfc')
-        # change frame error to whatever it ends up failing with
-        except FramingError:
-            time.sleep(4.1)
-    serial_port.write(b'\x06')
+    print("Attempting Calibration...")
+    calibrate(.3,serial_port,b'\xfc')
+
+    while not serial_port.in_waiting:
+        serial_port.write(b'\x06')
+        time.sleep(0.5)
+              
     # Do configuration and then close port.
     try:
         configure_bootloader(serial_port)
     finally:
         serial_port.close()
 
-    # Generate secret file.
-    generate_secret_file()

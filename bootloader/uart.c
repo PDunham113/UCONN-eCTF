@@ -26,9 +26,8 @@
 void UART1_init(void)
 {
     UBRR1H = 0; // Set the baud rate
-    UBRR1L = 7;
+    UBRR1L = 3;
 
-    UCSR1A |= (1 << U2X1);
 
     UCSR1B = (1 << RXEN1) | (1 << TXEN1); // Enable receive and transmit
 
@@ -50,6 +49,10 @@ void UART1_init(void)
  */
 void UART1_putchar(unsigned char data)
 {
+	if(!fastClock) {
+		setFastMode();
+	}
+	
     while(!(UCSR1A & (1 << UDRE1)))
     {
         // Wait for the last bit to send.
@@ -87,6 +90,7 @@ bool UART1_data_available(void)
  */
 unsigned char UART1_getchar(void)
 {
+	setFastMode();
     while (!UART1_data_available())
     {
         /* Wait for data to be received */
@@ -147,9 +151,8 @@ void UART1_putstring(char* str)
  */
 void UART0_init(void) {
     UBRR0H = 0; // Set the baud rate
-    UBRR0L = 7;
+    UBRR0L = 3;
 
-    UCSR0A |= (1 << U2X0);
 
     UCSR0B = (1 << RXEN0) | (1 << TXEN0); // Enable receive and transmit
 
@@ -171,6 +174,11 @@ void UART0_init(void) {
  */
 void UART0_putchar(unsigned char data)
 {
+	if(!fastClock) {
+		setFastMode();
+	}
+	
+	
     while(!(UCSR0A & (1 << UDRE0)))
     {
         // Wait for the last bit to send
@@ -208,6 +216,7 @@ bool UART0_data_available(void)
  */
 unsigned char UART0_getchar(void)
 {
+	setFastMode();
     while(!UART0_data_available())
     {
         /* Wait for data to be received */

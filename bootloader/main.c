@@ -52,10 +52,12 @@
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+#include <avr/eeprom.h>
 
 #include "uart.h"
 #include "AES_lib.h"
 #include "secret_build_output.txt"
+#include "eeprom_safe.h"
 
 
 
@@ -65,11 +67,9 @@
 uint16_t quickRand(uint16_t* seed);
 
 // Clock Switching
-void initTimer0(void);
-void enableClockSwitching(void);
-void disableClockSwitching(void);
 void setFastMode(void);
 void setSlowMode(void);
+void switchClock(void);
 
 // Bootloader Functionality
 void load_firmware(void);
@@ -78,6 +78,7 @@ void readback(void);
 void configure(void);
 
 // Generic
+void loadSecrets(void);
 void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash);
 void program_flash(uint32_t page_address, unsigned char *data);
 
@@ -88,7 +89,6 @@ void program_flash(uint32_t page_address, unsigned char *data);
 // Pin Definitions
 #define UPDATE_PIN PINB2
 #define READBACK_PIN PINB3
-#define CONFIGURE_PIN PINB4
 
 // Character Definitions
 #define ACK ((unsigned char)0x06)
@@ -113,27 +113,49 @@ void program_flash(uint32_t page_address, unsigned char *data);
 #define BOOTLDR_SECTION		480UL * SPM_PAGESIZE
 
 // Bootloader Control Flags
-uint16_t fw_version EEMEM   = 1;
-volatile uint8_t  fastClock = 1;
+uint16_t fw_version EEMEM         = 1;
+uint8_t  fastClock			  	  = 1;
+uint8_t  bootConfiguredEE	EEMEM = 0;
+uint8_t  bootConfigured           = 0;
 
 // Random Number Generation
-#define RAND_CLOCK_SWITCH 10
+uint16_t randSeedEE EEMEM = RAND_SEED;
+uint16_t randSeed = 0;
 
-uint16_t randSeed = 6969;
-
-// AES-256 Keys
-uint8_t hashKey[KEY_SIZE]			  = H_KEY;
-uint8_t readbackHashKey[KEY_SIZE]     = RBH_KEY;
-uint8_t firmwareKey[KEY_SIZE]	      = FW_KEY;
-uint8_t readbackKey[KEY_SIZE]		  = RB_KEY;
+// AES-256 Keys (Used by Code)
+uint8_t hashKey[KEY_SIZE]         = /*PC_H_KEY;//*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t readbackHashKey[KEY_SIZE] = /*PC_RBH_KEY; //*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t firmwareKey[KEY_SIZE]     = /*PC_FW_KEY; //*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint8_t readbackKey[KEY_SIZE]     = /*PC_RB_KEY; //*/ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // Initialization Vectors
 uint8_t firmwareIV[BLOCK_SIZE] = FW_IV;
 uint8_t readbackIV[BLOCK_SIZE] = RB_IV;
 
-// Passwords
-uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PW;
+// Passwords (Used by Code)
+uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = /*PC_RB_PW; //*/{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+// AES-256 Keys (In EEPROM)
+uint8_t hashKeyEE[2 * KEY_SIZE] EEMEM	      = H_KEY;
+uint8_t readbackHashKeyEE[2 * KEY_SIZE] EEMEM = RBH_KEY;
+uint8_t firmwareKeyEE[2 * KEY_SIZE] EEMEM	  = FW_KEY;
+uint8_t readbackKeyEE[2 * KEY_SIZE] EEMEM	  = RB_KEY;
+
+// Passwords (In EEPROM)
+uint8_t readbackPasswordEE[2 * READBACK_PASSWORD_SIZE] EEMEM = RB_PW;
+
+// Autocalibration
+#define CAL_MEASURE		0
+#define CAL_BIN_SEARCH	1
+#define CAL_FINISHED	2
+
+#define CORRECT_COUNT 192
+
+uint8_t osccalEE EEMEM = 0x40;
+
+volatile uint8_t count = 0;
+volatile uint8_t stepSize = 32;
+volatile uint8_t calState  = CAL_MEASURE;
 
 
 /*** CODE ***/
@@ -141,51 +163,55 @@ uint8_t readbackPassword[READBACK_PASSWORD_SIZE] = RB_PW;
 int main(void) {
 	/*** SETUP & INITIALIZATION ***/
 	
-	// Calibrate Internal RC Oscillator
-	OSCCAL = (OSCCAL / 3) + 40;
+	// Disable WDT
+	wdt_reset();
 	
+	MCUSR &= ~(1<<WDRF);
+	
+	WDTCSR |= (1<<WDCE)|(1<<WDE);
+	WDTCSR = 0;
+	
+	// Calibrate Internal RC Oscillator
+	OSCCAL = eeprom_read_byte(&osccalEE);
+		
 	// Init UARTs (virtual com port)
 	UART1_init();
 
 	UART0_init();
+			
+	// Configure Port B Pins 2, 3, and 4 as inputs.
+	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN));
 	
-	// Enable Timer0 for clock switching
-	initTimer0();
-	
-	wdt_reset();
-	MCUSR &= ~(1<<WDRF);
-	
-	wdt_disable();
-		
-	// Configure Port B Pins 2 and 3 as inputs.
-	DDRB &= ~((1 << UPDATE_PIN) | (1 << READBACK_PIN)|(1 << CONFIGURE_PIN));
+	DDRB |= (1<<PINB0);
 
 	// Enable pullups - give port time to settle.
-	PORTB |= (1 << UPDATE_PIN) | (1 << READBACK_PIN) | (1 << CONFIGURE_PIN);
+	PORTB |= (1 << UPDATE_PIN) | (1 << READBACK_PIN);
 	
-	// Enable interrupts for clock switching
-	sei();
+	// Load Configure flag
+	bootConfigured = eeprom_read_byte(&bootConfiguredEE);
 	
-	
-
-	// If jumper is present on pin 2, load new firmware.
-	if(!(PINB & (1 << UPDATE_PIN)))
+	// If the bootloader is running for the first time, enter configure mode.
+	if(bootConfigured == 0)
 	{
+		loadSecrets();
+		//UART1_putchar('C');
+		configure();
+	}
+	// If jumper is present on pin 2, load new firmware.
+	else if(!(PINB & (1 << UPDATE_PIN)))
+	{
+		loadSecrets();
 		UART1_putchar('U');
 		load_firmware();
 	}
+	// If jumper is present on pin 3, read back firmware.
 	else if(!(PINB & (1 << READBACK_PIN)))
 	{
+		loadSecrets();
 		UART1_putchar('R');
 		readback();
 	}
-	
-	else if(!(PINB & (1 << CONFIGURE_PIN)))
-	{
-		UART1_putchar('C');
-		configure();
-	}
-	
+	// Otherwise, boot
 	else
 	{
 		UART1_putchar('B');
@@ -197,16 +223,42 @@ int main(void) {
 
 
 
-/*** INTERRUPT SERVICE ROUTINES ***/
-ISR(TIMER0_COMPA_vect) {
-	if(fastClock) {
-		setSlowMode();
+/*** ISRS ***/
+
+ISR(INT0_vect) {
+	if(stepSize) {
+		// Reset TIMER0
+		count = TCNT0;
+		TCNT0 = 0;
+
+		switch(calState) {
+			case CAL_MEASURE:
+			// Set INT0 for rising edge trigger
+				EICRA |= (1<<ISC00);
+				
+				// Set to next state
+				calState = CAL_BIN_SEARCH;
+				
+				break;
+			case CAL_BIN_SEARCH:
+				if(count > CORRECT_COUNT) {
+					OSCCAL -= stepSize;
+				}
+				else if(count < CORRECT_COUNT) {
+					OSCCAL += stepSize;
+				}
+				
+				stepSize >>= 1;
+				
+				// Set INT0 for falling edge trigger
+				EICRA &= ~(1<<ISC00);
+				
+				// Set to next state
+				calState = CAL_MEASURE;
+				
+				break;
+			}
 	}
-	else {
-		setFastMode();
-	}
-	
-	OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
 }
 
 
@@ -239,50 +291,109 @@ ISR(TIMER0_COMPA_vect) {
  *
  */
 void configure(void) {
-	//uint8_t pageBuffer[SPM_PAGESIZE];
 	uint8_t hash[BLOCK_SIZE] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		
 	//Start the Watchdog Timer
 	wdt_enable(WDTO_4S);
 	
+	/* INITIALIZE CALIBRATION SEQUENCE */
+	
+	// Set INT0 for falling edge trigger
+	EICRA |= (1<<ISC01);
+	
+	// Enable INT0
+	EIMSK |= (1<<INT0);
+	
+	// Put Vect Table in Bootloader Section
+	uint8_t temp = MCUCR;
+	
+	MCUCR = temp | (1<<IVCE);
+	MCUCR = temp | (1<<IVSEL);
+	
+	// Enable TIMER0
+	TCCR0B |= (1<<CS00);
+	
+	wdt_reset();
+	
+	// Disable UART RX
+	 UCSR1B &= ~(1<<RXEN1);
+	
+	// Global Interrupt Enable
+	sei();
+	
+	
+	
+	/* RUN CALIBRATION SEQUENCE */
+	
+	// Wait for binary search to complete
+	while(stepSize) {
+		wdt_reset();
+		__asm__ __volatile__("");
+	}
+	
+
+	wdt_reset();
+	
+	
+	/* DE_INITIALIZE CALIBRATION SEQUENCE */
+	
+	// Global Interrupt Disable
+	cli();
+	
+	// Re-enable UART RX
+	UCSR1B |= (1<<RXEN1);
+	
+	eeprom_write_byte(&osccalEE, OSCCAL);
+
+	
+	wdt_reset();
+	
+	// INT0 Disable
+	EIMSK &= ~(1<<INT0);
+	
+	//Timer0 Disable
+	TCCR0B = 0;
+	
+	// Hand Interrupts to Application Section
+    temp = MCUCR;
+	
+	MCUCR = temp | (1<<IVCE);
+	MCUCR = temp & ~(1<<IVSEL);
+			
+	wdt_reset();
 	
 	
 	/*WAIT FOR ACK*/
 	while(!UART1_data_available()) {
 		__asm__ __volatile__("");
 	}
-	
+
 	if(UART1_getchar()==ACK) {
 		wdt_reset();
+		//UART1_putchar(ACK);
 	
 	
-	
-		/* CALCULATE HASH */
-		
-		enableClockSwitching();
-		
+	/* CALCULATE HASH */
+
 		calcHash(hashKey, BOOTLDR_SECTION/SPM_PAGESIZE, BOOTLDR_SECTION/SPM_PAGESIZE + 32, hash);
-		
-		disableClockSwitching();
-	
+
 		wdt_reset();
+		
+		
 		
 		/* SEND HASH */
 		for(int i = 0; i < BLOCK_SIZE; i++)	{
 			UART1_putchar(hash[i]);
 		}
 	
-		wdt_reset();
-		
-		/*WAIT FOR ACK*/
-		while(!UART1_data_available()) {
-			__asm__ __volatile__("");
-		}
-	
+			
 		//reset Watchdog Timer
 		wdt_reset();
 	
-		/*PC WILL ACK IF CORRECT*/
+	
+		eeprom_update_byte(&bootConfiguredEE, 1);
+	
+
 		while(1){__asm__ __volatile__("");}		//wait for reset
 	}
 
@@ -360,6 +471,8 @@ void readback(void)
     // Start the Watchdog Timer
     wdt_enable(WDTO_4S);
 	
+	setFastMode();
+	
 	// Wait for data
 	while(!UART1_data_available()) {
 		__asm__ __volatile__("");
@@ -375,11 +488,9 @@ void readback(void)
 
 	/* COMPUTE HASH */
 	
-	enableClockSwitching();
-		
 	hashCBC(readbackHashKey, readbackRequest, hash, READBACK_REQUEST_SIZE - BLOCK_SIZE);
-	
-	disableClockSwitching();
+
+
 
     wdt_reset();
 		
@@ -399,8 +510,6 @@ void readback(void)
 	
 	/* DECRYPT MESSAGE */
 	
-	enableClockSwitching();
-	
 	for(int i = 0; i < (READBACK_REQUEST_SIZE - BLOCK_SIZE); i += BLOCK_SIZE) {
 		if(i == 0) {
 			strtDecCFB(readbackKey, &readbackRequest[i], readbackIV, &ctx, &decryptdRequest[i]);
@@ -408,11 +517,13 @@ void readback(void)
 		else {
 			contDecCFB(&ctx, &readbackRequest[i], &readbackRequest[i - BLOCK_SIZE], &decryptdRequest[i]);
 		}
+		
+		switchClock();
 	}	
 	
 	wdt_reset();
 	
-	disableClockSwitching();
+	setFastMode();
 		
 	/* CHECK PASSWORD */
 	
@@ -430,12 +541,13 @@ void readback(void)
 	
 	/* GATHER PARAMETERS */
 	
-	enableClockSwitching();
 	
 	// Gather start address
 	for(int i = 0; i < 4; i++) {
 		startAddress |= (decryptdRequest[READBACK_PASSWORD_SIZE + i] << (8 * (3-i)));
 	}
+	
+	switchClock();
 	
 	// Gather size
 	for(int i = 0; i < 4; i++) {
@@ -446,17 +558,21 @@ void readback(void)
 	startPage = (startAddress / SPM_PAGESIZE);
 	endPage   = (startAddress + size - 1) / SPM_PAGESIZE;
 	
-	// If start page is outside application section, truncate
-	if(startPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
-		startPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
-	}
+	for(int i = 0; i < 16; i++) {
+		// If start page is outside application section, truncate
+		if(startPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
+			startPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
+		}
 	
-	// If end page is outside application section, truncate
-	if(endPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
-		endPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
-	}
+		switchClock();
+		
+		// If end page is outside application section, truncate
+		if(endPage > ((MESSAGE_SECTION / SPM_PAGESIZE) - 1)) {
+			endPage = (MESSAGE_SECTION / SPM_PAGESIZE) - 1;
+		}
 	
-	wdt_reset();
+		wdt_reset();
+	}
 	
 
 		
@@ -473,8 +589,6 @@ void readback(void)
 		
 		wdt_reset();
 		
-		enableClockSwitching();
-		
 		// Encrypts page
 		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
 			if((j == startPage) && (i == 0)) {
@@ -486,14 +600,14 @@ void readback(void)
 			else {
 				contEncCFB(&ctx, &pageBuffer[i], &encryptedBuffer[i - BLOCK_SIZE], &encryptedBuffer[i]);
 			}
+			
+			switchClock();
 		}
 			
 		// Save data for next page
 		for(int i = 0; i < BLOCK_SIZE; i++) {
 			blockBuffer[i] = encryptedBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}
-		
-		disableClockSwitching();
 		
 		// Print data
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
@@ -618,19 +732,16 @@ void load_firmware(void) {
 		wdt_reset();
 	}
 	
-	enableClockSwitching();
-	
 	calcHash(hashKey, ENCRYPTED_SECTION / SPM_PAGESIZE, ENCRYPTED_SECTION / SPM_PAGESIZE + LOAD_FIRMWARE_PAGE_NUMBER - 1, hash);
 	
 	wdt_reset();
-	
-	disableClockSwitching();
 
 
 	
 	/* CHECK HASH */
 	
 	for(int i = 0; i < BLOCK_SIZE; i++) {
+		switchClock();
 		
 		// If hash is wrong, erase and reset
 		if(hash[i] != pageBuffer[i]) {
@@ -663,13 +774,7 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
-	
-	// IS THIS NEEDED?
-	//UART1_putchar(ACK);
-	
-	// DEBUG - Tell us hash succeeded
-	//UART0_putstring("Good H\n");
-	
+		
 	
 	
 	/* DECRYPT */
@@ -683,7 +788,7 @@ void load_firmware(void) {
 		
 		wdt_reset();
 		
-		enableClockSwitching();
+
 		
 		// Decrypts page
 		for(int i = 0; i < SPM_PAGESIZE; i += BLOCK_SIZE) {
@@ -696,6 +801,8 @@ void load_firmware(void) {
 			else {
 				contDecCFB(&ctx, &pageBuffer[i], &pageBuffer[i - BLOCK_SIZE], &decryptedBuffer[i]);
 			}
+			
+			switchClock();
 		}
 		
 		wdt_reset();
@@ -705,7 +812,6 @@ void load_firmware(void) {
 			blockBuffer[i] = pageBuffer[SPM_PAGESIZE - BLOCK_SIZE + i];
 		}
 		
-		disableClockSwitching();
 		
 		// Writes data to Decrypted Section
 		program_flash(DECRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, decryptedBuffer);
@@ -714,10 +820,6 @@ void load_firmware(void) {
 	}
 	
 	wdt_reset();
-	
-	// IS THIS NEEDED?
-	// UART1_putchar(ACK);
-	
 	
 	
 	/* CHECK VERSION */
@@ -777,12 +879,6 @@ void load_firmware(void) {
 	
 	wdt_reset();
 	
-	// DEBUG - Decrypt successful
-	//UART0_putstring("Good DCPT\n");
-	
-	// IS THIS NEEDED?
-	//UART1_putchar(ACK);
-	
 	
 	
 	/* STORE MESSAGE */
@@ -806,6 +902,7 @@ void load_firmware(void) {
 	/* STORE PROGRAM */
 	
 	for(int j = 5; j < LOAD_FIRMWARE_PAGE_NUMBER - 1; j++) {
+		switchClock();
 		
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			
@@ -821,7 +918,7 @@ void load_firmware(void) {
 	
 	wdt_reset();
 	
-	
+	//PORTB |= (1<<PINB0);
 	
 	/* ERASE FLASH */
 	
@@ -831,7 +928,7 @@ void load_firmware(void) {
 		for(int i = 0; i < SPM_PAGESIZE; i++) {
 			pageBuffer[i] = 0xFF;
 		}
-		
+		wdt_reset();
 		// Write over Encrypted Section
 		program_flash(ENCRYPTED_SECTION + (uint32_t)j * SPM_PAGESIZE, pageBuffer);
 	}
@@ -840,14 +937,11 @@ void load_firmware(void) {
 	
 	// DEBUG - Firmware loaded
 	UART0_putstring("FW Up\n");
-	
-	UART1_putchar(ACK);
-	
-	
+		
 	
 	// Reset and boot
 	while(1) {
-		__asm__ __volatile__("");
+		UART1_putchar(ACK);
 	}
 	
 }
@@ -980,42 +1074,26 @@ void calcHash(uint8_t* key, uint16_t startPage, uint16_t endPage, uint8_t* hash)
 		// Add to hash
 		hashCBC(key, pageBuffer, hash, SPM_PAGESIZE);
 		
+		switchClock();
+		
 	}
 }
 
 
 
-/**
- * \brief Initialize Timer0 for clock switching
+/** 
+ * \brief Switches clock based on whether a random number is even or odd
  *
  */
-void initTimer0(void) {
-	// Configure to CTC Mode
-	TCCR0A = (1 << WGM01);
-	TIMSK0 = (1 << OCIE0A);
-	
-	// Overflow at a random amount
-	OCR0A = 50 + quickRand(&randSeed) % RAND_CLOCK_SWITCH;
-}
-
-
-
-/**
- * \brief Starts Timer0, enabling Clock Switching
- *
- */
-void enableClockSwitching(void) {
-	TCCR0B = (1 << CS02)|(1 << CS00); // Enable /1024 divider
-}
-
-
-/**
- * \brief Stops Timer0, disabling Clock Switching
- *
- */
-void disableClockSwitching(void) {
-	TCCR0B = 0;
-	setFastMode();
+void switchClock(void) {
+	if(quickRand(&randSeed) % 2) {
+		if(fastClock) {
+			setSlowMode();
+		}
+		else {
+			setFastMode();
+		}
+	}	
 }
 
 
@@ -1052,6 +1130,8 @@ void setSlowMode(void) {
 	fastClock = 0;
 }
 
+
+
 /** 
  * \brief Generates a pseudo random number using an LSFR
  * 
@@ -1075,4 +1155,33 @@ uint16_t quickRand(uint16_t* seed) {
 	*seed ^= (-lsb) & 0xB400u;
 	
 	return *seed;
+	
+	//XKCD-221 Compliant Implementation 
+	//return 5; // Chosen by fair dice roll
+			  // guaranteed to be random
+    
+}
+
+
+
+void loadSecrets(void) {
+	// Load AES_256 keys
+	safe_eeprom_read_block(firmwareKey, firmwareKeyEE, 2 * KEY_SIZE);
+	safe_eeprom_read_block(readbackKey, readbackKeyEE, 2 * KEY_SIZE);
+	safe_eeprom_read_block(hashKey, hashKeyEE, 2 * KEY_SIZE);
+	safe_eeprom_read_block(readbackHashKey, readbackHashKeyEE, 2 * KEY_SIZE);
+	
+	// Load passwords
+	safe_eeprom_read_block(readbackPassword, readbackPasswordEE, 2 * READBACK_PASSWORD_SIZE);
+	
+	// Load seed
+	randSeed = eeprom_read_word(&randSeedEE);
+	
+	// Save seed for next time
+	eeprom_write_word(&randSeedEE, randSeed + 1);
+	
+	// Prevent 0-seed from existing (stalls PRNG)
+	if(randSeed == 0) {
+		randSeed++;
+	}
 }
